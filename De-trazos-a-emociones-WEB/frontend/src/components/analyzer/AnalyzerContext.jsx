@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { ArrowRight, Pencil } from 'lucide-react';
 import '../common/ContextoNino.css';
 import './AnalyzerContext.css';
-import { textoEdad } from '../../utils/emociones';
-import { OPCIONES, normalizarGenero, opcionDiagnostico, opcionTiempo, tiempoEnMinutos } from '../../utils/contextoNino';
+import { textoEdad, edadDesde } from '../../utils/emociones';
+import { OPCIONES, normalizarGenero, textoGenero, opcionDiagnostico, opcionTiempo, tiempoEnMinutos } from '../../utils/contextoNino';
 
 const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onContinuar, ninoConocido, faltaAlias = false }) => {
   // Niño ya conocido: sus datos básicos se muestran resumidos y se pueden editar.
@@ -18,6 +18,14 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
     handleRadioChange('diagnostico_previo', v === 'otro' ? '' : v);
   };
   const tiempo = opcionTiempo(formData.tiempo_dibujo);
+  // Edad: si hay fecha de nacimiento se calcula sola; si no, se escribe.
+  const edadCalculada = edadDesde(formData.fecha_nacimiento);
+  const conFecha = Boolean(formData.fecha_nacimiento);
+  const cambiarFecha = (e) => {
+    handleInputChange(e);
+    const calc = edadDesde(e.target.value);
+    if (calc != null) handleRadioChange('edad', String(calc));
+  };
   return (
     <div id="screen-1" className="screen">
       {ninoConocido && !editarBasicos ? (
@@ -32,7 +40,7 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="card-title">{formData.nombre || 'Niño sin nombre'}</div>
               <div className="card-subtitle">
-                {[textoEdad(formData) || null, formData.genero].filter(Boolean).join(' · ') || 'Sin fecha de nacimiento ni género'}
+                {[textoEdad(formData) || null, formData.genero && textoGenero(formData.genero)].filter(Boolean).join(' · ') || 'Sin edad ni género'}
               </div>
             </div>
             <button type="button" className="ctx-editar" onClick={() => setEditarBasicos(true)}>
@@ -61,17 +69,21 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
           </div>
           <div className="card-body">
             <div className="form-grid cols-3">
-              <div className="field">
-                <label htmlFor="nombre">Nombre o alias</label>
+              <div className="field campo-completo">
+                <label htmlFor="nombre">Nombre, alias o código</label>
                 <input type="text" id="nombre" value={formData.nombre} onChange={handleInputChange} placeholder="Ej: Sofi, S. R. o Niño 3C-07" maxLength={60} readOnly={ninoConocido} className={faltaAlias ? 'invalido' : undefined} aria-invalid={faltaAlias || undefined} title={ninoConocido ? 'El nombre identifica al niño en el historial' : undefined} />
-                {faltaAlias
-                  ? <span className="field-error">Escribe un nombre o alias para continuar.</span>
-                  : !ninoConocido && <span className="field-hint">Un apodo, unas iniciales o un código. Sirve para agrupar sus dibujos.</span>}
+                {faltaAlias && <span className="field-error">Escribe un nombre, alias o código para continuar.</span>}
               </div>
               <div className="field">
-                <label>Fecha de nacimiento</label>
-                <input type="date" id="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={handleInputChange} max={new Date().toISOString().split('T')[0]} />
-                {textoEdad(formData) && <span className="field-hint">{textoEdad(formData)}</span>}
+                <label htmlFor="fecha_nacimiento">Fecha de nacimiento <span className="optional">Opcional</span></label>
+                <input type="date" id="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={cambiarFecha} max={new Date().toISOString().split('T')[0]} />
+              </div>
+              <div className="field">
+                <label htmlFor="edad">Edad {conFecha && <span className="optional">Calculada</span>}</label>
+                <input type="number" id="edad" min="2" max="17" inputMode="numeric" placeholder="Años"
+                  value={conFecha ? (edadCalculada ?? '') : (formData.edad || '')}
+                  onChange={(e) => handleRadioChange('edad', e.target.value.replace(/\D/g, '').slice(0, 2))}
+                  readOnly={conFecha} title={conFecha ? 'Se calcula con la fecha de nacimiento' : undefined} />
               </div>
               <div className="field">
                 <label>Género</label>

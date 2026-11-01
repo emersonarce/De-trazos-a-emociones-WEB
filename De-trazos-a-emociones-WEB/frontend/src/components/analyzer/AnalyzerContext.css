@@ -9,6 +9,10 @@
   grid-template-columns: 1fr 1fr 1fr;
 }
 
+.form-grid .campo-completo {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 640px) {
   .form-grid,
   .form-grid.cols-3 {
@@ -122,6 +126,12 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--emo-enojo, #f2736d);
+}
+
+/* Edad calculada con la fecha de nacimiento: no se edita */
+.field input#edad[readonly] {
+  color: var(--muted);
+  cursor: default;
 }
 
 /* «Otro» diagnóstico y tiempo exacto */

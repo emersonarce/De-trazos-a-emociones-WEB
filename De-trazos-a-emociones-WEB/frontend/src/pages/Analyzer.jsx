@@ -16,7 +16,7 @@ import { puedeContexto } from '../utils/permisos';
 // Campos de contexto del niño; si todos están vacíos, "Con contexto" no aporta
 // nada y el análisis equivaldría a "Solo dibujo".
 const CAMPOS_CONTEXTO = [
-  'nombre', 'fecha_nacimiento', 'genero', 'situacion_actual', 'comportamiento',
+  'nombre', 'edad', 'fecha_nacimiento', 'genero', 'situacion_actual', 'comportamiento',
   'diagnostico_previo', 'dibujo_espontaneo', 'comento_mientras', 'tiempo_dibujo',
 ];
 

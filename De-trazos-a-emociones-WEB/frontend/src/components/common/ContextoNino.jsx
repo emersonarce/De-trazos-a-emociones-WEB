@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pencil, UserRound } from 'lucide-react';
 import { filasContexto, OPCIONES, normalizarGenero, opcionDiagnostico, opcionTiempo, tiempoEnMinutos } from '../../utils/contextoNino';
+import { edadDesde } from '../../utils/emociones';
 import './ContextoNino.css';
 
 const LARGOS = ['Situación actual', 'Diagnóstico previo', 'Descripción del dibujo', 'Comentó mientras dibujaba'];
@@ -57,7 +58,7 @@ const Pildoras = ({ nombre, opciones, valor, onElegir }) => (
   </div>
 );
 
-// Editor compacto del contexto (fecha, género, situación, comportamiento,
+// Editor compacto del contexto (fecha, edad, género, situación, comportamiento,
 // diagnóstico y, si conDibujo, los datos del dibujo). El nombre no se edita:
 // identifica al niño en el historial.
 export const ContextoEditor = ({ valor = {}, onChange, conDibujo = true }) => {
@@ -68,12 +69,25 @@ export const ContextoEditor = ({ valor = {}, onChange, conDibujo = true }) => {
   const diag = opcionDiagnostico(valor.diagnostico_previo);
   const opcionDiag = otroDiag || diag.opcion === 'otro' ? 'otro' : diag.opcion;
   const tiempo = opcionTiempo(valor.tiempo_dibujo);
+  // Edad: si hay fecha de nacimiento se calcula sola; si no, se escribe.
+  const conFecha = Boolean(valor.fecha_nacimiento);
+  const cambiarFecha = (e) => {
+    const calc = edadDesde(e.target.value);
+    onChange({ ...valor, fecha_nacimiento: e.target.value, ...(calc != null && { edad: String(calc) }) });
+  };
   return (
     <div className="ctx-editor">
       <div className="ctx-grid">
         <label className="ctx-campo">
           <span>Fecha de nacimiento</span>
-          <input type="date" name="fecha_nacimiento" value={valor.fecha_nacimiento || ''} onChange={alEscribir} max={new Date().toISOString().split('T')[0]} />
+          <input type="date" name="fecha_nacimiento" value={valor.fecha_nacimiento || ''} onChange={cambiarFecha} max={new Date().toISOString().split('T')[0]} />
+        </label>
+        <label className="ctx-campo">
+          <span>Edad{conFecha && <em className="ctx-calculada"> · calculada</em>}</span>
+          <input type="number" name="edad" min="2" max="17" inputMode="numeric" placeholder="Años"
+            value={conFecha ? (edadDesde(valor.fecha_nacimiento) ?? '') : (valor.edad || '')}
+            onChange={(e) => poner('edad', e.target.value.replace(/\D/g, '').slice(0, 2))}
+            readOnly={conFecha} title={conFecha ? 'Se calcula con la fecha de nacimiento' : undefined} />
         </label>
         <label className="ctx-campo">
           <span>Género</span>

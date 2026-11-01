@@ -110,7 +110,7 @@
 }
 .ctx-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 14px;
 }
 .ctx-campo {
@@ -180,6 +180,17 @@
 :root[data-theme="light"] .ctx-campo select,
 :root[data-theme="light"] .ctx-campo textarea {
   background: var(--surface);
+}
+
+/* Edad calculada con la fecha de nacimiento: no se edita */
+.ctx-calculada {
+  font-style: normal;
+  font-weight: 500;
+  opacity: 0.75;
+}
+.ctx-campo input[readonly] {
+  color: var(--muted);
+  cursor: default;
 }
 
 /* «Otro» diagnóstico y tiempo exacto en el editor */
