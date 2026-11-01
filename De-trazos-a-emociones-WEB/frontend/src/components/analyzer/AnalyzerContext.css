@@ -136,18 +136,21 @@
   cursor: default;
 }
 
-/* «Otro» diagnóstico y tiempo exacto */
+/* «Otro» diagnóstico y tiempo exacto (horas y minutos) */
 .field select + input {
   margin-top: 8px;
 }
 .tiempo-exacto {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+}
+.field .tiempo-exacto label {
+  gap: 6px;
   font-size: 13px;
   color: var(--muted);
 }
 .field .tiempo-exacto input {
-  width: 76px;
+  width: 64px;
   padding: 8px 10px;
 }

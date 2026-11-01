@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pencil, UserRound } from 'lucide-react';
-import { filasContexto, OPCIONES, normalizarGenero, opcionDiagnostico, opcionTiempo, tiempoEnMinutos } from '../../utils/contextoNino';
+import { filasContexto, OPCIONES, normalizarGenero, opcionDiagnostico, opcionTiempo, tiempoExacto } from '../../utils/contextoNino';
 import { edadDesde } from '../../utils/emociones';
 import './ContextoNino.css';
 
@@ -133,11 +133,16 @@ export const ContextoEditor = ({ valor = {}, onChange, conDibujo = true }) => {
           <div className="ctx-campo">
             <span>Tiempo que tardó</span>
             <Pildoras nombre="tiempo_dibujo" opciones={OPCIONES.tiempo_dibujo} valor={valor.tiempo_dibujo || ''} onElegir={poner} />
-            <label className="ctx-minutos">
-              o tiempo exacto
-              <input type="number" min="1" max="240" inputMode="numeric" value={tiempo.minutos} onChange={(e) => poner('tiempo_dibujo', tiempoEnMinutos(e.target.value))} placeholder="—" aria-label="Tiempo exacto en minutos" />
-              min
-            </label>
+            <div className="ctx-minutos">
+              <label>
+                <input type="number" min="0" max="12" inputMode="numeric" value={tiempo.horas} onChange={(e) => poner('tiempo_dibujo', tiempoExacto(e.target.value, tiempo.minutos))} placeholder="—" aria-label="Horas exactas" />
+                h
+              </label>
+              <label>
+                <input type="number" min="0" max="59" inputMode="numeric" value={tiempo.minutos} onChange={(e) => poner('tiempo_dibujo', tiempoExacto(tiempo.horas, e.target.value))} placeholder="—" aria-label="Minutos exactos" />
+                min
+              </label>
+            </div>
           </div>
         </>
       )}

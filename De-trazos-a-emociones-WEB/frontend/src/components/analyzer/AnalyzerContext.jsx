@@ -4,7 +4,7 @@ import '../common/ContextoNino.css';
 import './AnalyzerContext.css';
 import AvisoCumple from '../common/AvisoCumple';
 import { textoEdad, edadDesde, infoCumple } from '../../utils/emociones';
-import { OPCIONES, normalizarGenero, textoGenero, opcionDiagnostico, opcionTiempo, tiempoEnMinutos } from '../../utils/contextoNino';
+import { OPCIONES, normalizarGenero, textoGenero, opcionDiagnostico, opcionTiempo, tiempoExacto } from '../../utils/contextoNino';
 
 const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onContinuar, ninoConocido, faltaAlias = false }) => {
   // Niño ya conocido: sus datos básicos se muestran resumidos y se pueden editar.
@@ -182,11 +182,16 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
                   <span className="radio-dot"></span>{opt}
                 </label>
               ))}
-              <label className="tiempo-exacto">
-                o tiempo exacto
-                <input type="number" min="1" max="240" inputMode="numeric" value={tiempo.minutos} onChange={(e) => handleRadioChange('tiempo_dibujo', tiempoEnMinutos(e.target.value))} placeholder="—" aria-label="Tiempo exacto en minutos" />
-                min
-              </label>
+              <div className="tiempo-exacto">
+                <label>
+                  <input type="number" min="0" max="12" inputMode="numeric" value={tiempo.horas} onChange={(e) => handleRadioChange('tiempo_dibujo', tiempoExacto(e.target.value, tiempo.minutos))} placeholder="—" aria-label="Horas exactas" />
+                  h
+                </label>
+                <label>
+                  <input type="number" min="0" max="59" inputMode="numeric" value={tiempo.minutos} onChange={(e) => handleRadioChange('tiempo_dibujo', tiempoExacto(tiempo.horas, e.target.value))} placeholder="—" aria-label="Minutos exactos" />
+                  min
+                </label>
+              </div>
             </div>
           </div>
         </div>

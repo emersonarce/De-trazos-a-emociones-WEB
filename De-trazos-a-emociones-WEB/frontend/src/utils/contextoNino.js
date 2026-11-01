@@ -44,18 +44,23 @@ export function opcionDiagnostico(valor) {
   return encontrada ? { opcion: encontrada, otro: '' } : { opcion: 'otro', otro: String(valor) };
 }
 
-// Tiempo que tardó: una de las opciones o los minutos exactos («12 minutos»).
-const MINUTOS = /^(\d{1,3}) minutos?$/;
+// Tiempo que tardó: una de las opciones o el tiempo exacto en horas y minutos
+// («12 minutos», «2 horas», «1 hora y 20 minutos»).
+const EXACTO = /^(?:(\d{1,2}) horas?)?(?:(?:^| y )(\d{1,3}) minutos?)?$/;
 export function opcionTiempo(valor) {
   const v = String(valor || '').trim();
-  if (OPCIONES.tiempo_dibujo.includes(v)) return { opcion: v, minutos: '' };
-  const m = v.match(MINUTOS);
-  return m ? { opcion: '', minutos: m[1] } : { opcion: '', minutos: '' };
+  if (OPCIONES.tiempo_dibujo.includes(v)) return { opcion: v, horas: '', minutos: '' };
+  const m = v ? v.match(EXACTO) : null;
+  return { opcion: '', horas: m?.[1] || '', minutos: m?.[2] || '' };
 }
-export const tiempoEnMinutos = (n) => {
-  const num = parseInt(n, 10);
-  return Number.isFinite(num) && num > 0 ? `${num} ${num === 1 ? 'minuto' : 'minutos'}` : '';
-};
+export function tiempoExacto(horas, minutos) {
+  const h = Math.min(parseInt(horas, 10) || 0, 99);
+  const min = Math.min(parseInt(minutos, 10) || 0, 999);
+  return [
+    h > 0 && `${h} ${h === 1 ? 'hora' : 'horas'}`,
+    min > 0 && `${min} ${min === 1 ? 'minuto' : 'minutos'}`,
+  ].filter(Boolean).join(' y ');
+}
 
 // Contexto más completo del niño a partir de sus análisis (del más reciente al
 // más antiguo): para cada dato, el valor más reciente que no esté vacío. Así no

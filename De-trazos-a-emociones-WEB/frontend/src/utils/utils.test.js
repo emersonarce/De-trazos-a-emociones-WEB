@@ -124,7 +124,7 @@ test('reanalizar: el contexto propuesto no mezcla niños sin nombre', async () =
 });
 
 test('contexto: género, diagnóstico previo y tiempo con opciones', async () => {
-  const { normalizarGenero, textoGenero, opcionDiagnostico, opcionTiempo, tiempoEnMinutos } = await import('./contextoNino.js');
+  const { normalizarGenero, textoGenero, opcionDiagnostico, opcionTiempo, tiempoExacto } = await import('./contextoNino.js');
   assert.equal(normalizarGenero('niña'), 'femenino');
   assert.equal(normalizarGenero('masculino'), 'masculino');
   assert.equal(textoGenero('niño'), 'Masculino');
@@ -133,9 +133,16 @@ test('contexto: género, diagnóstico previo y tiempo con opciones', async () =>
   assert.deepEqual(opcionDiagnostico('Ninguno conocido.'), { opcion: 'Ninguno conocido', otro: '' });
   assert.deepEqual(opcionDiagnostico('TDAH'), { opcion: 'TDAH (déficit de atención e hiperactividad)', otro: '' });
   assert.deepEqual(opcionDiagnostico('Epilepsia'), { opcion: 'otro', otro: 'Epilepsia' });
-  assert.deepEqual(opcionTiempo('5 a 15 minutos'), { opcion: '5 a 15 minutos', minutos: '' });
-  assert.deepEqual(opcionTiempo('12 minutos'), { opcion: '', minutos: '12' });
-  assert.equal(tiempoEnMinutos('12'), '12 minutos');
-  assert.equal(tiempoEnMinutos('1'), '1 minuto');
-  assert.equal(tiempoEnMinutos(''), '');
+  assert.deepEqual(opcionTiempo('5 a 15 minutos'), { opcion: '5 a 15 minutos', horas: '', minutos: '' });
+  assert.deepEqual(opcionTiempo('12 minutos'), { opcion: '', horas: '', minutos: '12' });
+  assert.deepEqual(opcionTiempo('2 horas'), { opcion: '', horas: '2', minutos: '' });
+  assert.deepEqual(opcionTiempo('1 hora y 20 minutos'), { opcion: '', horas: '1', minutos: '20' });
+  assert.deepEqual(opcionTiempo('un buen rato'), { opcion: '', horas: '', minutos: '' });
+  assert.equal(tiempoExacto('', '12'), '12 minutos');
+  assert.equal(tiempoExacto('', '1'), '1 minuto');
+  assert.equal(tiempoExacto('1', ''), '1 hora');
+  assert.equal(tiempoExacto('1', '20'), '1 hora y 20 minutos');
+  assert.equal(tiempoExacto('2', '1'), '2 horas y 1 minuto');
+  assert.equal(tiempoExacto('', ''), '');
+  assert.equal(tiempoExacto('0', '0'), '');
 });
