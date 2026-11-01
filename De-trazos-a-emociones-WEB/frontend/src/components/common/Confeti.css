@@ -1,0 +1,38 @@
+/* Lluvia de confeti (Confeti.jsx) */
+.confeti {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confeti span {
+  position: absolute;
+  top: -16px;
+  border-radius: 2px;
+  opacity: 0;
+  animation-name: confeti-cae;
+  animation-timing-function: cubic-bezier(0.25, 0.6, 0.5, 1);
+  animation-fill-mode: forwards;
+}
+
+@keyframes confeti-cae {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--deriva), 104vh, 0) rotate(var(--giro));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confeti {
+    display: none;
+  }
+}

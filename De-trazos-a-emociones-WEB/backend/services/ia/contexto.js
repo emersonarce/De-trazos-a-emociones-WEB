@@ -1,12 +1,13 @@
 // Contexto del niño que acompaña al dibujo en el prompt.
 
 // Calcula la edad en años a partir de una fecha de nacimiento (YYYY-MM-DD).
-// Devuelve null si no hay fecha válida.
-function edadDesdeFecha(fechaNacimiento) {
+// Devuelve null si no hay fecha válida. La fecha sola se lee como fecha local:
+// new Date("2018-03-15") la toma en UTC y en Colombia cae en el día anterior.
+function edadDesdeFecha(fechaNacimiento, hoy = new Date()) {
     if (!fechaNacimiento) return null;
-    const nac = new Date(fechaNacimiento);
+    const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(fechaNacimiento));
+    const nac = ymd ? new Date(Number(ymd[1]), Number(ymd[2]) - 1, Number(ymd[3])) : new Date(fechaNacimiento);
     if (isNaN(nac.getTime())) return null;
-    const hoy = new Date();
     let edad = hoy.getFullYear() - nac.getFullYear();
     const m = hoy.getMonth() - nac.getMonth();
     if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;

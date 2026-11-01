@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { ArrowRight, Pencil } from 'lucide-react';
 import '../common/ContextoNino.css';
 import './AnalyzerContext.css';
-import { textoEdad, edadDesde } from '../../utils/emociones';
+import AvisoCumple from '../common/AvisoCumple';
+import { textoEdad, edadDesde, infoCumple } from '../../utils/emociones';
 import { OPCIONES, normalizarGenero, textoGenero, opcionDiagnostico, opcionTiempo, tiempoEnMinutos } from '../../utils/contextoNino';
 
 const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onContinuar, ninoConocido, faltaAlias = false }) => {
@@ -26,6 +27,7 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
     const calc = edadDesde(e.target.value);
     if (calc != null) handleRadioChange('edad', String(calc));
   };
+  const cumple = infoCumple(formData.fecha_nacimiento);
   return (
     <div id="screen-1" className="screen">
       {ninoConocido && !editarBasicos ? (
@@ -96,6 +98,8 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
           </div>
         </div>
       )}
+
+      <AvisoCumple nombre={formData.nombre} cumple={cumple} clave={`${formData.nombre}|${formData.fecha_nacimiento}`} />
 
       <div className="card">
         <div className="card-header">

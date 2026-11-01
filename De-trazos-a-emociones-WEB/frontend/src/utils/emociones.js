@@ -77,12 +77,19 @@ export function esEmocionNegativa(emocion = '') {
     .some((neg) => e.includes(neg));
 }
 
+// Una fecha sola (YYYY-MM-DD) se lee como fecha local: new Date('2018-03-15')
+// la toma como medianoche UTC, que en Colombia todavía es el día anterior.
+function aFecha(valor) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(valor ?? ''));
+  const d = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(valor);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 // Edad en años a partir de una fecha de nacimiento (YYYY-MM-DD). null si no es válida.
-export function edadDesde(fechaNacimiento) {
+export function edadDesde(fechaNacimiento, hoy = new Date()) {
   if (!fechaNacimiento) return null;
-  const nac = new Date(fechaNacimiento);
-  if (isNaN(nac.getTime())) return null;
-  const hoy = new Date();
+  const nac = aFecha(fechaNacimiento);
+  if (!nac) return null;
   let edad = hoy.getFullYear() - nac.getFullYear();
   const m = hoy.getMonth() - nac.getMonth();
   if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
@@ -98,24 +105,28 @@ export function textoEdad({ fecha_nacimiento, edad } = {}) {
   return '';
 }
 
-// Si el cumpleaños es hoy o mañana, devuelve { cuando, edad }; si no, null.
-export function infoCumple(fechaNacimiento) {
-  if (!fechaNacimiento) return null;
-  const nac = new Date(fechaNacimiento);
-  if (isNaN(nac.getTime())) return null;
-  const hoy = new Date();
-  const manana = new Date(hoy);
-  manana.setDate(hoy.getDate() + 1);
-  const mismaFecha = (d) => d.getMonth() === nac.getMonth() && d.getDate() === nac.getDate();
-  const edadActual = edadDesde(fechaNacimiento) ?? 0;
-  if (mismaFecha(hoy)) return { cuando: 'hoy', edad: edadActual };
-  if (mismaFecha(manana)) return { cuando: 'mañana', edad: edadActual + 1 };
-  return null;
+// Con cuántos días de anticipación se avisa un cumpleaños.
+export const DIAS_AVISO_CUMPLE = 3;
+
+// Si el cumpleaños es hoy o llega en los próximos `diasAviso` días, devuelve
+// { dias (0 = hoy), cuando ('hoy', 'mañana' o 'en N días'), edad que cumple };
+// si no, null. Solo para niños (hasta 18 años): así tampoco se celebra un año
+// a medio escribir en el campo de fecha (0201, 0020…).
+export function infoCumple(fechaNacimiento, diasAviso = DIAS_AVISO_CUMPLE, hoy = new Date()) {
+  const nac = fechaNacimiento ? aFecha(fechaNacimiento) : null;
+  if (!nac) return null;
+  const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+  let proximo = new Date(inicio.getFullYear(), nac.getMonth(), nac.getDate());
+  if (proximo < inicio) proximo = new Date(inicio.getFullYear() + 1, nac.getMonth(), nac.getDate());
+  const dias = Math.round((proximo - inicio) / 86400000);
+  const edad = proximo.getFullYear() - nac.getFullYear();
+  if (dias > diasAviso || edad < 1 || edad > 18) return null;
+  return { dias, cuando: dias === 0 ? 'hoy' : dias === 1 ? 'mañana' : `en ${dias} días`, edad };
 }
 
 export function formatFecha(fecha) {
-  if (!fecha) return '';
-  const d = new Date(fecha);
+  const d = fecha ? aFecha(fecha) : null;
+  if (!d) return '';
   return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 

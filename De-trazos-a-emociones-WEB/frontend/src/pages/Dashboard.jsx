@@ -67,7 +67,7 @@ const Dashboard = () => {
   const emocionSel = selected ? emocionPredominante(selected.analisis) : null;
   const visualSel = emotionVisual(children.length > 0 ? emocionSel || '' : '');
 
-  // Cumpleaños hoy o mañana entre los niños registrados.
+  // Cumpleaños de hoy o de los próximos días (DIAS_AVISO_CUMPLE) entre los niños registrados.
   const cumples = children
     .map((c) => ({ nino: c, cumple: infoCumple(c.fecha_nacimiento) }))
     .filter((x) => x.cumple);
