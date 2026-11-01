@@ -52,6 +52,26 @@ test('emociones: nombre limpio y reconocimiento sin depender de tildes', async (
   assert.equal(limpiarResultadoIA({ emocion_predominante: 'Melancolia alta' }).emocion_predominante, 'Melancolía');
 });
 
+test('emociones: se reconocen por palabra, no por pedazos de palabra', async () => {
+  const { emotionVisual, esEmocionNegativa } = await import('./emociones.js');
+  // «ira» dentro de otra palabra no es enojo, y las negaciones no son alegría ni calma
+  for (const e of ['Admiración', 'Inspiración']) {
+    assert.equal(emotionVisual(e).clave, 'neutra', e);
+    assert.equal(esEmocionNegativa(e), false, e);
+  }
+  assert.equal(emotionVisual('Descontento').clave, 'neutra');
+  assert.equal(emotionVisual('Intranquilidad').clave, 'ansiedad');
+  // Malestar que antes no contaba para la alerta
+  for (const e of ['Nerviosismo', 'Inseguridad', 'Preocupación', 'Rabia', 'Temor']) assert.equal(esEmocionNegativa(e), true, e);
+  // Lo que ya funcionaba se mantiene
+  assert.equal(emotionVisual('Ira').clave, 'enojo');
+  assert.equal(emotionVisual('Contento').clave, 'alegria');
+  assert.equal(emotionVisual('Paz interior').clave, 'calma');
+  assert.equal(esEmocionNegativa('Tristeza'), true);
+  assert.equal(esEmocionNegativa('Alegría con algo de tristeza'), true);
+  assert.equal(esEmocionNegativa('Calma'), false);
+});
+
 test('clima emocional: valencia, puntos y tendencia', async () => {
   const { valenciaEmocion, puntosClima, resumenClima } = await import('./clima.js');
   assert.equal(valenciaEmocion('Alegre'), 1);

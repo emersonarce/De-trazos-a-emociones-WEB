@@ -45,20 +45,23 @@ export function nombreEmocion(texto) {
   });
 }
 
+// Grupos de emociones, en orden de prioridad (el malestar primero). Cada raíz se
+// busca al INICIO de una palabra: «ira» no debe coincidir con «admiración» ni
+// «content» con «descontento».
+const GRUPOS = [
+  ['ansiedad', Annoyed, 'molesta', ['ansiedad', 'estres', 'angustia', 'nervios', 'preocup', 'intranquil']],
+  ['enojo', Angry, 'enojo', ['enojo', 'ira', 'frustracion', 'rabia']],
+  ['miedo', Frown, 'miedo', ['miedo', 'temor', 'susto', 'insegur']],
+  ['tristeza', Frown, 'triste', ['tristeza', 'melancolia', 'soledad']],
+  ['alegria', Laugh, 'risa', ['alegr', 'felic', 'feliz', 'content', 'euforia', 'entusiasmo', 'amor']],
+  ['calma', Smile, 'sonrisa', ['calma', 'tranquilidad', 'paz']],
+];
+const MALESTAR = new Set(['ansiedad', 'enojo', 'miedo', 'tristeza']);
+
 export function emotionVisual(emocion = '') {
-  const e = sinTildes(emocion);
-  if (e.includes('ansiedad') || e.includes('estres') || e.includes('angustia') || e.includes('nervios'))
-    return visual('ansiedad', Annoyed, 'molesta');
-  if (e.includes('enojo') || e.includes('ira') || e.includes('frustracion') || e.includes('rabia'))
-    return visual('enojo', Angry, 'enojo');
-  if (e.includes('miedo') || e.includes('temor') || e.includes('susto'))
-    return visual('miedo', Frown, 'miedo');
-  if (e.includes('tristeza') || e.includes('melancolia') || e.includes('soledad'))
-    return visual('tristeza', Frown, 'triste');
-  if (e.includes('alegr') || e.includes('felic') || e.includes('feliz') || e.includes('content') || e.includes('euforia') || e.includes('entusiasmo') || e.includes('amor'))
-    return visual('alegria', Laugh, 'risa');
-  if (e.includes('calma') || e.includes('tranquilidad') || e.includes('paz'))
-    return visual('calma', Smile, 'sonrisa');
+  const palabras = sinTildes(emocion).split(/[^a-z]+/).filter(Boolean);
+  const grupo = GRUPOS.find(([, , , raices]) => palabras.some((p) => raices.some((r) => p.startsWith(r))));
+  if (grupo) return visual(grupo[0], grupo[1], grupo[2]);
   // Respaldo neutro (gris azulado), para no caer en un ámbar que se ve marrón.
   return visual('neutra', Meh, 'neutra');
 }
@@ -70,11 +73,11 @@ export function intensityInfo(intensidad = '') {
   return { label: 'media', color: 'var(--int-media)', valor: 2 };
 }
 
-// Emociones consideradas negativas, para reglas de alerta orientativas.
+// Emociones que suelen asociarse a malestar (grupos de ansiedad, enojo, miedo y
+// tristeza), para reglas de alerta orientativas, no diagnósticas. Es la misma
+// clasificación que da el icono y el color de cada emoción.
 export function esEmocionNegativa(emocion = '') {
-  const e = sinTildes(emocion);
-  return ['ansiedad', 'enojo', 'ira', 'frustracion', 'estres', 'tristeza', 'miedo', 'melancolia', 'soledad', 'angustia']
-    .some((neg) => e.includes(neg));
+  return MALESTAR.has(emotionVisual(emocion).clave);
 }
 
 // Una fecha sola (YYYY-MM-DD) se lee como fecha local: new Date('2018-03-15')
