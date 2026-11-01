@@ -63,10 +63,10 @@
   --rueda-op: 0.85;
 
   /* Emociones: un color propio por emoción (utils/emociones.js, historial y
-     animaciones de trazos). Las agradables en tonos fríos (alegría turquesa,
-     calma verde hoja); las difíciles cada una con su tono: tristeza azul,
-     miedo violeta, enojo rojo coral, ansiedad naranja. Tonos separados en el
-     círculo cromático para distinguirlas de un vistazo. */
+     animaciones de trazos). Las agradables: alegría turquesa, calma verde hoja,
+     asombro amarillo y cariño rosado; las difíciles cada una con su tono:
+     tristeza azul, miedo violeta, enojo rojo coral, ansiedad naranja. Tonos
+     separados en el círculo cromático para distinguirlas de un vistazo. */
   --emo-alegria: #2fd2cc;
   --emo-alegria-bg: rgba(47, 210, 204, 0.16);
   --emo-tristeza: #6f9cf0;
@@ -79,6 +79,10 @@
   --emo-miedo-bg: rgba(180, 140, 245, 0.16);
   --emo-ansiedad: #f5a254;
   --emo-ansiedad-bg: rgba(245, 162, 84, 0.16);
+  --emo-asombro: #f2c94c;
+  --emo-asombro-bg: rgba(242, 201, 76, 0.16);
+  --emo-carino: #f38bc2;
+  --emo-carino-bg: rgba(243, 139, 194, 0.16);
   --emo-neutra: #94a3b8;
   --emo-neutra-bg: rgba(148, 163, 184, 0.15);
   /* Las barras mezclan su color con este gris (de luminosidad parecida) para
@@ -159,6 +163,10 @@
   --emo-miedo-bg: rgba(129, 80, 214, 0.12);
   --emo-ansiedad: #d9771f;
   --emo-ansiedad-bg: rgba(217, 119, 31, 0.12);
+  --emo-asombro: #b7860b;
+  --emo-asombro-bg: rgba(183, 134, 11, 0.12);
+  --emo-carino: #d14d8f;
+  --emo-carino-bg: rgba(209, 77, 143, 0.12);
   --emo-neutra: #64748b;
   --emo-neutra-bg: rgba(100, 116, 139, 0.12);
   --barra-mezcla: #d8dbe3;

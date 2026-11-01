@@ -18,7 +18,7 @@ const ubicarCara = (w, h) => {
 const atenuar = (x, y, w) => 0.3 + 0.7 * Math.min(1, Math.max(0, (x / w - 0.3) / 0.25));
 
 // Emociones por las que pasa la cara al hacer clic, cada una con su cara y color.
-const CICLO = ['Alegría', 'Calma', 'Tristeza', 'Miedo', 'Enojo', 'Ansiedad'].map((nombre) => emotionVisual(nombre));
+const CICLO = ['Alegría', 'Cariño', 'Asombro', 'Calma', 'Tristeza', 'Miedo', 'Enojo', 'Ansiedad'].map((nombre) => emotionVisual(nombre));
 // Tras unos segundos sin clics, vuelve a la emoción predominante del niño.
 const VOLVER_MS = 8000;
 

@@ -2,18 +2,11 @@
 // agradables (arriba) y más difíciles (abajo); la distancia al centro es la
 // intensidad. Es una simplificación orientativa para ver cambios en el tiempo,
 // no una medida clínica.
-import { emotionVisual, intensityInfo } from './emociones.js';
+import { intensityInfo, valenciaEmocion } from './emociones.js';
 
-const AGRADABLES = ['alegria', 'calma'];
-const DIFICILES = ['tristeza', 'miedo', 'enojo', 'ansiedad'];
-
-// +1 agradable, -1 difícil, 0 neutra/no reconocida.
-export const valenciaEmocion = (emocion) => {
-  const { clave } = emotionVisual(emocion || '');
-  if (AGRADABLES.includes(clave)) return 1;
-  if (DIFICILES.includes(clave)) return -1;
-  return 0;
-};
+// +1 agradable, -1 difícil, 0 neutra/no reconocida (la misma clasificación de
+// emociones que las caras y la alerta).
+export { valenciaEmocion };
 
 export const PERIODOS = { '3m': 90, todo: null };
 const MAX_PUNTOS = 12;

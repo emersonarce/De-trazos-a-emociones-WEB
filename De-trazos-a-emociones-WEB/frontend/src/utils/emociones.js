@@ -5,7 +5,8 @@
 // el color con style={{ color }} (el atributo stroke no acepta var()).
 // "cara" es la misma expresión dibujada con trazos en el Dashboard (trazosCara.js).
 // Un color propio por emoción (variables --emo-* de index.css).
-import { Laugh, Smile, Frown, Annoyed, Angry, Meh } from 'lucide-react';
+import { Laugh, Smile, Angry, Meh } from 'lucide-react';
+import { CaraAnsiedad, CaraAsombro, CaraCarino, CaraMiedo, CaraTriste } from '../components/common/carasEmocion.js';
 
 const visual = (clave, Icono, cara) => ({
   clave,
@@ -45,18 +46,22 @@ export function nombreEmocion(texto) {
   });
 }
 
-// Grupos de emociones, en orden de prioridad (el malestar primero). Cada raíz se
-// busca al INICIO de una palabra: «ira» no debe coincidir con «admiración» ni
-// «content» con «descontento».
+// Grupos de emociones, en orden de prioridad: primero el malestar, para que en
+// una mezcla («alegría con algo de tristeza») mande la emoción difícil. Cada raíz
+// se busca al INICIO de una palabra: «ira» no debe coincidir con «admiración» ni
+// «content» con «descontento». Cada grupo tiene su cara y su color (--emo-*).
 const GRUPOS = [
-  ['ansiedad', Annoyed, 'molesta', ['ansiedad', 'estres', 'angustia', 'nervios', 'preocup', 'intranquil']],
-  ['enojo', Angry, 'enojo', ['enojo', 'ira', 'frustracion', 'rabia']],
-  ['miedo', Frown, 'miedo', ['miedo', 'temor', 'susto', 'insegur']],
-  ['tristeza', Frown, 'triste', ['tristeza', 'melancolia', 'soledad']],
-  ['alegria', Laugh, 'risa', ['alegr', 'felic', 'feliz', 'content', 'euforia', 'entusiasmo', 'amor']],
-  ['calma', Smile, 'sonrisa', ['calma', 'tranquilidad', 'paz']],
+  ['ansiedad', CaraAnsiedad, 'ansiosa', ['ansiedad', 'ansios', 'estres', 'angustia', 'nervios', 'preocup', 'intranquil', 'inquiet', 'tens', 'agita', 'desesperacion', 'desesperad']],
+  ['enojo', Angry, 'enojo', ['enoj', 'ira', 'rabia', 'frustr', 'molest', 'irrita', 'descontent']],
+  ['miedo', CaraMiedo, 'miedo', ['miedo', 'temor', 'temeros', 'susto', 'asust', 'panico', 'terror', 'insegur']],
+  ['tristeza', CaraTriste, 'triste', ['trist', 'melancol', 'soledad', 'infeli', 'desamor', 'pena', 'desanim', 'decepcion', 'nostalgi', 'desesperanza']],
+  ['alegria', Laugh, 'risa', ['alegr', 'felic', 'feliz', 'content', 'euforia', 'entusiasm', 'diversion', 'divert', 'ilusion', 'orgullo', 'energia']],
+  ['carino', CaraCarino, 'carino', ['amor', 'carino', 'ternura', 'afecto', 'afectuos', 'enamor', 'gratitud', 'agradec']],
+  ['asombro', CaraAsombro, 'asombro', ['asombr', 'sorpresa', 'sorprend', 'admira', 'curios', 'interes', 'inspira', 'fascina', 'imaginacion', 'creativ']],
+  ['calma', Smile, 'sonrisa', ['calm', 'tranquil', 'paz', 'serenidad', 'relaj', 'satisfaccion', 'satisfech', 'confianza']],
 ];
-const MALESTAR = new Set(['ansiedad', 'enojo', 'miedo', 'tristeza']);
+export const CLAVES_MALESTAR = ['ansiedad', 'enojo', 'miedo', 'tristeza'];
+export const CLAVES_BIENESTAR = ['alegria', 'carino', 'asombro', 'calma'];
 
 export function emotionVisual(emocion = '') {
   const palabras = sinTildes(emocion).split(/[^a-z]+/).filter(Boolean);
@@ -73,11 +78,19 @@ export function intensityInfo(intensidad = '') {
   return { label: 'media', color: 'var(--int-media)', valor: 2 };
 }
 
-// Emociones que suelen asociarse a malestar (grupos de ansiedad, enojo, miedo y
-// tristeza), para reglas de alerta orientativas, no diagnósticas. Es la misma
-// clasificación que da el icono y el color de cada emoción.
+// Valencia de una emoción: 1 bienestar, -1 malestar, 0 neutra o no reconocida.
+export function valenciaEmocion(emocion = '') {
+  const { clave } = emotionVisual(emocion);
+  if (CLAVES_BIENESTAR.includes(clave)) return 1;
+  if (CLAVES_MALESTAR.includes(clave)) return -1;
+  return 0;
+}
+
+// Emociones que suelen asociarse a malestar (ansiedad, enojo, miedo, tristeza y
+// afines), para reglas de alerta orientativas, no diagnósticas. Es la misma
+// clasificación que da la cara y el color de cada emoción.
 export function esEmocionNegativa(emocion = '') {
-  return MALESTAR.has(emotionVisual(emocion).clave);
+  return valenciaEmocion(emocion) < 0;
 }
 
 // Una fecha sola (YYYY-MM-DD) se lee como fecha local: new Date('2018-03-15')

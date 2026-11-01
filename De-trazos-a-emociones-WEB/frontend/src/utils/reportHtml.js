@@ -17,8 +17,8 @@ const BORDER = '#e4e2ee';
 const ACCENT = '#5b49cf';
 const SUAVE = '#f6f5fb';
 const EMO = {
-  alegria: '#0f9e9a', calma: '#4f9a33', tristeza: '#3b6fd4', miedo: '#8150d6',
-  enojo: '#d8453f', ansiedad: '#d9771f', neutra: '#64748b',
+  alegria: '#0f9e9a', calma: '#4f9a33', asombro: '#b7860b', carino: '#d14d8f',
+  tristeza: '#3b6fd4', miedo: '#8150d6', enojo: '#d8453f', ansiedad: '#d9771f', neutra: '#64748b',
 };
 // Colores de la rueda del logo (tema claro).
 export const RUEDA = ['#eaa22a', '#2f9e7d', '#4a7fd1', '#e0697f'];

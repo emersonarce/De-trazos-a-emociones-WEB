@@ -4,6 +4,7 @@
 // Cada actividad incluye un "fundamento": el porqué de la sugerencia.
 
 import { BookOpen, ClipboardList, Flashlight, HeartHandshake, MessageCircle, MessagesSquare, Palette, PersonStanding, Trees, Wind } from 'lucide-react';
+import { emotionVisual } from '../utils/emociones';
 
 const PURPURA = { bg: 'rgba(139, 121, 242, 0.15)', color: 'var(--purple-light)' };
 const TEAL = { bg: 'rgba(45,212,191,0.15)', color: 'var(--teal)' };
@@ -89,13 +90,10 @@ const CATALOGO = {
   },
 };
 
+// Usa la misma clasificación de emociones que las caras. Asombro y cariño, que
+// son agradables, comparten las actividades de alegría.
+const CATALOGO_DE = { asombro: 'alegria', carino: 'alegria' };
 export function actividadesPara(emocion = '') {
-  const e = String(emocion).toLowerCase();
-  if (e.includes('alegr') || e.includes('felic') || e.includes('entusias') || e.includes('euforia')) return CATALOGO.alegria;
-  if (e.includes('triste') || e.includes('melanc') || e.includes('soled')) return CATALOGO.tristeza;
-  if (e.includes('ansied') || e.includes('estrés') || e.includes('estres') || e.includes('nervios') || e.includes('angustia')) return CATALOGO.ansiedad;
-  if (e.includes('enojo') || e.includes('ira') || e.includes('frustr')) return CATALOGO.enojo;
-  if (e.includes('calma') || e.includes('tranquil') || e.includes('paz')) return CATALOGO.calma;
-  if (e.includes('miedo') || e.includes('temor')) return CATALOGO.miedo;
-  return CATALOGO.default;
+  const { clave } = emotionVisual(emocion || '');
+  return CATALOGO[CATALOGO_DE[clave] || clave] || CATALOGO.default;
 }

@@ -56,10 +56,10 @@ test('emociones: se reconocen por palabra, no por pedazos de palabra', async () 
   const { emotionVisual, esEmocionNegativa } = await import('./emociones.js');
   // «ira» dentro de otra palabra no es enojo, y las negaciones no son alegría ni calma
   for (const e of ['Admiración', 'Inspiración']) {
-    assert.equal(emotionVisual(e).clave, 'neutra', e);
+    assert.equal(emotionVisual(e).clave, 'asombro', e);
     assert.equal(esEmocionNegativa(e), false, e);
   }
-  assert.equal(emotionVisual('Descontento').clave, 'neutra');
+  assert.equal(emotionVisual('Descontento').clave, 'enojo');
   assert.equal(emotionVisual('Intranquilidad').clave, 'ansiedad');
   // Malestar que antes no contaba para la alerta
   for (const e of ['Nerviosismo', 'Inseguridad', 'Preocupación', 'Rabia', 'Temor']) assert.equal(esEmocionNegativa(e), true, e);
@@ -72,11 +72,28 @@ test('emociones: se reconocen por palabra, no por pedazos de palabra', async () 
   assert.equal(esEmocionNegativa('Calma'), false);
 });
 
+test('emociones: cada grupo tiene su cara y su color', async () => {
+  const { emotionVisual, valenciaEmocion } = await import('./emociones.js');
+  const casos = {
+    Cariño: 'carino', Enamoramiento: 'carino', Curiosidad: 'asombro', Sorpresa: 'asombro',
+    Infelicidad: 'tristeza', Desamor: 'tristeza', Pánico: 'miedo', Orgullo: 'alegria',
+    Serenidad: 'calma', Aburrimiento: 'neutra',
+  };
+  for (const [e, clave] of Object.entries(casos)) assert.equal(emotionVisual(e).clave, clave, e);
+  // Miedo y tristeza ya no comparten la misma cara
+  assert.notEqual(emotionVisual('Miedo').Icono, emotionVisual('Tristeza').Icono);
+  assert.notEqual(emotionVisual('Miedo').cara, emotionVisual('Tristeza').cara);
+  assert.equal(emotionVisual('Cariño').color, 'var(--emo-carino)');
+  assert.equal(valenciaEmocion('Asombro'), 1);
+  assert.equal(valenciaEmocion('Ansiedad'), -1);
+});
+
 test('clima emocional: valencia, puntos y tendencia', async () => {
   const { valenciaEmocion, puntosClima, resumenClima } = await import('./clima.js');
   assert.equal(valenciaEmocion('Alegre'), 1);
   assert.equal(valenciaEmocion('Melancolia alta'), -1);
-  assert.equal(valenciaEmocion('sorpresa'), 0);
+  assert.equal(valenciaEmocion('sorpresa'), 1);
+  assert.equal(valenciaEmocion('Aburrimiento'), 0);
   const ahora = Date.parse('2026-10-30T12:00:00Z');
   const s = (emocion, intensidad, fecha) => ({ fecha, resultado_ia: { emocion_predominante: emocion, intensidad } });
   // Del más reciente al más antiguo, como llegan del backend.

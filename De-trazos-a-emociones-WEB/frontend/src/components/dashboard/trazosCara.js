@@ -23,22 +23,58 @@ const curva = ([x0, y0], [cx, cy], [x1, y1]) => (t) => {
 // El contorno empieza arriba y gira en sentido horario, como un trazo a mano.
 const CONTORNO = { f: arco(12, 12, 10, 10, -Math.PI / 2, 1.5 * Math.PI), cerrado: true };
 const ojos = (y = 9) => [{ punto: [9, y] }, { punto: [15, y] }];
-const OJOS_LINEA = [{ f: linea([8, 9], [10, 9]) }, { f: linea([14, 9], [16, 9]) }];
+// Cejas de preocupación: más altas hacia el centro.
+const CEJAS_PREOCUPADAS = [{ f: linea([7.2, 8.4], [10.6, 6.8]) }, { f: linea([13.4, 6.8], [16.8, 8.4]) }];
+const ovalo = (cx, cy, rx, ry) => ({ f: arco(cx, cy, rx, ry, 0, TAU), cerrado: true });
+// Gota (lágrima o sudor): punta arriba y parte redonda abajo, en (cx, cy).
+const gota = (cx, cy, r) => [
+  { f: curva([cx, cy - 2.1 * r], [cx + r, cy - r], [cx + r, cy]) },
+  { f: arco(cx, cy, r, r, 0, Math.PI) },
+  { f: curva([cx - r, cy], [cx - r, cy - r], [cx, cy - 2.1 * r]) },
+];
+// Corazón chico (ojos de cariño), centrado en (cx, cy).
+const corazon = (cx, cy, s = 0.1) => ({
+  f: (t) => {
+    const a = t * TAU;
+    return [cx + s * 16 * Math.sin(a) ** 3, cy - s * (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a))];
+  },
+  cerrado: true,
+});
 
+// Las mismas caras que los iconos (utils/emociones.js y common/carasEmocion.js).
 const CARAS = {
   risa: [CONTORNO, { f: arco(12, 13, 6, 5, 0, Math.PI) }, { f: linea([6, 13], [18, 13]) }, ...ojos()],
   sonrisa: [CONTORNO, { f: curva([8, 14], [12, 18], [16, 14]) }, ...ojos()],
-  triste: [CONTORNO, { f: curva([8, 16], [12, 12], [16, 16]) }, ...ojos()],
+  // Tristeza: boca hacia abajo y una lágrima bajo el ojo.
+  triste: [CONTORNO, { f: curva([8, 16], [12, 12], [16, 16]) }, ...ojos(), ...gota(8.6, 12.4, 0.9)],
   neutra: [CONTORNO, { f: linea([8, 15], [16, 15]) }, ...ojos()],
-  molesta: [CONTORNO, { f: linea([8, 15], [16, 15]) }, ...OJOS_LINEA],
-  // Miedo: cejas de preocupación (más altas hacia el centro) y boca temblorosa.
-  miedo: [
+  // Ansiedad: cejas de preocupación, boca temblorosa y una gota de sudor.
+  ansiosa: [
     CONTORNO,
     { f: (t) => [8 + 8 * t, 15.6 + 0.85 * Math.sin(t * 3 * 2 * Math.PI)] },
-    { f: linea([7.2, 8.4], [10.6, 6.8]) },
-    { f: linea([13.4, 6.8], [16.8, 8.4]) },
+    ...CEJAS_PREOCUPADAS,
     ...ojos(10.4),
+    ...gota(21.3, 3.4, 1),
   ],
+  // Miedo: cejas de preocupación (más arriba), ojos muy abiertos y boca abierta.
+  miedo: [
+    CONTORNO,
+    { f: linea([7.2, 7.8], [10.6, 6.2]) },
+    { f: linea([13.4, 6.2], [16.8, 7.8]) },
+    ovalo(9, 10.8, 1.25, 1.25),
+    ovalo(15, 10.8, 1.25, 1.25),
+    ovalo(12, 16.4, 2.3, 1.6),
+  ],
+  // Asombro: cejas arriba y boca en «o».
+  asombro: [
+    CONTORNO,
+    { f: curva([7.5, 7.6], [9, 6], [10.5, 7.2]) },
+    { f: curva([13.5, 7.2], [15, 6], [16.5, 7.6]) },
+    ...ojos(10),
+    ovalo(12, 16, 1.9, 2.2),
+  ],
+  // Cariño: ojos de corazón y sonrisa.
+  carino: [CONTORNO, { f: curva([8, 14], [12, 18], [16, 14]) }, corazon(9, 9.6), corazon(15, 9.6)],
   enojo: [
     CONTORNO,
     { f: curva([8, 16], [12, 12], [16, 16]) },
