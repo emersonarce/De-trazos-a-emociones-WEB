@@ -7,6 +7,7 @@ const path = require("path");
 const { reducirAJpeg } = require("../utils/imagen");
 const { obtenerAnalisisIA, construirContextoFinal } = require("../services/ia");
 const { sanitizarContexto } = require("../services/ia/contexto");
+const { medirImagen } = require("../services/medicionImagen");
 const Analysis = require("../models/Analysis");
 const User = require("../models/User");
 const { permisosEfectivos } = require("../utils/permisos");
@@ -83,8 +84,12 @@ router.post(
         // Redimensionar y comprimir la imagen para que el modelo la procese más rápido.
         await reducirAJpeg(req.file.path, processedImagePath, { max: 800, calidad: 80 });
 
+        // Medición de color y trazo sobre la imagen (sin IA); si falla, sigue sin ella.
+        const medicion = await medirImagen(processedImagePath);
+
         const imagenBase64 = fs.readFileSync(processedImagePath, { encoding: "base64" });
         const { resultado: resultadoJSON, aviso: avisoParseo } = await obtenerAnalisisIA(imagenBase64, contextoFinal);
+        if (medicion && resultadoJSON && typeof resultadoJSON === "object") resultadoJSON.medicion_imagen = medicion;
 
         // Eliminar solo el archivo original temporal, nos quedamos con el resized.
         fs.unlinkSync(req.file.path);
@@ -318,8 +323,10 @@ router.post("/analisis/:id/reanalizar", verificarToken, async (req, res) => {
         const cambios = sanitizarContexto((req.body || {}).contexto_nino);
         const contexto = { ...(analisis.toObject().contexto_nino || {}), ...(cambios || {}) };
         const contextoFinal = construirContextoFinal(contexto);
+        const medicion = await medirImagen(rutaFisica);
         const imagenBase64 = fs.readFileSync(rutaFisica, { encoding: "base64" });
         const { resultado, aviso } = await obtenerAnalisisIA(imagenBase64, contextoFinal);
+        if (medicion && resultado && typeof resultado === "object") resultado.medicion_imagen = medicion;
 
         analisis.contexto_nino = contexto;
         analisis.resultado_ia = resultado;

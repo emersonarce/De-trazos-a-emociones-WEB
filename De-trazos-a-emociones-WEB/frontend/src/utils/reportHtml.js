@@ -7,6 +7,7 @@
 import { limpiarResultadoIA, enParrafos } from './textoIA';
 import { emotionVisual, intensityInfo, formatFechaHora, textoEdad, emocionPredominante } from './emociones';
 import { filasContexto } from './contextoNino';
+import { coloresMedicion, filasMedicion, NOTA_MEDICION } from './medicion';
 
 // Colores fijos para impresión (los del tema claro de la app): el PDF se ve
 // igual aunque la app esté en tema oscuro.
@@ -169,9 +170,27 @@ export const bloquesDetalle = (analisis, imagenDataUrl) => {
           font-size:12.5px;color:${TEXT};line-height:1.45;">${esc(x)}</span>`).join('')}
       </div>`));
   }
-  // 3) Interpretación.
+  // 3) Medición de color y trazo, calculada sobre la imagen (sin IA).
+  const filasMed = filasMedicion(r.medicion_imagen);
+  if (filasMed.length) {
+    const colores = coloresMedicion(r.medicion_imagen);
+    bloques.push(card(`${tituloSeccion('Medición de color y trazo (calculada sobre la imagen, sin IA)')}
+      ${colores.length ? `<div style="display:flex;height:14px;border-radius:999px;overflow:hidden;border:1px solid ${BORDER};margin:0 0 8px;">
+          ${colores.map((col) => `<span style="display:block;width:${col.ancho}%;background:${col.color};"></span>`).join('')}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:${MUTED};margin:0 0 12px;">
+          ${colores.map((col) => `<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${col.color};margin-right:5px;"></span>${esc(capital(col.nombre))} <b style="color:${TEXT};">${esc(col.texto)}</b></span>`).join('')}
+        </div>` : ''}
+      <div style="display:flex;flex-wrap:wrap;gap:10px 22px;">
+        ${filasMed.map(([etq, val]) => `<div style="min-width:200px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${MUTED};">${esc(etq)}</div>
+          <div style="font-size:12.5px;color:${TEXT};margin-top:2px;line-height:1.5;">${esc(val)}</div></div>`).join('')}
+      </div>
+      <div style="font-size:11px;color:${MUTED};margin-top:10px;line-height:1.5;">${esc(NOTA_MEDICION)}</div>`));
+  }
+  // 4) Interpretación.
   if (r.interpretacion) bloques.push(card(`${tituloSeccion('Interpretación')}${parrafos(r.interpretacion)}`));
-  // 4) Lectura orientativa (destacada con el color de la emoción).
+  // 5) Lectura orientativa (destacada con el color de la emoción).
   if (lectura) {
     bloques.push(`<div style="font-family:${SANS};border-radius:16px;padding:20px 22px;border:1px solid ${rgba(c, 0.3)};
       background:${rgba(c, 0.05)};border-left:4px solid ${c};">

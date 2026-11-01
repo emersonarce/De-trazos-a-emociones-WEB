@@ -89,3 +89,21 @@ test('contexto del niño: valor más reciente no vacío por campo y filas legibl
   assert.deepEqual(filasContexto({}), []);
   assert.deepEqual(filasContexto({ descripcion_dibujo: 'Su familia en la playa' }), [['Descripción del dibujo', 'Su familia en la playa']]);
 });
+
+test('medición de color y trazo: colores proporcionales y filas legibles', async () => {
+  const { coloresMedicion, filasMedicion } = await import('./medicion.js');
+  const m = {
+    uso_hoja: 15.4, tonos: { calidos: 60.2, frios: 30, neutros: 9.8 }, tonos_oscuros: 8.3, intensidad_color: 57,
+    relleno: 72.5, trazo: 'relleno', colores: [{ nombre: 'amarillo', porcentaje: 45 }, { nombre: 'azul', porcentaje: 30 }, { nombre: 'gris', porcentaje: 15 }],
+  };
+  const colores = coloresMedicion(m);
+  assert.equal(colores.length, 3);
+  assert.equal(Math.round(colores.reduce((s, c) => s + c.ancho, 0)), 100);
+  assert.equal(colores[0].texto, '45 %');
+  const filas = filasMedicion(m);
+  assert.deepEqual(filas.map((f) => f[0]), ['Uso de la hoja', 'Tonos', 'Tonos oscuros', 'Intensidad del color', 'Tipo de trazo']);
+  assert.equal(filas[0][1], '15 % de la hoja tiene trazo o color');
+  assert.match(filas[4][1], /áreas coloreadas/);
+  assert.deepEqual(filasMedicion(null), []);
+  assert.deepEqual(coloresMedicion({}), []);
+});

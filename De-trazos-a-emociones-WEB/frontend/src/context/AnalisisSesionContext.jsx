@@ -51,6 +51,7 @@ function construirResultado(raw, aviso) {
     aviso: aviso || (raw.parseo_incompleto ? 'El modelo no devolvió un JSON completo. Se muestra el texto recuperado; puedes intentar analizar de nuevo.' : ''),
     simulado: raw.simulado === true,
     duracion: formatDuracion(raw.duracion_ms),
+    medicion: raw.medicion_imagen || null,
     rawText: JSON.stringify(raw, null, 2),
     jsonObj: raw
   };

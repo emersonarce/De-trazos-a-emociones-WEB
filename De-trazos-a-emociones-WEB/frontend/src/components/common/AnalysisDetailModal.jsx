@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, ZoomIn, RefreshCw, FileDown, Undo2, ImageOff, Timer } from 'lucide-react';
+import MedicionImagen from './MedicionImagen';
 import './AnalysisDetailModal.css';
 import { emotionVisual, intensityInfo, formatFechaHora } from '../../utils/emociones';
 import { formatDuracion } from '../../utils/tiempo';
@@ -225,6 +226,12 @@ const AnalysisDetailModal = ({ analisis, analisisDelNino = [], onClose, onActual
               <ul className="adm-list">
                 {rasgos.map((x, i) => <li key={i}>{x}</li>)}
               </ul>
+            </section>
+          )}
+          {r.medicion_imagen && (
+            <section className="adm-section">
+              <h4 className="adm-title">Medición de color y trazo</h4>
+              <MedicionImagen medicion={r.medicion_imagen} />
             </section>
           )}
           {r.interpretacion && (

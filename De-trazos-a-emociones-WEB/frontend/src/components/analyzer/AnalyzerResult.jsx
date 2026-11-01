@@ -1,8 +1,9 @@
-import { RefreshCw, Timer, Eye, Puzzle, Compass, Info } from 'lucide-react';
+import { RefreshCw, Timer, Eye, Puzzle, Compass, Info, Palette } from 'lucide-react';
 import './AnalyzerResult.css';
 import { emotionVisual } from '../../utils/emociones';
 import { enParrafos } from '../../utils/textoIA';
 import { ContextoResumen } from '../common/ContextoNino';
+import MedicionImagen from '../common/MedicionImagen';
 
 const NIVELES = [
   { clave: 'low', label: 'Baja' },
@@ -94,6 +95,12 @@ const AnalyzerResult = ({ analysisResult, resetAll, previewUrl, contexto = null 
               <li key={i} style={{ animationDelay: `${0.15 + i * 0.05}s` }}>{rasgo}</li>
             ))}
           </ul>
+        </Bloque>
+      )}
+
+      {analysisResult.medicion && (
+        <Bloque Icono={Palette} titulo="Medición de color y trazo" sub="Calculada sobre la imagen, sin IA">
+          <MedicionImagen medicion={analysisResult.medicion} />
         </Bloque>
       )}
 

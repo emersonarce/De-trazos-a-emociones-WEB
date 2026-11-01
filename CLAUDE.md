@@ -21,7 +21,8 @@ IMPORTANTE: los documentos académicos dicen que el análisis usa la API de Clau
     - `backend/app.js`: app Express (middlewares, rutas, frontend compilado y manejo de errores). Se puede probar sin base de datos.
     - `backend/routes/analisis.js`: `/analizar-imagen` y todos los `/analisis/*`.
     - `backend/services/ia/`: análisis con IA. `index.js` (`obtenerAnalisisIA`), `variantes.js` (`IA_VARIANTE`: estructurado | equilibrado | libre), `prompt.js`, `parseo.js`, `contexto.js`, `esquema.js` y `proveedores/` (ollama, mock).
-    - `backend/utils/imagen.js`: redimensionado con sharp o, si no carga, Jimp.
+    - `backend/utils/imagen.js`: redimensionado y lectura de píxeles con sharp o, si no carga, Jimp.
+    - `backend/services/medicionImagen.js`: medición de color y trazo sobre la imagen, sin IA (colores predominantes, uso de la hoja, tonos, intensidad del color, relleno o línea). Se guarda en `resultado_ia.medicion_imagen` al analizar y al reanalizar; el frontend la muestra con `components/common/MedicionImagen.jsx` y en el PDF.
     - `backend/tests/`: pruebas con `node --test` (`npm test` en la carpeta del proyecto).
     - `backend/scripts/comparar-variantes.js`: compara las variantes del análisis con dibujos reales (`npm run comparar -- dibujo.jpg`); el informe queda en `comparaciones/` (ignorado por git).
     - `backend/database.js`: conexión Mongoose.
@@ -62,7 +63,7 @@ Plantilla disponible en `backend/.env.example`.
 
 **Modelos de datos:**
 - `User`: nombre, apellido, email (único), password (hash), rol, timestamps.
-- `Analysis`: usuarioId; `contexto_nino` { nombre, edad, fecha_nacimiento, genero, situacion_actual, comportamiento, diagnostico_previo, dibujo_espontaneo, comento_mientras, tiempo_dibujo, descripcion_dibujo (desde 2026-10-30; los análisis anteriores no la tienen) }; ruta_imagen; resultado_ia (Mixed); independiente; analizado_sin_contexto; fecha.
+- `Analysis`: usuarioId; `contexto_nino` { nombre, edad, fecha_nacimiento, genero, situacion_actual, comportamiento, diagnostico_previo, dibujo_espontaneo, comento_mientras, tiempo_dibujo, descripcion_dibujo (desde 2026-10-30; los análisis anteriores no la tienen) }; ruta_imagen; resultado_ia (Mixed; desde 2026-10-31 incluye `medicion_imagen`, los análisis anteriores no la tienen); independiente; analizado_sin_contexto; fecha.
 
 **Flujo de la app:**
 - Registro e inicio de sesión. El token se guarda en `localStorage` y el login redirige a `/app`.

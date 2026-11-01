@@ -80,4 +80,24 @@ async function recortarCuadradoAJpeg(entrada, destino, { lado = 256, calidad = 8
     await fs.promises.writeFile(destino, await imagen.getBuffer("image/jpeg", { quality: calidad }));
 }
 
-module.exports = { reducirAJpeg, recortarCuadradoAJpeg, motorImagen };
+// Píxeles RGB de la imagen reducida a `max` px por lado, para medirla
+// (services/medicionImagen.js). Devuelve { data, width, height, canales }.
+async function leerPixeles(entrada, { max = 320 } = {}) {
+    if (sharp) {
+        const { data, info } = await sharp(entrada)
+            .resize({ width: max, height: max, fit: "inside", withoutEnlargement: true })
+            .removeAlpha()
+            .toColourspace("srgb")
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+        return { data, width: info.width, height: info.height, canales: info.channels };
+    }
+    const Jimp = await cargarJimp();
+    const imagen = await Jimp.read(entrada);
+    if (imagen.bitmap.width > max || imagen.bitmap.height > max) {
+        imagen.scaleToFit({ w: max, h: max });
+    }
+    return { data: imagen.bitmap.data, width: imagen.bitmap.width, height: imagen.bitmap.height, canales: 4 };
+}
+
+module.exports = { reducirAJpeg, recortarCuadradoAJpeg, leerPixeles, motorImagen };
