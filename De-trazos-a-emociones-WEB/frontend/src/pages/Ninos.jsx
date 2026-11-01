@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { textoGenero } from '../utils/contextoNino';
 import { useNavigate } from 'react-router-dom';
 import { X, LayoutDashboard } from 'lucide-react';
 import { api } from '../api';
@@ -70,7 +71,7 @@ const Ninos = () => {
                 <div className="nino-card" key={n.nombre} onClick={() => setDetalle(n)}>
                   <div className="nino-avatar" style={{ background: v.bg }}><v.Icono size={26} style={{ color: v.color }} /></div>
                   <div className="nino-name">{n.nombre}</div>
-                  <div className="nino-meta">{[edad, n.contexto?.genero].filter(Boolean).join(' · ') || '—'}</div>
+                  <div className="nino-meta">{[edad, n.contexto?.genero && textoGenero(n.contexto.genero)].filter(Boolean).join(' · ') || '—'}</div>
                   <div className="nino-sit">
                     {n.contexto?.situacion_actual || 'Sin situación registrada'}
                   </div>
@@ -94,7 +95,7 @@ const Ninos = () => {
               <div>
                 <div className="nino-modal-name">{detalle.nombre}</div>
                 <div className="nino-modal-meta">
-                  {[textoEdad(detalle.contexto), detalle.contexto?.genero].filter(Boolean).join(' · ') || '—'}
+                  {[textoEdad(detalle.contexto), detalle.contexto?.genero && textoGenero(detalle.contexto.genero)].filter(Boolean).join(' · ') || '—'}
                 </div>
               </div>
             </div>

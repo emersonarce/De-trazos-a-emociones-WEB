@@ -112,3 +112,30 @@
   color: var(--purple-light, #a89ee0);
   font-weight: 600;
 }
+
+/* Nombre o alias obligatorio: aviso al intentar continuar sin él */
+.field input.invalido {
+  border-color: var(--emo-enojo, #f2736d);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--emo-enojo, #f2736d) 18%, transparent);
+}
+.field-error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emo-enojo, #f2736d);
+}
+
+/* «Otro» diagnóstico y tiempo exacto */
+.field select + input {
+  margin-top: 8px;
+}
+.tiempo-exacto {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.field .tiempo-exacto input {
+  width: 76px;
+  padding: 8px 10px;
+}

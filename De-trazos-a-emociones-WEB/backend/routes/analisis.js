@@ -45,6 +45,14 @@ router.post(
         return res.status(400).json({ error: "No se envió ninguna imagen" });
     }
 
+    // En el modo con contexto, el nombre o alias identifica al niño en el
+    // historial: sin él se mezclarían los dibujos de niños distintos.
+    const alias = String(req.body.nombre || "").trim().slice(0, 60);
+    if (req.body.persistir !== "false" && !alias) {
+        fs.unlink(req.file.path, () => {});
+        return res.status(400).json({ error: "Escribe un nombre o alias para el niño: así sus dibujos se agrupan en su historial." });
+    }
+
     // Permiso: analizar CON contexto (persistir != "false") requiere el permiso
     // "conContexto". El modo "solo dibujo" lo puede usar cualquier cuenta aprobada.
     if (req.body.persistir !== "false") {
@@ -63,7 +71,6 @@ router.post(
     }
 
     const {
-        nombre,
         edad,
         fecha_nacimiento,
         genero,
@@ -109,7 +116,7 @@ router.post(
         const nuevoAnalisis = new Analysis({
             usuarioId: req.usuario.id,
             contexto_nino: {
-                nombre, edad, fecha_nacimiento, genero,
+                nombre: alias, edad, fecha_nacimiento, genero,
                 situacion_actual, comportamiento, diagnostico_previo,
                 dibujo_espontaneo, comento_mientras, tiempo_dibujo,
                 descripcion_dibujo

@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Pencil, UserRound } from 'lucide-react';
-import { filasContexto, OPCIONES } from '../../utils/contextoNino';
+import { filasContexto, OPCIONES, normalizarGenero, opcionDiagnostico, opcionTiempo, tiempoEnMinutos } from '../../utils/contextoNino';
 import './ContextoNino.css';
 
 const LARGOS = ['Situación actual', 'Diagnóstico previo', 'Descripción del dibujo', 'Comentó mientras dibujaba'];
@@ -62,6 +63,11 @@ const Pildoras = ({ nombre, opciones, valor, onElegir }) => (
 export const ContextoEditor = ({ valor = {}, onChange, conDibujo = true }) => {
   const poner = (campo, v) => onChange({ ...valor, [campo]: v });
   const alEscribir = (e) => poner(e.target.name, e.target.value);
+  // «Otro» en diagnóstico previo: muestra un campo corto aunque aún esté vacío.
+  const [otroDiag, setOtroDiag] = useState(false);
+  const diag = opcionDiagnostico(valor.diagnostico_previo);
+  const opcionDiag = otroDiag || diag.opcion === 'otro' ? 'otro' : diag.opcion;
+  const tiempo = opcionTiempo(valor.tiempo_dibujo);
   return (
     <div className="ctx-editor">
       <div className="ctx-grid">
@@ -71,7 +77,7 @@ export const ContextoEditor = ({ valor = {}, onChange, conDibujo = true }) => {
         </label>
         <label className="ctx-campo">
           <span>Género</span>
-          <select name="genero" value={valor.genero || ''} onChange={alEscribir}>
+          <select name="genero" value={normalizarGenero(valor.genero)} onChange={alEscribir}>
             <option value="">Seleccionar</option>
             {OPCIONES.genero.map(([v, t]) => <option key={v} value={v}>{t}</option>)}
           </select>
@@ -85,10 +91,17 @@ export const ContextoEditor = ({ valor = {}, onChange, conDibujo = true }) => {
         <span>Comportamiento reciente</span>
         <Pildoras nombre="comportamiento" opciones={OPCIONES.comportamiento} valor={valor.comportamiento || ''} onElegir={poner} />
       </div>
-      <label className="ctx-campo">
+      <div className="ctx-campo">
         <span>Diagnóstico previo</span>
-        <input type="text" name="diagnostico_previo" value={valor.diagnostico_previo || ''} onChange={alEscribir} placeholder="Opcional" />
-      </label>
+        <select aria-label="Diagnóstico previo" value={opcionDiag} onChange={(e) => { setOtroDiag(e.target.value === 'otro'); poner('diagnostico_previo', e.target.value === 'otro' ? '' : e.target.value); }}>
+          <option value="">Opcional: seleccionar</option>
+          {OPCIONES.diagnostico_previo.map((op) => <option key={op} value={op}>{op}</option>)}
+          <option value="otro">Otro</option>
+        </select>
+        {opcionDiag === 'otro' && (
+          <input type="text" name="diagnostico_previo" value={valor.diagnostico_previo || ''} onChange={alEscribir} placeholder="¿Cuál?" maxLength={120} aria-label="Otro diagnóstico previo" />
+        )}
+      </div>
       {conDibujo && (
         <>
           <label className="ctx-campo">
@@ -106,6 +119,11 @@ export const ContextoEditor = ({ valor = {}, onChange, conDibujo = true }) => {
           <div className="ctx-campo">
             <span>Tiempo que tardó</span>
             <Pildoras nombre="tiempo_dibujo" opciones={OPCIONES.tiempo_dibujo} valor={valor.tiempo_dibujo || ''} onElegir={poner} />
+            <label className="ctx-minutos">
+              o tiempo exacto
+              <input type="number" min="1" max="240" inputMode="numeric" value={tiempo.minutos} onChange={(e) => poner('tiempo_dibujo', tiempoEnMinutos(e.target.value))} placeholder="—" aria-label="Tiempo exacto en minutos" />
+              min
+            </label>
           </div>
         </>
       )}

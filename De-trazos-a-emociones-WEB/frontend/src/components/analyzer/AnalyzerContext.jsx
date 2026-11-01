@@ -3,10 +3,21 @@ import { ArrowRight, Pencil } from 'lucide-react';
 import '../common/ContextoNino.css';
 import './AnalyzerContext.css';
 import { textoEdad } from '../../utils/emociones';
+import { OPCIONES, normalizarGenero, opcionDiagnostico, opcionTiempo, tiempoEnMinutos } from '../../utils/contextoNino';
 
-const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onContinuar, ninoConocido }) => {
+const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onContinuar, ninoConocido, faltaAlias = false }) => {
   // Niño ya conocido: sus datos básicos se muestran resumidos y se pueden editar.
   const [editarBasicos, setEditarBasicos] = useState(false);
+  // «Otro» en diagnóstico previo: muestra un campo corto aunque aún esté vacío.
+  const [otroDiag, setOtroDiag] = useState(false);
+  const diag = opcionDiagnostico(formData.diagnostico_previo);
+  const opcionDiag = otroDiag || diag.opcion === 'otro' ? 'otro' : diag.opcion;
+  const elegirDiagnostico = (e) => {
+    const v = e.target.value;
+    setOtroDiag(v === 'otro');
+    handleRadioChange('diagnostico_previo', v === 'otro' ? '' : v);
+  };
+  const tiempo = opcionTiempo(formData.tiempo_dibujo);
   return (
     <div id="screen-1" className="screen">
       {ninoConocido && !editarBasicos ? (
@@ -51,8 +62,11 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
           <div className="card-body">
             <div className="form-grid cols-3">
               <div className="field">
-                <label>Nombre <span className="optional">Opcional</span></label>
-                <input type="text" id="nombre" value={formData.nombre} onChange={handleInputChange} placeholder="Ej: Sofía" readOnly={ninoConocido} title={ninoConocido ? 'El nombre identifica al niño en el historial' : undefined} />
+                <label htmlFor="nombre">Nombre o alias</label>
+                <input type="text" id="nombre" value={formData.nombre} onChange={handleInputChange} placeholder="Ej: Sofi, S. R. o Niño 3C-07" maxLength={60} readOnly={ninoConocido} className={faltaAlias ? 'invalido' : undefined} aria-invalid={faltaAlias || undefined} title={ninoConocido ? 'El nombre identifica al niño en el historial' : undefined} />
+                {faltaAlias
+                  ? <span className="field-error">Escribe un nombre o alias para continuar.</span>
+                  : !ninoConocido && <span className="field-hint">Un apodo, unas iniciales o un código. Sirve para agrupar sus dibujos.</span>}
               </div>
               <div className="field">
                 <label>Fecha de nacimiento</label>
@@ -61,11 +75,9 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
               </div>
               <div className="field">
                 <label>Género</label>
-                <select id="genero" value={formData.genero} onChange={handleInputChange}>
+                <select id="genero" value={normalizarGenero(formData.genero)} onChange={handleInputChange}>
                   <option value="">Seleccionar</option>
-                  <option value="niña">Niña</option>
-                  <option value="niño">Niño</option>
-                  <option value="no especificado">Prefiero no decirlo</option>
+                  {OPCIONES.genero.map(([valor, texto]) => <option key={valor} value={valor}>{texto}</option>)}
                 </select>
               </div>
             </div>
@@ -103,8 +115,15 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
             </div>
           </div>
           <div className="field">
-            <label>Diagnóstico previo <span className="optional">Opcional</span></label>
-            <input type="text" id="diagnostico_previo" value={formData.diagnostico_previo} onChange={handleInputChange} placeholder="Ej: TDAH, ansiedad, TEA... o ninguno" />
+            <label htmlFor="diagnostico_previo_opcion">Diagnóstico previo <span className="optional">Opcional</span></label>
+            <select id="diagnostico_previo_opcion" value={opcionDiag} onChange={elegirDiagnostico}>
+              <option value="">Seleccionar</option>
+              {OPCIONES.diagnostico_previo.map((op) => <option key={op} value={op}>{op}</option>)}
+              <option value="otro">Otro</option>
+            </select>
+            {opcionDiag === 'otro' && (
+              <input type="text" id="diagnostico_previo" value={formData.diagnostico_previo} onChange={handleInputChange} placeholder="¿Cuál?" maxLength={120} aria-label="Otro diagnóstico previo" />
+            )}
           </div>
         </div>
       </div>
@@ -147,6 +166,11 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
                   <span className="radio-dot"></span>{opt}
                 </label>
               ))}
+              <label className="tiempo-exacto">
+                o tiempo exacto
+                <input type="number" min="1" max="240" inputMode="numeric" value={tiempo.minutos} onChange={(e) => handleRadioChange('tiempo_dibujo', tiempoEnMinutos(e.target.value))} placeholder="—" aria-label="Tiempo exacto en minutos" />
+                min
+              </label>
             </div>
           </div>
         </div>

@@ -61,11 +61,21 @@ const Analyzer = () => {
   // Aviso cuando se pasa a "Solo dibujo" por continuar sin escribir contexto.
   const [avisoSinContexto, setAvisoSinContexto] = useState(false);
 
+  // Falta el nombre o alias del niño (se marca al intentar continuar sin él).
+  const [faltaAlias, setFaltaAlias] = useState(false);
+
   // Al continuar desde el formulario de contexto: si no hay ningún dato escrito,
-  // se cambia a "Solo dibujo" y se avisa; si hay algún dato, se sigue con contexto.
+  // se cambia a "Solo dibujo" y se avisa; si hay algún dato, se sigue con
+  // contexto, siempre que tenga nombre o alias (agrupa sus dibujos).
   const continuarContexto = () => {
     const hayContexto = CAMPOS_CONTEXTO.some((k) => String(formData[k] || '').trim() !== '');
     if (hayContexto) {
+      if (!String(formData.nombre || '').trim()) {
+        setFaltaAlias(true);
+        document.getElementById('nombre')?.focus();
+        return;
+      }
+      setFaltaAlias(false);
       setAvisoSinContexto(false);
       setStep(2);
     } else {
@@ -133,7 +143,7 @@ const Analyzer = () => {
               <div className="step-divider"></div>
             </>
           )}
-          <div className={`step ${step === 2 ? 'active' : step > 2 ? 'done' : ''}`} onClick={() => (step > 2 || (step === 1 && formData.fecha_nacimiento)) && setStep(2)}>
+          <div className={`step ${step === 2 ? 'active' : step > 2 ? 'done' : ''}`} onClick={() => (step > 2 ? setStep(2) : step === 1 && continuarContexto())}>
             <div className="step-num">{modo === 'contexto' ? '2' : '1'}</div> Dibujo
           </div>
           <div className="step-divider"></div>
@@ -165,6 +175,7 @@ const Analyzer = () => {
             handleRadioChange={handleRadioChange}
             onContinuar={continuarContexto}
             ninoConocido={ninoConocido}
+            faltaAlias={faltaAlias && !String(formData.nombre || '').trim()}
           />
         )}
 

@@ -85,7 +85,7 @@ test('contexto del niño: valor más reciente no vacío por campo y filas legibl
   assert.equal(ctx.diagnostico_previo, '');
   const filas = filasContexto(ctx);
   assert.deepEqual(filas.map((f) => f[0]), ['Edad', 'Género', 'Situación actual', 'Comportamiento reciente']);
-  assert.equal(filas[1][1], 'Niña');
+  assert.equal(filas[1][1], 'Femenino');
   assert.deepEqual(filasContexto({}), []);
   assert.deepEqual(filasContexto({ descripcion_dibujo: 'Su familia en la playa' }), [['Descripción del dibujo', 'Su familia en la playa']]);
 });
@@ -106,4 +106,36 @@ test('medición de color y trazo: colores proporcionales y filas legibles', asyn
   assert.match(filas[4][1], /áreas coloreadas/);
   assert.deepEqual(filasMedicion(null), []);
   assert.deepEqual(coloresMedicion({}), []);
+});
+
+test('reanalizar: el contexto propuesto no mezcla niños sin nombre', async () => {
+  const { contextoParaReanalizar } = await import('./contextoNino.js');
+  const sinNombre = { contexto_nino: { edad: '8' } };
+  const otroSinNombre = { contexto_nino: { situacion_actual: 'De otro niño' } };
+  const propio = contextoParaReanalizar(sinNombre, [sinNombre, otroSinNombre]);
+  assert.equal(propio.edad, '8');
+  assert.equal(propio.situacion_actual, '');
+  const tomas = { contexto_nino: { nombre: 'Tomás', edad: '7' } };
+  const tomasAntes = { contexto_nino: { nombre: 'Tomás', situacion_actual: 'Cambio de colegio', edad: '6' } };
+  const ctx = contextoParaReanalizar(tomas, [tomas, tomasAntes, otroSinNombre]);
+  assert.equal(ctx.situacion_actual, 'Cambio de colegio');
+  assert.equal(ctx.edad, '7');
+  assert.equal(ctx.nombre, 'Tomás');
+});
+
+test('contexto: género, diagnóstico previo y tiempo con opciones', async () => {
+  const { normalizarGenero, textoGenero, opcionDiagnostico, opcionTiempo, tiempoEnMinutos } = await import('./contextoNino.js');
+  assert.equal(normalizarGenero('niña'), 'femenino');
+  assert.equal(normalizarGenero('masculino'), 'masculino');
+  assert.equal(textoGenero('niño'), 'Masculino');
+  assert.equal(textoGenero('no especificado'), 'Prefiero no decirlo');
+  assert.deepEqual(opcionDiagnostico(''), { opcion: '', otro: '' });
+  assert.deepEqual(opcionDiagnostico('Ninguno conocido.'), { opcion: 'Ninguno conocido', otro: '' });
+  assert.deepEqual(opcionDiagnostico('TDAH'), { opcion: 'TDAH (déficit de atención e hiperactividad)', otro: '' });
+  assert.deepEqual(opcionDiagnostico('Epilepsia'), { opcion: 'otro', otro: 'Epilepsia' });
+  assert.deepEqual(opcionTiempo('5 a 15 minutos'), { opcion: '5 a 15 minutos', minutos: '' });
+  assert.deepEqual(opcionTiempo('12 minutos'), { opcion: '', minutos: '12' });
+  assert.equal(tiempoEnMinutos('12'), '12 minutos');
+  assert.equal(tiempoEnMinutos('1'), '1 minuto');
+  assert.equal(tiempoEnMinutos(''), '');
 });

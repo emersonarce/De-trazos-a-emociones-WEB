@@ -12,12 +12,8 @@ import { useBloquearScroll } from '../../hooks/useBloquearScroll';
 import { puedePdf, puedeContexto } from '../../utils/permisos';
 import { useImagenAnalisis } from '../../hooks/useImagenAnalisis';
 import { useAvisos } from '../../context/AvisosContext';
-import { contextoDelNino } from '../../utils/contextoNino';
+import { contextoParaReanalizar } from '../../utils/contextoNino';
 import { ContextoResumen, ContextoEditor } from './ContextoNino';
-
-// Solo los datos con valor (para que no pisen con vacíos al combinar).
-const soloLlenos = (ctx = {}) =>
-  Object.fromEntries(Object.entries(ctx || {}).filter(([, v]) => String(v ?? '').trim() !== ''));
 
 // analisisDelNino: los demás análisis del mismo niño, para proponer su contexto
 // más completo al reanalizar (ver utils/contextoNino.js).
@@ -57,12 +53,8 @@ const AnalysisDetailModal = ({ analisis, analisisDelNino = [], onClose, onActual
   const puedeReanalizar = sinContexto && !analisis.independiente && conPermiso;
   const nombreNino = analisis.contexto_nino?.nombre || 'el niño';
 
-  // Contexto que se propone para reanalizar: lo del propio análisis y, para lo
-  // que falte, lo más reciente del niño en sus otros análisis.
-  const ctxPropuesto = {
-    ...contextoDelNino(analisisDelNino.filter((a) => a.contexto_nino?.nombre === analisis.contexto_nino?.nombre)),
-    ...soloLlenos(analisis.contexto_nino),
-  };
+  // Contexto que se propone para reanalizar (ver utils/contextoNino.js).
+  const ctxPropuesto = contextoParaReanalizar(analisis, analisisDelNino);
   const ctxMostrado = ctxGuardado || (sinContexto ? ctxPropuesto : analisis.contexto_nino || {});
 
   const abrirRevision = () => {

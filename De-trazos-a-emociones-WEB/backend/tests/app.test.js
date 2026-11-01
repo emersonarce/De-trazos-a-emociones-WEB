@@ -75,6 +75,16 @@ test("subida del dibujo: sin imagen y con formato no permitido", async () => {
     assert.deepEqual(await pedir("POST", "/analizar-imagen", { token: valido, form }), { status: 400, cuerpo: { error: "Formato no permitido. Usa JPG, PNG o WEBP." } });
 });
 
+test("analizar con contexto exige un nombre o alias", async () => {
+    const { Jimp } = require("jimp");
+    const png = await new Jimp({ width: 300, height: 200, color: 0xffffffff }).getBuffer("image/png");
+    const form = new FormData();
+    form.append("imagen", new Blob([png], { type: "image/png" }), "dibujo.png");
+    form.append("nombre", "   ");
+    form.append("edad", "8");
+    assert.deepEqual(await pedir("POST", "/analizar-imagen", { token: valido, form }), { status: 400, cuerpo: { error: "Escribe un nombre o alias para el niño: así sus dibujos se agrupan en su historial." } });
+});
+
 test("analizar en modo solo dibujo (IA simulada) y descartar", async () => {
     const { Jimp } = require("jimp");
     const png = await new Jimp({ width: 1200, height: 900, color: 0x3366ccff }).getBuffer("image/png");

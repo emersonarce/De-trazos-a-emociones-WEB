@@ -5,6 +5,7 @@ import { useAvisos } from './AvisosContext';
 import { formatDuracion } from '../utils/tiempo';
 import { limpiarTextoIA } from '../utils/textoIA';
 import { nombreEmocion } from '../utils/emociones';
+import { normalizarGenero } from '../utils/contextoNino';
 
 const AnalisisSesionContext = createContext(null);
 export const useAnalisisSesion = () => useContext(AnalisisSesionContext);
@@ -131,7 +132,7 @@ export function AnalisisSesionProvider({ children }) {
       nombre: ctx.nombre || '',
       edad: ctx.edad || '',
       fecha_nacimiento: ctx.fecha_nacimiento || '',
-      genero: ctx.genero || '',
+      genero: normalizarGenero(ctx.genero),
       situacion_actual: ctx.situacion_actual || '',
       diagnostico_previo: ctx.diagnostico_previo || '',
       comportamiento: ctx.comportamiento || ''

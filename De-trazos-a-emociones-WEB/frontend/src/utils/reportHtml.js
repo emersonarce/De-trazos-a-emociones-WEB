@@ -6,7 +6,7 @@
 
 import { limpiarResultadoIA, enParrafos } from './textoIA';
 import { emotionVisual, intensityInfo, formatFechaHora, textoEdad, emocionPredominante } from './emociones';
-import { filasContexto } from './contextoNino';
+import { filasContexto, textoGenero } from './contextoNino';
 import { coloresMedicion, filasMedicion, NOTA_MEDICION } from './medicion';
 
 // Colores fijos para impresión (los del tema claro de la app): el PDF se ve
@@ -119,7 +119,7 @@ export const bloquesDetalle = (analisis, imagenDataUrl) => {
   const lectura = r.lectura_orientativa || r.analisis_completo || '';
   const sinContexto = analisis.analizado_sin_contexto === true;
   const filas = esIndep || sinContexto ? [] : filasContexto(ctx);
-  const datosNino = [textoEdad(ctx), ctx.genero && capital(ctx.genero)].filter(Boolean).join(' · ');
+  const datosNino = [textoEdad(ctx), ctx.genero && textoGenero(ctx.genero)].filter(Boolean).join(' · ');
   const bloques = [];
 
   // El contexto que se muestra es el que se usó en ESTE análisis. Si el dibujo
@@ -268,7 +268,7 @@ export const bloquesConsolidado = (ninos) => {
     return card(`
       <div style="font-family:${DISPLAY};font-size:20px;font-weight:700;margin:0 0 4px;">${esc(n.nombre)}</div>
       <div style="font-size:12px;color:${MUTED};margin:0 0 12px;">
-        ${[edad && esc(edad), n.contexto?.genero && esc(capital(n.contexto.genero)), `${n.analisis.length} análisis`].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;')}
+        ${[edad && esc(edad), n.contexto?.genero && esc(textoGenero(n.contexto.genero)), `${n.analisis.length} análisis`].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;')}
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin:0 0 14px;">
         <span style="font-size:12px;color:${MUTED};">Emoción predominante:</span>${chipEmocion(emo)}

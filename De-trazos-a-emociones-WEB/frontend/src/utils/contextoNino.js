@@ -7,14 +7,55 @@ export const CAMPOS_NINO = ['nombre', 'edad', 'fecha_nacimiento', 'genero', 'sit
 export const CAMPOS_DIBUJO = ['descripcion_dibujo', 'dibujo_espontaneo', 'comento_mientras', 'tiempo_dibujo'];
 
 export const OPCIONES = {
-  genero: [['niña', 'Niña'], ['niño', 'Niño'], ['no especificado', 'Prefiero no decirlo']],
+  genero: [['femenino', 'Femenino'], ['masculino', 'Masculino'], ['no especificado', 'Prefiero no decirlo']],
   comportamiento: ['normal', 'retraído', 'agresivo', 'ansioso', 'triste', 'hiperactivo'],
   dibujo_espontaneo: ['espontáneo', 'se le pidió'],
   tiempo_dibujo: ['menos de 5 minutos', '5 a 15 minutos', 'más de 15 minutos'],
+  // Lo que el adulto informa; la app no diagnostica. «Otro» abre un campo corto.
+  diagnostico_previo: [
+    'Ninguno conocido',
+    'TDAH (déficit de atención e hiperactividad)',
+    'TEA (trastorno del espectro autista)',
+    'Dificultad de aprendizaje (dislexia, discalculia…)',
+    'Trastorno del lenguaje',
+    'Ansiedad',
+    'Discapacidad intelectual',
+  ],
 };
 
 const lleno = (v) => String(v ?? '').trim() !== '';
 const capital = (t) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : t);
+
+// Género: los análisis anteriores guardaron «niña» / «niño».
+const GENERO_ANTERIOR = { 'niña': 'femenino', 'niño': 'masculino' };
+export const normalizarGenero = (g) => GENERO_ANTERIOR[String(g || '').trim().toLowerCase()] || (g || '');
+export const textoGenero = (g) => {
+  const v = normalizarGenero(g);
+  const op = OPCIONES.genero.find(([valor]) => valor === v);
+  return op ? op[1] : capital(v);
+};
+
+// Diagnóstico previo: qué opción de la lista corresponde a un valor guardado.
+// Lo que no esté en la lista (p. ej. texto libre de análisis anteriores) es «Otro».
+const sinPunto = (t) => String(t || '').trim().replace(/[.\s]+$/, '').toLowerCase();
+export function opcionDiagnostico(valor) {
+  if (!lleno(valor)) return { opcion: '', otro: '' };
+  const encontrada = OPCIONES.diagnostico_previo.find((op) => sinPunto(op) === sinPunto(valor) || sinPunto(op).split(' (')[0] === sinPunto(valor));
+  return encontrada ? { opcion: encontrada, otro: '' } : { opcion: 'otro', otro: String(valor) };
+}
+
+// Tiempo que tardó: una de las opciones o los minutos exactos («12 minutos»).
+const MINUTOS = /^(\d{1,3}) minutos?$/;
+export function opcionTiempo(valor) {
+  const v = String(valor || '').trim();
+  if (OPCIONES.tiempo_dibujo.includes(v)) return { opcion: v, minutos: '' };
+  const m = v.match(MINUTOS);
+  return m ? { opcion: '', minutos: m[1] } : { opcion: '', minutos: '' };
+}
+export const tiempoEnMinutos = (n) => {
+  const num = parseInt(n, 10);
+  return Number.isFinite(num) && num > 0 ? `${num} ${num === 1 ? 'minuto' : 'minutos'}` : '';
+};
 
 // Contexto más completo del niño a partir de sus análisis (del más reciente al
 // más antiguo): para cada dato, el valor más reciente que no esté vacío. Así no
@@ -29,12 +70,27 @@ export function contextoDelNino(analisis = []) {
   return ctx;
 }
 
+// Solo los datos con valor (para que no pisen con vacíos al combinar).
+const soloLlenos = (ctx = {}) =>
+  Object.fromEntries(Object.entries(ctx || {}).filter(([, v]) => lleno(v)));
+
+// Contexto que se propone al reanalizar: el del propio análisis y, para lo que
+// falte, lo más reciente del mismo niño. Sin nombre no se sabe qué otros
+// análisis son del mismo niño, así que solo se usa el propio.
+export function contextoParaReanalizar(analisis, analisisDelNino = []) {
+  const nombre = String(analisis?.contexto_nino?.nombre || '').trim();
+  const delMismoNino = nombre
+    ? analisisDelNino.filter((a) => String(a?.contexto_nino?.nombre || '').trim() === nombre)
+    : [];
+  return { ...contextoDelNino(delMismoNino), ...soloLlenos(analisis?.contexto_nino) };
+}
+
 // Filas legibles [etiqueta, valor] con los datos presentes, para mostrar.
 export function filasContexto(ctx = {}) {
   const filas = [];
   const edad = textoEdad(ctx);
   if (edad) filas.push(['Edad', edad]);
-  if (lleno(ctx.genero)) filas.push(['Género', capital(ctx.genero)]);
+  if (lleno(ctx.genero)) filas.push(['Género', textoGenero(ctx.genero)]);
   if (lleno(ctx.situacion_actual)) filas.push(['Situación actual', ctx.situacion_actual]);
   if (lleno(ctx.comportamiento)) filas.push(['Comportamiento reciente', capital(ctx.comportamiento)]);
   if (lleno(ctx.diagnostico_previo)) filas.push(['Diagnóstico previo', ctx.diagnostico_previo]);

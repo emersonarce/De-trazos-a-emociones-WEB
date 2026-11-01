@@ -181,3 +181,19 @@
 :root[data-theme="light"] .ctx-campo textarea {
   background: var(--surface);
 }
+
+/* «Otro» diagnóstico y tiempo exacto en el editor */
+.ctx-campo select + input {
+  margin-top: 8px;
+}
+.ctx-minutos {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.ctx-campo .ctx-minutos input {
+  width: 76px;
+}
