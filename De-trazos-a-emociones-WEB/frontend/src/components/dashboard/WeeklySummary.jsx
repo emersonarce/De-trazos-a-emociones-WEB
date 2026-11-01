@@ -9,6 +9,7 @@ import { actividadesPara } from '../../data/actividades';
 import ConsejosModal from './ConsejosModal';
 import { contextoDelNino } from '../../utils/contextoNino';
 import { useAvisos } from '../../context/AvisosContext';
+import { senalParaAcompanar, textoSenal, deNombre } from '../../utils/alerta';
 
 const alturaPorIntensidad = { 1: '22px', 2: '40px', 3: '56px' };
 
@@ -54,10 +55,9 @@ const WeeklySummary = ({ child }) => {
   const emocion = emocionPredominante(analisis);
   const visual = emotionVisual(emocion || '');
 
-  // Regla de alerta (orientativa, no diagnóstica): se avisa cuando los 3 análisis
-  // más recientes muestran emociones negativas. Es una señal para conversar, no un diagnóstico.
-  const ultimos3 = analisis.slice(0, 3);
-  const alerta = ultimos3.length >= 3 && ultimos3.every((a) => esEmocionNegativa(a.resultado_ia?.emocion_predominante || ''));
+  // Regla de alerta (orientativa, no diagnóstica; ver utils/alerta.js): 3 dibujos
+  // seguidos con malestar, 3 en la última semana o más malestar que bienestar en el mes.
+  const senal = senalParaAcompanar(analisis);
 
   const mensaje = emocion
     ? (esEmocionNegativa(emocion)
@@ -115,18 +115,18 @@ const WeeklySummary = ({ child }) => {
 
       {/* DERECHA */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {alerta ? (
+        {senal ? (
           <div className="alert-card">
             <div className="alert-icono" style={{ animation: 'float 4s infinite ease-in-out' }}><Bell size={22} /></div>
             <div className="alert-title">Señal para acompañar</div>
-            <div className="alert-sub">Los últimos 3 análisis de {nombre} muestran emociones que suelen asociarse a malestar. Podría ser útil conversar con calma o, si lo consideras, con un profesional.</div>
+            <div className="alert-sub">{textoSenal(senal, nombre)} Podría ser útil conversar con calma o, si lo consideras, con un profesional.</div>
             <button className="alert-action" disabled title="Próximamente" style={{ opacity: 0.6, cursor: 'not-allowed' }}>Contactar especialista →</button>
           </div>
         ) : (
           <div className="alert-card ok">
             <div className="alert-icono"><Sprout size={22} /></div>
             <div className="alert-title">Todo en seguimiento</div>
-            <div className="alert-sub">No hay señales de alerta en los análisis recientes de {nombre}. Sigue acompañando y registrando sus dibujos.</div>
+            <div className="alert-sub">No hay señales de alerta en los análisis recientes {deNombre(nombre)}. Sigue acompañando y registrando sus dibujos.</div>
           </div>
         )}
 

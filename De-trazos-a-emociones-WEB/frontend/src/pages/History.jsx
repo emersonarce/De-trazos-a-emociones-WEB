@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, AlertTriangle } from 'lucide-react';
 import './History.css';
 import { api } from '../api';
-import { esEmocionNegativa } from '../utils/emociones';
+import { senalParaAcompanar, textoSenal } from '../utils/alerta';
 import { useAnalisisSesion } from '../context/AnalisisSesionContext';
 
 import Sidebar from '../components/layout/Sidebar';
@@ -84,8 +84,8 @@ const History = () => {
 
   const activeChildName = esIndep ? 'Dibujos independientes' : activeChild;
 
-  const ultimos3 = activeSessions.slice(0, 3);
-  const mostrarAlerta = !esIndep && ultimos3.length >= 3 && ultimos3.every(s => esEmocionNegativa(s.resultado_ia?.emocion_predominante || ''));
+  // Regla de alerta orientativa (utils/alerta.js); no aplica a dibujos independientes.
+  const senal = esIndep ? null : senalParaAcompanar(activeSessions);
 
   const handleDeleted = (id) => {
     setHistoryData(prev => prev.filter(a => a._id !== id));
@@ -128,14 +128,14 @@ const History = () => {
           </div>
         </div>
 
-        {mostrarAlerta && (
+        {senal && (
           <div className="alert-banner">
             <div className="alert-icon">
               <AlertTriangle color="#f87171" size={20} />
             </div>
             <div className="alert-text">
               <div className="alert-title">Señal para acompañar — {activeChildName}</div>
-              <div className="alert-sub">Los 3 análisis más recientes muestran emociones que suelen asociarse a malestar. Podría ser útil conversar con calma o, si lo consideras, con un profesional. Esto es orientativo, no un diagnóstico.</div>
+              <div className="alert-sub">{textoSenal(senal, activeChildName)} Podría ser útil conversar con calma o, si lo consideras, con un profesional. Esto es orientativo, no un diagnóstico.</div>
             </div>
           </div>
         )}
