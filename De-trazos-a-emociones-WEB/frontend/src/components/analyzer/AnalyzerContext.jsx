@@ -70,11 +70,18 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
             </div>
           </div>
           <div className="card-body">
-            <div className="form-grid cols-3">
-              <div className="field campo-completo">
+            <div className="form-grid">
+              <div className="field">
                 <label htmlFor="nombre">Nombre, alias o código</label>
                 <input type="text" id="nombre" value={formData.nombre} onChange={handleInputChange} placeholder="Ej: Sofi, S. R. o Niño 3C-07" maxLength={60} readOnly={ninoConocido} className={faltaAlias ? 'invalido' : undefined} aria-invalid={faltaAlias || undefined} title={ninoConocido ? 'El nombre identifica al niño en el historial' : undefined} />
                 {faltaAlias && <span className="field-error">Escribe un nombre, alias o código para continuar.</span>}
+              </div>
+              <div className="field">
+                <label htmlFor="genero">Género</label>
+                <select id="genero" value={normalizarGenero(formData.genero)} onChange={handleInputChange}>
+                  <option value="">Seleccionar</option>
+                  {OPCIONES.genero.map(([valor, texto]) => <option key={valor} value={valor}>{texto}</option>)}
+                </select>
               </div>
               <div className="field">
                 <label htmlFor="fecha_nacimiento">Fecha de nacimiento <span className="optional">Opcional</span></label>
@@ -86,13 +93,6 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
                   value={conFecha ? (edadCalculada ?? '') : (formData.edad || '')}
                   onChange={(e) => handleRadioChange('edad', e.target.value.replace(/\D/g, '').slice(0, 2))}
                   readOnly={conFecha} title={conFecha ? 'Se calcula con la fecha de nacimiento' : undefined} />
-              </div>
-              <div className="field">
-                <label>Género</label>
-                <select id="genero" value={normalizarGenero(formData.genero)} onChange={handleInputChange}>
-                  <option value="">Seleccionar</option>
-                  {OPCIONES.genero.map(([valor, texto]) => <option key={valor} value={valor}>{texto}</option>)}
-                </select>
               </div>
             </div>
           </div>

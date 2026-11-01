@@ -9,10 +9,6 @@
   grid-template-columns: 1fr 1fr 1fr;
 }
 
-.form-grid .campo-completo {
-  grid-column: 1 / -1;
-}
-
 @media (max-width: 640px) {
   .form-grid,
   .form-grid.cols-3 {
@@ -63,6 +59,12 @@
 
 .field select {
   cursor: pointer;
+}
+
+/* Misma altura para textos, fechas y listas que quedan lado a lado */
+.field > input,
+.field > select {
+  min-height: 46px;
 }
 
 .optional {
