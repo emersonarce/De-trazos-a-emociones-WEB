@@ -31,3 +31,10 @@ WhatsApp Image*
 /*.png
 # Informes de comparación de variantes del análisis (backend/scripts/comparar-variantes.js)
 De-trazos-a-emociones-WEB/comparaciones/
+
+# Artículo científico y evidencias de la prueba piloto (contienen dibujos y nombres reales de niños: no se versionan)
+/articulo cientifico/
+/Articulo_cientifico_*.pdf
+/PRUEBAS_PROYECTO_DE_GRADO*.docx
+/FORMAT_*.PDF
+/Carta de Respuesta*.docx
