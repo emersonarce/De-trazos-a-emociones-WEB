@@ -25,6 +25,7 @@ IMPORTANTE: los documentos académicos dicen que el análisis usa la API de Clau
     - `backend/services/medicionImagen.js`: medición de color y trazo sobre la imagen, sin IA (colores predominantes, uso de la hoja, tonos, intensidad del color, relleno o línea). Se guarda en `resultado_ia.medicion_imagen` al analizar y al reanalizar; el frontend la muestra con `components/common/MedicionImagen.jsx` y en el PDF.
     - `backend/tests/`: pruebas con `node --test` (`npm test` en la carpeta del proyecto).
     - `backend/scripts/comparar-variantes.js`: compara las variantes del análisis con dibujos reales (`npm run comparar -- dibujo.jpg`); el informe queda en `comparaciones/` (ignorado por git).
+    - `backend/scripts/demo.js`: banco de datos de PRUEBA, solo para uso local. `npm run demo:crear` crea un usuario demo (`demo@detrazos.test` / `demo1234`) con 8 niños inventados, unos 500 análisis y dibujos generados por código (`backend/scripts/demo/`) en una base aparte (la de `MONGO_URI` con `_demo` al final; se niega a usar otra) e imágenes `uploads/demo-*`. `npm run dev:demo` arranca el backend con esa base y `npm run demo:borrar` la elimina. Las fechas se calculan al crearlo: hay que regenerarlo para que los cumpleaños y las alertas caigan en el día actual.
     - `backend/database.js`: conexión Mongoose.
     - `backend/models/User.js` y `backend/models/Analysis.js`.
     - `backend/routes/auth.js`: `/auth/register` y `/auth/login`.
@@ -130,6 +131,7 @@ Plantilla disponible en `backend/.env.example`.
 - Verificación disponible aquí: `npm test` (backend) en la carpeta del proyecto; `npm run lint`, `npm test` y `npm run build` en `frontend/`; y `node --check <archivo>` para los archivos del backend.
 - Las pruebas reales con Ollama (modelo `minicpm-v`) se hacen en otro equipo, después del push. Al terminar cada paso, indicar exactamente qué probar allá, con qué usuarios de prueba y qué resultado esperar.
 - Si algo no se puede verificar en esta máquina, decirlo explícitamente en vez de asumir que funciona.
+- MongoDB Atlas a veces falla aquí con `querySrv EREFUSED` (DNS intermitente de WSL): anteponer `DNS_SERVERS=8.8.8.8,1.1.1.1` al comando.
 
 ## 4. Plan de trabajo
 
