@@ -16,6 +16,7 @@ const sharp = require("sharp");
 const User = require("../models/User");
 const Analysis = require("../models/Analysis");
 const { medirImagen } = require("../services/medicionImagen");
+const { validarPassword } = require("../utils/password");
 const { nombreBaseDemo } = require("./demo/base");
 const { USUARIO_DEMO, azar, generarBanco, resultadoIA } = require("./demo/datos");
 const { dibujo, GRUPOS_DIBUJO } = require("./demo/dibujos");
@@ -57,6 +58,9 @@ async function crear() {
         }
     }
 
+    // La contraseña demo cumple la misma política que el registro.
+    const errorPassword = validarPassword(USUARIO_DEMO.password);
+    if (errorPassword) throw new Error(`Contraseña demo no válida: ${errorPassword}.`);
     const usuario = await User.create({ ...USUARIO_DEMO, password: await bcrypt.hash(USUARIO_DEMO.password, 12) });
     const banco = generarBanco(new Date());
     const docs = banco.map((item, i) => {

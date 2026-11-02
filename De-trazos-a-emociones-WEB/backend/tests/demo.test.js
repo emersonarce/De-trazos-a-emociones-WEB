@@ -1,7 +1,8 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { nombreBaseDemo } = require("../scripts/demo/base");
-const { generarBanco } = require("../scripts/demo/datos");
+const { generarBanco, USUARIO_DEMO } = require("../scripts/demo/datos");
+const { validarPassword } = require("../utils/password");
 const { dibujo, GRUPOS_DIBUJO } = require("../scripts/demo/dibujos");
 
 test("demo: la base de prueba siempre termina en _demo", () => {
@@ -9,6 +10,10 @@ test("demo: la base de prueba siempre termina en _demo", () => {
     assert.equal(nombreBaseDemo({ MONGO_URI: "mongodb://localhost:27017" }), "test_demo");
     assert.equal(nombreBaseDemo({ MONGO_URI: "mongodb://x/emocionesDB", MONGO_DB_DEMO: "otra_demo" }), "otra_demo");
     assert.throws(() => nombreBaseDemo({ MONGO_URI: "mongodb://x/emocionesDB", MONGO_DB_DEMO: "emocionesDB" }), /_demo/);
+});
+
+test("demo: la contraseña del usuario demo cumple la política de contraseñas", () => {
+    assert.equal(validarPassword(USUARIO_DEMO.password), null);
 });
 
 test("demo: el banco trae los casos que se quieren ver", async () => {

@@ -5,7 +5,7 @@
 // mismo día, historiales largos (gráfico con muchos puntos) y cortos.
 
 const USUARIO_DEMO = {
-    nombre: "Docente", apellido: "Demo", email: "demo@detrazos.test", password: "demo1234",
+    nombre: "Docente", apellido: "Demo", email: "demo@detrazos.test", password: "Demo2026!", // cumple utils/password.js
     rol: "profesor", institucion: "Colegio de prueba (datos inventados)", estado: "aprobado",
     permisos: { conContexto: true, descargarPdf: true },
 };
