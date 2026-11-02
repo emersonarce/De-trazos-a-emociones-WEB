@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link, useOutletContext } from 'react-router-dom';
-import { Mail, Lock, KeyRound, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, KeyRound, Loader2 } from 'lucide-react';
 import AuthAviso from '../components/auth/AuthAviso';
 import { avisoDeError, correoValido } from '../components/auth/avisos';
 import Logo from '../components/common/Logo';
@@ -16,6 +16,7 @@ const Login = () => {
   const { introLista } = useOutletContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [verPassword, setVerPassword] = useState(false);
   const [cargando, setCargando] = useState(false);
   // Aviso con diseño propio (en vez de alert). El id vuelve a animarlo en cada intento.
   const [aviso, setAviso] = useState(null);
@@ -134,7 +135,7 @@ const Login = () => {
                   <Lock size={20} />
                 </div>
                 <input
-                  type="password"
+                  type={verPassword ? 'text' : 'password'}
                   id="password"
                   placeholder="••••••"
                   autoComplete="current-password"
@@ -143,6 +144,14 @@ const Login = () => {
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); setAviso(null); }}
                 />
+                <button
+                  type="button"
+                  className="eye-icon"
+                  onClick={() => setVerPassword((v) => !v)}
+                  aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {verPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 

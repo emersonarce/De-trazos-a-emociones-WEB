@@ -8,22 +8,6 @@
   flex: 1;
 }
 
-.auth-container .eye-icon {
-  position: absolute;
-  right: 16px;
-  color: var(--text-gray);
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  transition: color 0.2s ease;
-}
-.auth-container .eye-icon:hover {
-  color: var(--text);
-}
-
 .auth-container select {
   appearance: none;
   -webkit-appearance: none;

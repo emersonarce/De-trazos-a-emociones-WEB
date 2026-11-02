@@ -378,6 +378,27 @@
   color: var(--accent);
 }
 
+/* Botón para mostrar u ocultar la contraseña (login y registro). */
+.auth-container .eye-icon {
+  position: absolute;
+  right: 16px;
+  color: var(--text-gray);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+.auth-container .eye-icon:hover {
+  color: var(--text);
+}
+/* Que el texto no quede debajo del ojo. */
+.auth-container .input-wrapper:has(.eye-icon) input {
+  padding-right: 48px;
+}
+
 .auth-container .btn-submit {
   width: 100%;
   background: var(--accent);

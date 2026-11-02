@@ -245,6 +245,11 @@ a {
   color: inherit;
 }
 
+/* Edge agrega su propio ojo a los campos de contraseña; la app ya trae el suyo. */
+input::-ms-reveal {
+  display: none;
+}
+
 /* Opciones de las listas desplegables con los colores del tema. */
 select option {
   background-color: var(--card);
