@@ -89,22 +89,55 @@ test('emociones: cada grupo tiene su cara y su color', async () => {
 });
 
 test('clima emocional: valencia, puntos y tendencia', async () => {
-  const { valenciaEmocion, puntosClima, resumenClima } = await import('./clima.js');
+  const { valenciaEmocion, puntosClima, resumenClima, ventanaPeriodo, promediosClima } = await import('./clima.js');
   assert.equal(valenciaEmocion('Alegre'), 1);
   assert.equal(valenciaEmocion('Melancolia alta'), -1);
   assert.equal(valenciaEmocion('sorpresa'), 1);
   assert.equal(valenciaEmocion('Aburrimiento'), 0);
-  const ahora = Date.parse('2026-10-30T12:00:00Z');
   const s = (emocion, intensidad, fecha) => ({ fecha, resultado_ia: { emocion_predominante: emocion, intensidad } });
-  // Del más reciente al más antiguo, como llegan del backend.
-  const sesiones = [s('Melancolía', 'media', '2026-10-30'), s('Alegre', 'media', '2026-10-29'), s('Calma', 'alta', '2026-05-01')];
-  const todo = puntosClima(sesiones, 'todo', ahora);
-  assert.deepEqual(todo.map((p) => p.valor), [3, 2, -2]);
-  assert.equal(puntosClima(sesiones, '3m', ahora).length, 2);
-  assert.equal(resumenClima(puntosClima(sesiones, '3m', ahora)).tipo, 'baja');
+  // Del más reciente al más antiguo, como llegan del backend; dos el mismo día.
+  const sesiones = [
+    s('Melancolía', 'media', '2026-10-30T16:00:00'), s('Alegre', 'baja', '2026-10-30T09:00:00'),
+    s('Alegre', 'media', '2026-10-29T10:00:00'), s('Calma', 'alta', '2026-05-01T09:00:00'),
+  ];
+  // «Todo» trae todos (sin tope de 12), en orden cronológico.
+  const todo = puntosClima(sesiones, ventanaPeriodo('todo', 0, sesiones));
+  assert.deepEqual(todo.map((p) => p.valor), [3, 2, 1, -2]);
+  const octubre = puntosClima(sesiones, ventanaPeriodo('mes', new Date(2026, 9, 15)));
+  assert.equal(octubre.length, 3);
+  assert.equal(resumenClima(octubre).tipo, 'baja');
+  const elDia = puntosClima(sesiones, ventanaPeriodo('dia', new Date(2026, 9, 30, 12)));
+  assert.deepEqual(elDia.map((p) => p.emocion), ['Alegre', 'Melancolía']);
+  // Promedio por tramo: los dos del 30 de octubre van juntos (1 y -2).
+  assert.deepEqual(promediosClima(octubre).map((p) => p.valor), [2, -0.5]);
   assert.equal(resumenClima([{ valor: -2 }, { valor: 1 }]).tipo, 'mejora');
   assert.equal(resumenClima([{ valor: 2 }, { valor: 2 }]).tipo, 'estable');
   assert.equal(resumenClima([{ valor: 2 }]), null);
+});
+
+test('clima emocional: periodos, flechas y marcas del eje', async () => {
+  const { ventanaPeriodo, moverPeriodo, etiquetaPeriodo, marcasEje } = await import('./clima.js');
+  const ref = new Date(2026, 9, 31, 15); // sábado 31 de octubre de 2026
+  const etiqueta = (nivel, r = ref) => etiquetaPeriodo(nivel, ventanaPeriodo(nivel, r));
+  assert.equal(etiqueta('anio'), '2026');
+  assert.equal(etiqueta('mes'), 'Octubre de 2026');
+  assert.equal(etiqueta('semana'), '26 oct – 1 nov 2026');
+  assert.equal(etiqueta('dia'), 'Sábado 31 de octubre de 2026');
+  assert.equal(etiqueta('semana', new Date(2026, 11, 30)), '28 dic 2026 – 3 ene 2027');
+  assert.equal(etiqueta('mes', moverPeriodo('mes', ref, 1)), 'Noviembre de 2026');
+  assert.equal(etiqueta('mes', moverPeriodo('mes', new Date(2026, 0, 31), 1)), 'Febrero de 2026');
+  assert.equal(etiqueta('semana', moverPeriodo('semana', ref, -1)), '19 oct – 25 oct 2026');
+  assert.equal(etiqueta('dia', moverPeriodo('dia', ref, 1)), 'Domingo 1 de noviembre de 2026');
+  assert.equal(etiqueta('anio', moverPeriodo('anio', ref, -1)), '2025');
+  // Marcas: meses del año (clic: ese mes), días de la semana (clic: ese día), horas del día.
+  const meses = marcasEje('anio', ventanaPeriodo('anio', ref));
+  assert.deepEqual([meses.length, meses[0].texto, meses[0].zoom.nivel], [12, 'ene', 'mes']);
+  const semana = marcasEje('semana', ventanaPeriodo('semana', ref));
+  assert.deepEqual(semana.map((m) => m.texto), ['lun 26', 'mar 27', 'mié 28', 'jue 29', 'vie 30', 'sáb 31', 'dom 1']);
+  assert.equal(semana[5].zoom.nivel, 'dia');
+  const lunesDelMes = marcasEje('mes', ventanaPeriodo('mes', ref));
+  assert.deepEqual(lunesDelMes.map((m) => m.texto), ['5 oct', '12 oct', '19 oct', '26 oct']);
+  assert.equal(marcasEje('dia', ventanaPeriodo('dia', ref)).length, 7);
 });
 
 test('contexto del niño: valor más reciente no vacío por campo y filas legibles', async () => {
