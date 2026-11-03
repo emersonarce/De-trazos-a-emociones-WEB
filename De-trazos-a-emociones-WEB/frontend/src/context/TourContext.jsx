@@ -1,7 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GuidedTour from '../components/common/GuidedTour';
+import { puedePdf } from '../utils/permisos';
 
 const TourContext = createContext(null);
 export const useTour = () => useContext(TourContext);
@@ -38,14 +39,22 @@ export function TourProvider({ children }) {
       { route: '/dashboard', selector: '[data-tour="exportar"]', titulo: 'Exportar a PDF', texto: 'Descarga el historial del niño en PDF. También puedes exportar el detalle de cada análisis.' },
       { route: '/historial', selector: '[data-tour="hist"]', titulo: 'Historial y evolución', texto: 'Revisa todos los análisis de un niño y su evolución en el tiempo.' },
       { route: '/ninos', selector: '[data-tour="ninos"]', titulo: 'Mis niños', texto: 'Consulta la información y la situación actual de cada niño registrado.' },
-      { route: '/app', selector: '[data-tour="perfil"]', titulo: 'Tu cuenta', texto: '¡Listo! Desde tu perfil (aquí en la barra) cambias tu foto, entras a Configuración (tema, paletas y contraseña) o cierras sesión. Ya puedes empezar subiendo un dibujo.' },
-    ],
+      { route: '/app', selector: '[data-tour="perfil"]', titulo: 'Tu cuenta', texto: '¡Listo! Desde tu perfil (aquí en la barra) cambias tu foto, entras a Configuración (tema y contraseña) o cierras sesión. Ya puedes empezar subiendo un dibujo.' },
+    ].filter((p) => p.selector !== '[data-tour="exportar"]' || puedePdf()), // sin el permiso no hay botón de PDF
     [nombre]
   );
 
   const paso = activo ? pasos[i] : null;
 
+  // El Analyzer lanza el recorrido al montarse; como el último paso vuelve a
+  // /app, sin esta guarda el recorrido en curso empezaría otra vez desde cero.
+  const activoRef = useRef(false);
+  useEffect(() => {
+    activoRef.current = activo;
+  }, [activo]);
+
   const start = useCallback(() => {
+    if (activoRef.current) return;
     setI(0);
     setRect(null);
     setActivo(true);

@@ -10,6 +10,7 @@ import ConsejosModal from './ConsejosModal';
 import { contextoDelNino } from '../../utils/contextoNino';
 import { useAvisos } from '../../context/AvisosContext';
 import { senalParaAcompanar, textoSenal, deNombre } from '../../utils/alerta';
+import { puedePdf } from '../../utils/permisos';
 
 const alturaPorIntensidad = { 1: '22px', 2: '40px', 3: '56px' };
 
@@ -143,16 +144,18 @@ const WeeklySummary = ({ child }) => {
               <span className="qa-icon teal"><History size={18} /></span>
               Ver historial
             </div>
-            <div
-              className="qa-btn"
-              data-tour="exportar"
-              onClick={exportarPdfNino}
-              style={analisis.length === 0 || generandoPdf ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
-              title={analisis.length === 0 ? 'Sin análisis para exportar' : 'Exportar el historial en PDF'}
-            >
-              <span className="qa-icon azul"><FileDown size={18} /></span>
-              {generandoPdf ? 'Generando…' : 'Exportar PDF'}
-            </div>
+            {puedePdf() && (
+              <div
+                className="qa-btn"
+                data-tour="exportar"
+                onClick={exportarPdfNino}
+                style={analisis.length === 0 || generandoPdf ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                title={analisis.length === 0 ? 'Sin análisis para exportar' : 'Exportar el historial en PDF'}
+              >
+                <span className="qa-icon azul"><FileDown size={18} /></span>
+                {generandoPdf ? 'Generando…' : 'Exportar PDF'}
+              </div>
+            )}
             <div
               className="qa-btn"
               role="button"
