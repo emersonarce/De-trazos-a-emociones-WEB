@@ -1,4 +1,5 @@
 import { portada, cabecera, bloquesDetalle, bloquesHistorial, bloquesConsolidado, notaFinal, RUEDA } from './reportHtml';
+import { TITULO_REPORTE } from './periodos';
 
 // PDF A4 con la identidad de la app: portada con el logo, cabecera compacta en
 // las páginas siguientes y pie con número de página. El contenido va en
@@ -58,7 +59,7 @@ const esperarImagenes = (nodo) =>
     )
   );
 
-const htmlAPdf = async ({ tipo, bloques }, nombreArchivo) => {
+const htmlAPdf = async ({ tipo, periodo, bloques }, nombreArchivo) => {
   // jsPDF y html2canvas se cargan bajo demanda (chunks aparte).
   const [{ jsPDF }, html2canvasMod] = await Promise.all([import('jspdf'), import('html2canvas')]);
   const html2canvas = html2canvasMod.default;
@@ -74,8 +75,8 @@ const htmlAPdf = async ({ tipo, bloques }, nombreArchivo) => {
     cont.appendChild(d);
     return d;
   };
-  const elPortada = crear(portada({ logo, tipo, fecha }), '0');
-  const elCabecera = crear(cabecera({ logo, tipo }), '0');
+  const elPortada = crear(portada({ logo, tipo, periodo, fecha }), '0');
+  const elCabecera = crear(cabecera({ logo, tipo, periodo }), '0');
   const elBloques = bloques.map((b) => crear(b, '0 36px'));
   document.body.appendChild(cont);
 
@@ -161,7 +162,11 @@ export async function exportarAnalisis({ detalle, imagenDataUrl, historial, nomb
   await htmlAPdf({ tipo, bloques }, nombreArchivo);
 }
 
-// Reporte consolidado de todos los niños.
-export async function exportarReporte(ninos, nombreArchivo) {
-  await htmlAPdf({ tipo: 'Reporte consolidado', bloques: [...bloquesConsolidado(ninos), notaFinal()] }, nombreArchivo || 'de-trazos-reporte.pdf');
+// Reporte de los niños en un periodo: `nivel` ('todo', 'mes', 'semana' o 'dia')
+// y `periodo`, el periodo en palabras, que sale en la portada y en cada página.
+export async function exportarReporte(ninos, { nivel = 'todo', periodo = '', nombreArchivo } = {}) {
+  await htmlAPdf(
+    { tipo: TITULO_REPORTE[nivel], periodo, bloques: [...bloquesConsolidado(ninos, { nivel, periodo }), notaFinal()] },
+    nombreArchivo || 'de-trazos-reporte.pdf'
+  );
 }

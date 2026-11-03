@@ -42,7 +42,7 @@
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.5;
-  margin: 0 0 2rem;
+  margin: 0 0 1.5rem;
 }
 
 .rep-empty {
@@ -52,6 +52,130 @@
   padding: 2rem;
   text-align: center;
   color: var(--muted);
+}
+
+/* Periodo del reporte: todo el historial, o un mes, semana o día concretos.
+   Mismo estilo que el selector de periodo del gráfico del Historial. */
+.rep-periodo {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 1.25rem;
+}
+.rep-periodo-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.rep-periodo-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+}
+.rep-niveles {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 11px;
+  background: var(--sunken);
+  border: 1px solid var(--border);
+}
+.rep-niveles button {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.rep-niveles button:hover {
+  color: var(--text);
+}
+.rep-niveles button.activo {
+  background: var(--purple-dim);
+  color: var(--purple-light);
+}
+.rep-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.rep-flecha {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--sunken);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.rep-flecha:hover:not(:disabled) {
+  border-color: var(--purple-light);
+  color: var(--purple-light);
+}
+.rep-flecha:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.rep-fecha {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.rep-fecha svg {
+  flex-shrink: 0;
+  color: var(--purple-light);
+}
+button.rep-fecha:hover {
+  border-color: var(--border);
+}
+.rep-fecha.fija {
+  cursor: default;
+}
+/* El calendario se abre desde el nombre del periodo; el campo no se ve. */
+.rep-calendario {
+  position: absolute;
+  left: 38px;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.rep-cuenta {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--muted);
+  white-space: nowrap;
 }
 
 .rep-list {
@@ -97,6 +221,10 @@
   text-transform: capitalize;
 }
 
+.rep-empty + .rep-download {
+  margin-top: 1.25rem;
+}
+
 .rep-download {
   display: inline-flex;
   align-items: center;
@@ -115,7 +243,27 @@
 .rep-download:hover:not(:disabled) {
   background: var(--accent-strong);
 }
+/* Con filter y no con opacity: la animación de entrada de la página deja la
+   opacidad fija en 1. */
 .rep-download:disabled {
-  opacity: 0.6;
+  filter: opacity(0.55);
   cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .rep-container {
+    padding: 24px 16px;
+  }
+  /* Los cinco periodos caben en una fila. */
+  .rep-niveles {
+    display: flex;
+    width: 100%;
+  }
+  .rep-niveles button {
+    flex: 1 1 auto;
+    padding: 6px 4px;
+  }
+  .rep-cuenta {
+    margin-left: 0;
+  }
 }

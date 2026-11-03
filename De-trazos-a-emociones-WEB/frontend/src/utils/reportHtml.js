@@ -4,10 +4,11 @@
 // app (logo, tipografía de la marca, color de cada emoción). Todo el lenguaje
 // es orientativo, nunca clínico.
 
-import { limpiarResultadoIA, enParrafos } from './textoIA';
-import { emotionVisual, intensityInfo, formatFechaHora, textoEdad, emocionPredominante } from './emociones';
-import { filasContexto, textoGenero } from './contextoNino';
-import { coloresMedicion, filasMedicion, NOTA_MEDICION } from './medicion';
+import { limpiarResultadoIA, enParrafos } from './textoIA.js';
+import { emotionVisual, intensityInfo, formatFechaHora, formatHora, textoEdad, emocionPredominante } from './emociones.js';
+import { filasContexto, textoGenero } from './contextoNino.js';
+import { coloresMedicion, filasMedicion, NOTA_MEDICION } from './medicion.js';
+import { porMes, rangoAnalisis } from './periodos.js';
 
 // Colores fijos para impresión (los del tema claro de la app): el PDF se ve
 // igual aunque la app esté en tema oscuro.
@@ -74,20 +75,21 @@ const card = (inner, { acento } = {}) =>
 
 // ---------- Portada y cabecera ----------
 
-// Primera página: logo, marca, tipo de documento y fecha.
-export const portada = ({ logo, tipo, fecha }) => `
+// Primera página: logo, marca, tipo de documento, periodo (en los reportes) y fecha.
+export const portada = ({ logo, tipo, periodo, fecha }) => `
   <div style="font-family:${SANS};background:linear-gradient(135deg,#efeafd 0%,#f7f4ff 50%,#fdf3ec 100%);
     padding:30px 36px 0;border-bottom:1px solid ${BORDER};">
     <div style="display:flex;align-items:center;justify-content:space-between;">
-      <div style="display:flex;align-items:center;gap:14px;">
+      <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
         ${logo ? `<img src="${logo}" style="width:58px;height:58px;" />` : ''}
         <div>
           <div style="font-family:${DISPLAY};font-size:28px;font-weight:700;color:${TEXT};line-height:1.1;">De trazos a emociones</div>
           <div style="font-size:11px;letter-spacing:0.14em;color:${MUTED};font-weight:700;margin-top:5px;">PSICOLOGÍA INFANTIL · IA</div>
         </div>
       </div>
-      <div style="text-align:right;">
+      <div style="text-align:right;max-width:340px;">
         <div style="font-family:${DISPLAY};font-size:17px;font-weight:700;color:${ACCENT};">${esc(tipo)}</div>
+        ${periodo ? `<div style="font-size:13px;font-weight:700;color:${TEXT};margin-top:5px;line-height:1.35;text-wrap:balance;">${esc(periodo)}</div>` : ''}
         <div style="font-size:11px;color:${MUTED};margin-top:4px;">Generado el ${esc(fecha)}</div>
       </div>
     </div>
@@ -97,14 +99,14 @@ export const portada = ({ logo, tipo, fecha }) => `
   </div>`;
 
 // Páginas siguientes: cabecera compacta.
-export const cabecera = ({ logo, tipo }) => `
+export const cabecera = ({ logo, tipo, periodo }) => `
   <div style="font-family:${SANS};display:flex;align-items:center;justify-content:space-between;
     padding:14px 36px 12px;border-bottom:1px solid ${BORDER};background:#ffffff;">
     <div style="display:flex;align-items:center;gap:9px;">
       ${logo ? `<img src="${logo}" style="width:24px;height:24px;" />` : ''}
       <span style="font-family:${DISPLAY};font-size:15px;font-weight:700;color:${TEXT};">De trazos a emociones</span>
     </div>
-    <span style="font-size:11px;color:${MUTED};">${esc(tipo)}</span>
+    <span style="font-size:11px;color:${MUTED};">${esc(periodo ? `${tipo} · ${periodo}` : tipo)}</span>
   </div>`;
 
 // ---------- Detalle de un análisis ----------
@@ -227,9 +229,36 @@ const graficoDistribucion = (lista) => {
 
 const FILAS_POR_BLOQUE = 14;
 
+// Lista de análisis (fecha, o solo la hora, emoción e intensidad) en el orden
+// recibido, en bloques para no partir filas entre páginas.
+const bloquesLista = (titulo, lista, { soloHora = false, acento } = {}) => {
+  const bloques = [];
+  for (let i = 0; i < lista.length; i += FILAS_POR_BLOQUE) {
+    const filas = lista.slice(i, i + FILAS_POR_BLOQUE).map((a) => {
+      const r = limpiarResultadoIA(a.resultado_ia || {});
+      return `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid ${BORDER};">
+        <span style="font-size:12.5px;color:${TEXT};width:190px;">${esc(soloHora ? formatHora(a.fecha) : formatFechaHora(a.fecha))}</span>
+        <span style="flex:1;">${chipEmocion(r.emocion_predominante)}</span>
+        ${barrasIntensidad(r.emocion_predominante, r.intensidad)}
+      </div>`;
+    }).join('');
+    bloques.push(card(`${tituloSeccion(i === 0 ? titulo : `${titulo} (continuación)`)}${filas}`, { acento }));
+  }
+  return bloques;
+};
+const porFecha = (lista, orden) => [...lista].sort((a, b) => orden * (new Date(a.fecha || 0) - new Date(b.fecha || 0)));
+
+// Reporte anual: cuántos análisis hubo cada mes y su emoción predominante.
+const bloqueMeses = (titulo, lista, acento) => card(`${tituloSeccion(titulo)}${porMes(lista).map(({ mes, analisis }) => `
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid ${BORDER};">
+    <span style="font-size:12.5px;color:${TEXT};width:190px;">${esc(mes)}</span>
+    <span style="flex:1;">${chipEmocion(emocionPredominante(analisis))}</span>
+    <span style="width:90px;text-align:right;font-size:12.5px;color:${MUTED};">${analisis.length} análisis</span>
+  </div>`).join('')}`, { acento });
+
 export const bloquesHistorial = (nombre, lista) => {
   const emo = emocionPredominante(lista);
-  const bloques = [card(`
+  const resumen = card(`
     <div style="font-family:${DISPLAY};font-size:22px;font-weight:700;margin:0 0 4px;">Historial de ${esc(nombre)}</div>
     <div style="font-size:12px;color:${MUTED};margin:0 0 16px;">${lista.length} análisis registrados</div>
     <div style="display:flex;align-items:center;gap:10px;margin:0 0 18px;">
@@ -237,38 +266,44 @@ export const bloquesHistorial = (nombre, lista) => {
     </div>
     ${tituloSeccion('Distribución de emociones')}
     ${graficoDistribucion(lista)}
-  `)];
-
-  // Lista cronológica, en bloques para no partir filas entre páginas.
-  const ordenados = [...lista].sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0));
-  for (let i = 0; i < ordenados.length; i += FILAS_POR_BLOQUE) {
-    const filas = ordenados.slice(i, i + FILAS_POR_BLOQUE).map((a) => {
-      const r = limpiarResultadoIA(a.resultado_ia || {});
-      return `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid ${BORDER};">
-        <span style="font-size:12.5px;color:${TEXT};width:190px;">${esc(formatFechaHora(a.fecha))}</span>
-        <span style="flex:1;">${chipEmocion(r.emocion_predominante)}</span>
-        ${barrasIntensidad(r.emocion_predominante, r.intensidad)}
-      </div>`;
-    }).join('');
-    bloques.push(card(`${tituloSeccion(i === 0 ? 'Análisis registrados' : 'Análisis registrados (continuación)')}${filas}`));
-  }
-  return bloques;
+  `);
+  // Del más reciente al más antiguo, como en el Historial.
+  return [resumen, ...bloquesLista('Análisis registrados', porFecha(lista, -1))];
 };
 
-// ---------- Reporte consolidado ----------
+// ---------- Reporte por periodo ----------
 
-export const bloquesConsolidado = (ninos) => {
+// `ninos`: [{ nombre, contexto, analisis }] con solo los análisis del periodo.
+// `nivel`: 'todo', 'anio', 'mes', 'semana' o 'dia'; `periodo`: el periodo en
+// palabras. Abre con un resumen del periodo y sigue con una tarjeta por niño
+// (con las fechas de sus análisis); en un año, también cuántos hubo cada mes, y
+// en un mes, semana o día, la lista de cada análisis en orden cronológico (en
+// un día, solo con la hora).
+export const bloquesConsolidado = (ninos, { nivel = 'todo', periodo = '' } = {}) => {
   if (!ninos.length) {
-    return [card(`<div style="color:${MUTED};font-size:14px;">Aún no hay niños con análisis para incluir en el reporte.</div>`)];
+    return [card(`<div style="color:${MUTED};font-size:14px;">No hay análisis para incluir en este reporte.</div>`)];
   }
-  return ninos.map((n) => {
+  const todos = ninos.flatMap((n) => n.analisis);
+  const general = emocionPredominante(todos);
+  const bloques = [card(`
+    ${tituloSeccion('Periodo del reporte')}
+    <div style="font-family:${DISPLAY};font-size:22px;font-weight:700;margin:0 0 8px;">${esc(periodo || 'Todo el historial')}</div>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;font-size:12.5px;color:${MUTED};">
+      <span>${todos.length} análisis de ${ninos.length === 1 ? '1 niño' : `${ninos.length} niños`}</span>
+      ${general ? `<span>·</span><span>Emoción más frecuente:</span>${chipEmocion(general)}` : ''}
+    </div>
+  `, { acento: ACCENT })];
+
+  for (const n of ninos) {
     const emo = emocionPredominante(n.analisis);
     const edad = textoEdad(n.contexto || {});
     const sit = n.contexto?.situacion_actual;
-    return card(`
+    // En el reporte de un día la fecha ya es la del periodo.
+    const cuantos = `${n.analisis.length} análisis${nivel === 'dia' ? '' : `, ${rangoAnalisis(n.analisis)}`}`;
+    bloques.push(card(`
       <div style="font-family:${DISPLAY};font-size:20px;font-weight:700;margin:0 0 4px;">${esc(n.nombre)}</div>
       <div style="font-size:12px;color:${MUTED};margin:0 0 12px;">
-        ${[edad && esc(edad), n.contexto?.genero && esc(textoGenero(n.contexto.genero)), `${n.analisis.length} análisis`].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;')}
+        ${[edad && esc(edad), n.contexto?.genero && esc(textoGenero(n.contexto.genero)), esc(cuantos)].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;')}
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin:0 0 14px;">
         <span style="font-size:12px;color:${MUTED};">Emoción predominante:</span>${chipEmocion(emo)}
@@ -276,8 +311,14 @@ export const bloquesConsolidado = (ninos) => {
       ${sit ? `<div style="font-size:12.5px;color:${TEXT};margin:0 0 14px;padding:10px 12px;background:${SUAVE};border-radius:10px;"><b>Situación actual:</b> ${esc(sit)}</div>` : ''}
       ${tituloSeccion('Distribución de emociones')}
       ${graficoDistribucion(n.analisis)}
-    `, { acento: colorEmocion(emo) });
-  });
+    `, { acento: colorEmocion(emo) }));
+    if (nivel === 'anio') {
+      bloques.push(bloqueMeses(`Análisis de ${n.nombre} por mes`, n.analisis, colorEmocion(emo)));
+    } else if (nivel !== 'todo') {
+      bloques.push(...bloquesLista(`Análisis de ${n.nombre}`, porFecha(n.analisis, 1), { soloHora: nivel === 'dia', acento: colorEmocion(emo) }));
+    }
+  }
+  return bloques;
 };
 
 // Nota final del documento.
