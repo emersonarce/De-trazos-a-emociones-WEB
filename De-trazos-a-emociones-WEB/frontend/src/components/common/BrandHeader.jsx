@@ -1,5 +1,6 @@
 import './BrandHeader.css';
 import Logo from './Logo';
+import Notificaciones from './Notificaciones';
 
 const BrandHeader = () => (
   <div className="brand-header">
@@ -12,6 +13,7 @@ const BrandHeader = () => (
         <span className="brand-header-sub">Psicología infantil · IA</span>
       </div>
     </div>
+    <Notificaciones />
   </div>
 );
 

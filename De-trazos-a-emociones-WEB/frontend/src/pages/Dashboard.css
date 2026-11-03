@@ -200,3 +200,46 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Esqueleto de carga: misma silueta que el selector de niños y las tarjetas. */
+.dash-esqueleto {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.esq-fila {
+  display: flex;
+  gap: 12px;
+  overflow: hidden;
+}
+.esq-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+}
+.esq {
+  display: block;
+  border: 1px solid var(--border);
+  background: linear-gradient(90deg, var(--card) 0%, var(--card2) 50%, var(--card) 100%);
+  background-size: 200% 100%;
+  animation: esq-brillo 1.4s ease-in-out infinite;
+}
+.esq-chip {
+  flex: 0 0 200px;
+  height: 64px;
+  border-radius: 999px;
+}
+.esq-tarjeta {
+  height: 320px;
+  border-radius: 20px;
+}
+@keyframes esq-brillo {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (max-width: 900px) {
+  .esq-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .esq { animation: none; }
+}

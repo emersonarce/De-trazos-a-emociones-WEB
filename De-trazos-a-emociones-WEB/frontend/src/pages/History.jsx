@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, AlertTriangle } from 'lucide-react';
 import './History.css';
 import { api } from '../api';
-import { senalParaAcompanar, textoSenal } from '../utils/alerta';
+import { notificacionesDe, abrirNotificacion } from '../utils/notificaciones';
 import { useAnalisisSesion } from '../context/AnalisisSesionContext';
 
 import Sidebar from '../components/layout/Sidebar';
@@ -19,13 +19,39 @@ import { contextoDelNino } from '../utils/contextoNino';
 
 const INDEP = '__independientes__';
 
+const nombreDe = (it) => (it.contexto_nino?.nombre || '').trim() || 'Sin nombre';
+
+// Niño que se muestra: el pedido (por ejemplo, desde una notificación) si
+// existe; si no, el actual si sigue existiendo; si no, el primero.
+const elegirNino = (data, pedido, actual) => {
+  const nombres = [];
+  let indep = false;
+  for (const it of data) {
+    if (it.independiente) { indep = true; continue; }
+    const n = nombreDe(it);
+    if (!nombres.includes(n)) nombres.push(n);
+  }
+  if (pedido && nombres.includes(pedido)) return pedido;
+  if (actual && (actual === INDEP ? indep : nombres.includes(actual))) return actual;
+  return nombres[0] || (indep ? INDEP : '');
+};
+
 const History = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { precargarContexto, nuevaSesion } = useAnalisisSesion();
-  const [historyData, setHistoryData] = useState([]);
-  const [activeChild, setActiveChild] = useState('');
-  const [loading, setLoading] = useState(true);
+  // Si ya se trajeron en esta sesión, se muestran al instante mientras llegan los actuales.
+  const [historyData, setHistoryData] = useState(() => api.analisisGuardados() || []);
+  const [activeChild, setActiveChild] = useState(() => elegirNino(api.analisisGuardados() || [], location.state?.nino));
+  const [loading, setLoading] = useState(() => !api.analisisGuardados());
   const [detalle, setDetalle] = useState(null);
+
+  // Volver a entrar con otro niño pedido estando ya en el Historial.
+  const [visita, setVisita] = useState(location.key);
+  if (visita !== location.key) {
+    setVisita(location.key);
+    if (location.state?.nino) setActiveChild(location.state.nino);
+  }
 
   // Refresco simple (tras asignar un independiente). No cambia el niño activo.
   const recargar = async () => {
@@ -42,15 +68,7 @@ const History = () => {
       try {
         const data = await api.getAnalisis();
         setHistoryData(data);
-        const nombres = [];
-        let indep = false;
-        for (const it of data) {
-          if (it.independiente) { indep = true; continue; }
-          const n = (it.contexto_nino?.nombre || '').trim() || 'Sin nombre';
-          if (!nombres.includes(n)) nombres.push(n);
-        }
-        if (nombres.length) setActiveChild(nombres[0]);
-        else if (indep) setActiveChild(INDEP);
+        setActiveChild((actual) => elegirNino(data, null, actual));
       } catch (err) {
         console.error('Error fetching history:', err);
       } finally {
@@ -84,8 +102,9 @@ const History = () => {
 
   const activeChildName = esIndep ? 'Dibujos independientes' : activeChild;
 
-  // Regla de alerta orientativa (utils/alerta.js); no aplica a dibujos independientes.
-  const senal = esIndep ? null : senalParaAcompanar(activeSessions);
+  // «Señal para acompañar» del niño (utils/alerta.js), compacta: se despliega en
+  // la campana de notificaciones. No aplica a dibujos independientes.
+  const avisoSenal = esIndep ? null : notificacionesDe(activeSessions).find((n) => n.tipo === 'senal');
 
   const handleDeleted = (id) => {
     setHistoryData(prev => prev.filter(a => a._id !== id));
@@ -113,6 +132,18 @@ const History = () => {
             <div className="page-title">Historial <span>emocional</span></div>
           </div>
           <div className="topbar-right">
+            {avisoSenal && (
+              <button
+                type="button"
+                className="senal-chip"
+                onClick={() => abrirNotificacion(avisoSenal.id)}
+                title={`Ver la señal para acompañar a ${activeChildName}`}
+                aria-label={`Señal para acompañar a ${activeChildName}`}
+              >
+                <AlertTriangle size={16} />
+                <span className="senal-chip-texto">Señal para acompañar</span>
+              </button>
+            )}
             <button
               className="btn-new"
               onClick={() => {
@@ -127,18 +158,6 @@ const History = () => {
             </button>
           </div>
         </div>
-
-        {senal && (
-          <div className="alert-banner">
-            <div className="alert-icon">
-              <AlertTriangle color="#f87171" size={20} />
-            </div>
-            <div className="alert-text">
-              <div className="alert-title">Señal para acompañar — {activeChildName}</div>
-              <div className="alert-sub">{textoSenal(senal, activeChildName)} Podría ser útil conversar con calma o, si lo consideras, con un profesional. Esto es orientativo, no un diagnóstico.</div>
-            </div>
-          </div>
-        )}
 
         {loading ? (
           <div style={{padding: '20px', color: 'var(--muted)'}}>Cargando historial...</div>

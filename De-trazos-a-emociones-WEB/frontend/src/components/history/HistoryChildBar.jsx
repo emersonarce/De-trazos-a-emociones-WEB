@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Image as ImageIcon } from 'lucide-react';
 import './HistoryChildBar.css';
 import { useAnalisisSesion } from '../../context/AnalisisSesionContext';
+import { textoEdad } from '../../utils/emociones';
 
 const HistoryChildBar = ({ childrenList, activeChild, setActiveChild, hayIndependientes, independientesKey }) => {
   const navigate = useNavigate();
@@ -19,12 +20,14 @@ const HistoryChildBar = ({ childrenList, activeChild, setActiveChild, hayIndepen
         ];
         const style = colors[i % colors.length];
         const initials = child.nombre ? child.nombre.substring(0, 2).toUpperCase() : '?';
+        // La edad de hoy si hay fecha de nacimiento (como en el Inicio), no la del último dibujo.
+        const edad = textoEdad(child);
 
         return (
           <div key={i} className={`child-pill ${activeChild === child.nombre ? 'active' : ''}`} onClick={() => setActiveChild(child.nombre)}>
             <div className="child-avatar" style={{background: style.bg, color: style.color}}>{initials}</div>
             <span className="child-name">{child.nombre}</span>
-            {child.edad && <span className="child-age">· {child.edad} años</span>}
+            {edad && <span className="child-age">· {edad}</span>}
           </div>
         );
       })}

@@ -132,6 +132,7 @@ Plantilla disponible en `backend/.env.example`.
 - Las pruebas reales con Ollama (modelo `minicpm-v`) se hacen en otro equipo, después del push. Al terminar cada paso, indicar exactamente qué probar allá, con qué usuarios de prueba y qué resultado esperar.
 - Si algo no se puede verificar en esta máquina, decirlo explícitamente en vez de asumir que funciona.
 - MongoDB Atlas a veces falla aquí con `querySrv EREFUSED` (DNS intermitente de WSL): anteponer `DNS_SERVERS=8.8.8.8,1.1.1.1` al comando.
+- La latencia hacia Atlas desde aquí varía mucho: la misma consulta (GET /analisis del usuario demo, ~1 MB) tarda de 0,3 s a más de 100 s. Para medir rendimiento, intercalar las mediciones y comparar medianas; una sola medición no prueba nada.
 
 ## 4. Plan de trabajo
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import './Dashboard.css';
 import { api } from '../api';
-import { emotionVisual, emocionPredominante, infoCumple } from '../utils/emociones';
+import { emotionVisual, emocionPredominante } from '../utils/emociones';
 
 import Sidebar from '../components/layout/Sidebar';
 import ChildSwitcher from '../components/dashboard/ChildSwitcher';
@@ -13,13 +13,20 @@ import ComparisonSection from '../components/dashboard/ComparisonSection';
 import AnalysisDetailModal from '../components/common/AnalysisDetailModal';
 import BrandHeader from '../components/common/BrandHeader';
 import IconoAnimo from '../components/dashboard/IconoAnimo';
-import BirthdayBanner from '../components/dashboard/BirthdayBanner';
 
 const Dashboard = () => {
   const location = useLocation();
   // Permite llegar desde "Mis niños" con un niño ya seleccionado.
   const [activeChild, setActiveChild] = useState(location.state?.nino || null);
-  const [historyData, setHistoryData] = useState([]);
+  // Volver a entrar con otro niño pedido (por ejemplo, desde una notificación) estando ya aquí.
+  const [visita, setVisita] = useState(location.key);
+  if (visita !== location.key) {
+    setVisita(location.key);
+    if (location.state?.nino) setActiveChild(location.state.nino);
+  }
+  // Si ya se trajeron en esta sesión, se muestran al instante mientras llegan los actuales.
+  const [historyData, setHistoryData] = useState(() => api.analisisGuardados() || []);
+  const [cargando, setCargando] = useState(() => !api.analisisGuardados());
   const [detalle, setDetalle] = useState(null);
 
   const recargar = async () => {
@@ -28,6 +35,8 @@ const Dashboard = () => {
       setHistoryData(data);
     } catch (error) {
       console.error('Error cargando dashboard:', error);
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -67,11 +76,6 @@ const Dashboard = () => {
   const emocionSel = selected ? emocionPredominante(selected.analisis) : null;
   const visualSel = emotionVisual(children.length > 0 ? emocionSel || '' : '');
 
-  // Cumpleaños de hoy o de los próximos días (DIAS_AVISO_CUMPLE) entre los niños registrados.
-  const cumples = children
-    .map((c) => ({ nino: c, cumple: infoCumple(c.fecha_nacimiento) }))
-    .filter((x) => x.cumple);
-
   return (
     <div className="dashboard-container">
       <div className="bg-orb orb-1"></div>
@@ -83,8 +87,6 @@ const Dashboard = () => {
       <main className="main">
         <BrandHeader />
 
-        <BirthdayBanner cumples={cumples} />
-
         {/* WELCOME */}
         <div className="welcome" data-tour="dash">
           <div className="welcome-left">
@@ -95,15 +97,28 @@ const Dashboard = () => {
               ¿Cómo está <span>{selected?.nombre && selected.nombre !== 'Sin nombre' ? selected.nombre : 'tu niño/a'}</span> hoy?
             </div>
             <div className="welcome-sub">
-              {children.length > 0
-                ? `Tienes ${children.length} niño(s) registrados.`
-                : 'Aún no tienes niños registrados. Realiza un análisis con contexto para comenzar el seguimiento.'}
+              {cargando
+                ? 'Cargando tus datos…'
+                : children.length > 0
+                  ? `Tienes ${children.length} niño(s) registrados.`
+                  : 'Aún no tienes niños registrados. Realiza un análisis con contexto para comenzar el seguimiento.'}
             </div>
           </div>
           <IconoAnimo visual={visualSel} emocion={children.length > 0 ? emocionSel : null} />
         </div>
 
-        {children.length === 0 ? (
+        {cargando ? (
+          // Esqueleto mientras llegan los análisis (antes decía que no había niños).
+          <div className="dash-esqueleto" aria-busy="true" aria-label="Cargando datos">
+            <div className="esq-fila">
+              {[0, 1, 2, 3].map((i) => <span key={i} className="esq esq-chip" />)}
+            </div>
+            <div className="esq-grid">
+              <span className="esq esq-tarjeta" />
+              <span className="esq esq-tarjeta" />
+            </div>
+          </div>
+        ) : children.length === 0 ? (
           <div className="dashboard-card" style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)' }}>
             Todavía no hay niños registrados. Usa <strong>Agregar niño</strong> o <strong>Nuevo análisis</strong> para comenzar. Los dibujos analizados de forma independiente se ven en el Historial.
           </div>

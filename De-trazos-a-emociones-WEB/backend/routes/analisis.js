@@ -152,9 +152,11 @@ router.post(
 
 router.get("/analisis", verificarToken, async (req, res) => {
     try {
+        // lean(): objetos planos, sin armar documentos de Mongoose (la lista
+        // puede tener cientos de análisis y solo se envía como JSON).
         const historial = await Analysis.find({
             usuarioId: req.usuario.id
-        }).sort({ fecha: -1 });
+        }).sort({ fecha: -1 }).lean();
 
         res.json(historial);
 

@@ -290,14 +290,6 @@
 :root[data-theme="light"] .history-wrapper .btn-outline-small:hover {
   background: rgba(17, 24, 39, 0.07);
 }
-:root[data-theme="light"] .bday-card {
-  background: linear-gradient(90deg, var(--accent-dim), var(--t-ok-bg));
-  border-color: rgba(109, 92, 224, 0.25);
-}
-:root[data-theme="light"] .bday-card.bday-hoy {
-  background: linear-gradient(90deg, rgba(242, 115, 109, 0.14), rgba(251, 191, 36, 0.16) 50%, var(--accent-dim));
-  border-color: rgba(217, 119, 6, 0.35);
-}
 :root[data-theme="light"] .alert-card {
   background: var(--t-danger-bg);
   border-color: rgba(220, 38, 38, 0.18);
@@ -330,13 +322,6 @@
 :root[data-theme="light"] .alert-card.ok .alert-icono {
   background: rgba(13, 148, 136, 0.12);
   color: var(--t-ok);
-}
-:root[data-theme="light"] .history-wrapper .alert-banner {
-  background: var(--t-danger-bg);
-  border-color: rgba(220, 38, 38, 0.18);
-}
-:root[data-theme="light"] .history-wrapper .alert-icon {
-  background: rgba(220, 38, 38, 0.1);
 }
 :root[data-theme="light"] .week-badge,
 :root[data-theme="light"] .qa-icon.teal {

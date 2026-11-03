@@ -104,79 +104,43 @@
   box-shadow: 0 6px 20px rgba(139, 121, 242, 0.4);
 }
 
-/* BANNER DE ALERTA */
-.history-wrapper .alert-banner {
-  background: rgba(248, 113, 113, 0.08);
-  border: 1px solid rgba(248, 113, 113, 0.2);
-  backdrop-filter: blur(10px);
-  border-radius: 14px;
-  padding: 16px 20px;
-  display: flex;
+/* SEÑAL PARA ACOMPAÑAR, compacta: al tocarla se despliega en la campana. */
+.history-wrapper .senal-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-  animation: fadeUp 0.6s 0.1s ease both;
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.history-wrapper .alert-banner:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(248, 113, 113, 0.15);
-}
-
-.history-wrapper .alert-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: rgba(248, 113, 113, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  animation: pulse-alert 2s infinite;
-}
-
-@keyframes pulse-alert {
-  0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(248, 113, 113, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
-}
-
-.history-wrapper .alert-text {
-  flex: 1;
-}
-
-.history-wrapper .alert-title {
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: #f87171;
-  margin-bottom: 2px;
-}
-
-.history-wrapper .alert-sub {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.history-wrapper .alert-btn {
-  font-size: 12px;
+  gap: 8px;
+  padding: 11px 16px;
+  border: 1px solid color-mix(in srgb, var(--coral) 35%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--coral) 10%, transparent);
+  color: var(--coral);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
   font-weight: 600;
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.12);
-  border: none;
-  border-radius: 8px;
-  padding: 8px 14px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
-
-.history-wrapper .alert-btn:hover {
-  background: rgba(248, 113, 113, 0.2);
-  transform: scale(1.05);
+.history-wrapper .senal-chip:hover {
+  background: color-mix(in srgb, var(--coral) 16%, transparent);
+  border-color: color-mix(in srgb, var(--coral) 55%, transparent);
 }
-
-
+.history-wrapper .senal-chip:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 2px;
+}
+/* En pantallas angostas queda solo el ícono, para no apretar el título. */
+@media (max-width: 700px) {
+  .history-wrapper .topbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .history-wrapper .senal-chip {
+    padding: 11px 12px;
+  }
+  .history-wrapper .senal-chip-texto {
+    display: none;
+  }
+}
 
 /* GRID DE LA PARTE SUPERIOR */
 .history-wrapper .grid-top {

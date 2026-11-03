@@ -8,7 +8,27 @@ import { limpiarResultadoIA } from "./utils/textoIA";
 const limpiarSesion = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
+  descartarCacheAnalisis();
 };
+
+/* =========================
+   CACHÉ DE LOS ANÁLISIS
+   La página y la campana de avisos piden la lista al mismo tiempo, y cada
+   pantalla la vuelve a pedir: así sale una sola petición a la vez y la pantalla
+   siguiente puede mostrar al instante lo que ya había mientras llega lo nuevo.
+   Cualquier cambio en los análisis la descarta y lo avisa con un evento.
+========================= */
+
+export const EVENTO_ANALISIS_CAMBIARON = "analisis:cambiaron";
+let analisisCache = null; // { token, datos }
+let analisisEnCurso = null; // { token, promesa }
+let versionCache = 0; // una lectura que empezó antes de un cambio no se guarda
+
+function descartarCacheAnalisis() {
+  versionCache++;
+  analisisCache = null;
+  analisisEnCurso = null;
+}
 
 // La sesión dejó de ser válida: limpiamos y mandamos al login obligatorio.
 const forzarLogin = () => {
@@ -34,6 +54,11 @@ export const tokenVigente = () => {
 // fetch autenticado: agrega el Bearer y, ante un 401/403, cierra la sesión.
 const authFetch = async (url, options = {}) => {
   const token = localStorage.getItem("token");
+  // Guardar, borrar, reanalizar…: la caché se descarta antes (una lectura en
+  // curso ya no vale) y después (por si alguna empezó durante el cambio).
+  const cambiaAnalisis =
+    (options.method || "GET").toUpperCase() !== "GET" && /\/(analisis|analizar-imagen)/.test(url);
+  if (cambiaAnalisis) descartarCacheAnalisis();
 
   const response = await fetch(url, {
     ...options,
@@ -42,6 +67,11 @@ const authFetch = async (url, options = {}) => {
       Authorization: `Bearer ${token}`,
     },
   });
+
+  if (cambiaAnalisis) {
+    descartarCacheAnalisis();
+    window.dispatchEvent(new Event(EVENTO_ANALISIS_CAMBIARON));
+  }
 
   // Solo el 401 (token ausente, inválido o expirado) cierra la sesión. El 403
   // es "no tienes permiso para esto" y NO debe desloguear: el llamador muestra
@@ -110,23 +140,45 @@ export const api = {
   },
 
   getAnalisis: async () => {
-    const response = await authFetch(`${API_URL}/analisis`);
+    const token = localStorage.getItem("token");
+    if (analisisEnCurso && analisisEnCurso.token === token) return analisisEnCurso.promesa;
+    const version = versionCache;
 
-    const data = await jsonSeguro(response);
+    const promesa = (async () => {
+      const response = await authFetch(`${API_URL}/analisis`);
 
-    if (!response.ok) {
-      throw new Error(data.error || "Error al obtener análisis");
+      const data = await jsonSeguro(response);
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al obtener análisis");
+      }
+
+      // Textos de la IA limpios para todas las pantallas (análisis guardados
+      // antes de que el backend los limpiara: caracteres en chino, "Melancolia alta"…).
+      return Array.isArray(data)
+        ? data.map((a) =>
+            a && a.resultado_ia && typeof a.resultado_ia === "object"
+              ? { ...a, resultado_ia: limpiarResultadoIA(a.resultado_ia) }
+              : a
+          )
+        : data;
+    })();
+
+    analisisEnCurso = { token, promesa };
+    try {
+      const datos = await promesa;
+      if (version === versionCache) analisisCache = { token, datos };
+      return datos;
+    } finally {
+      if (analisisEnCurso && analisisEnCurso.promesa === promesa) analisisEnCurso = null;
     }
+  },
 
-    // Textos de la IA limpios para todas las pantallas (análisis guardados
-    // antes de que el backend los limpiara: caracteres en chino, "Melancolia alta"…).
-    return Array.isArray(data)
-      ? data.map((a) =>
-          a && a.resultado_ia && typeof a.resultado_ia === "object"
-            ? { ...a, resultado_ia: limpiarResultadoIA(a.resultado_ia) }
-            : a
-        )
-      : data;
+  // Los últimos análisis traídos en esta sesión, o null: para pintar una
+  // pantalla al instante mientras getAnalisis trae los actuales.
+  analisisGuardados: () => {
+    const token = localStorage.getItem("token");
+    return analisisCache && analisisCache.token === token ? analisisCache.datos : null;
   },
 
   analizarImagen: async (formData, signal) => {

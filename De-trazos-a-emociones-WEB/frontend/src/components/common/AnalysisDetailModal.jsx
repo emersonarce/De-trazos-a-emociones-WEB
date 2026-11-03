@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ZoomIn, RefreshCw, FileDown, Undo2, ImageOff, Timer } from 'lucide-react';
 import MedicionImagen from './MedicionImagen';
 import './AnalysisDetailModal.css';
@@ -239,10 +240,13 @@ const AnalysisDetailModal = ({ analisis, analisisDelNino = [], onClose, onActual
         </div>
       </div>
 
-      {zoom && imgUrl && (
+      {/* En <body>: el backdrop-filter de .adm-overlay vuelve relativo a él el
+          position: fixed de sus hijos, y con la ventana desplazada el visor salía corrido. */}
+      {zoom && imgUrl && createPortal(
         <div className="adm-lightbox" onClick={(e) => { e.stopPropagation(); setZoom(false); }} title="Cerrar">
           <img src={imgUrl} alt="Dibujo ampliado" />
-        </div>
+        </div>,
+        document.body
       )}
 
       {exportar && (

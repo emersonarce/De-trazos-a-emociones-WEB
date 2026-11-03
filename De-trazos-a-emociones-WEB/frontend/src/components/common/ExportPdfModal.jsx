@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, FileDown } from 'lucide-react';
 import { api } from '../../api';
 import { exportarAnalisis } from '../../utils/exportarPdf';
@@ -69,7 +70,9 @@ const ExportPdfModal = ({ analisis, imgUrl, onClose }) => {
     }
   };
 
-  return (
+  // En <body>, para no quedar corrido dentro de un modal con backdrop-filter
+  // (por ejemplo, el detalle del análisis desplazado hacia abajo).
+  return createPortal(
     <div
       className="exp-overlay"
       onClick={(e) => {
@@ -121,7 +124,8 @@ const ExportPdfModal = ({ analisis, imgUrl, onClose }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

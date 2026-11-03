@@ -50,4 +50,7 @@ const AnalysisSchema = new mongoose.Schema({
     }
 });
 
+// El historial de cada usuario, del más reciente al más antiguo (GET /analisis).
+AnalysisSchema.index({ usuarioId: 1, fecha: -1 });
+
 module.exports = mongoose.model("Analysis", AnalysisSchema);
