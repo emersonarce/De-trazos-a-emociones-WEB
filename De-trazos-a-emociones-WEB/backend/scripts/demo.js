@@ -3,6 +3,8 @@
 // inventados en una base de datos APARTE (la de MONGO_URI con «_demo» al final);
 // la base real no se toca. Las imágenes van a backend/uploads con el prefijo demo-.
 //   npm run demo:crear    borra el banco anterior y crea uno nuevo
+//   npm run demo:crear -- 2026-11-05   igual, armado para ese día: los
+//                         cumpleaños y las alertas caen ahí (p. ej. una presentación)
 //   npm run demo:borrar   borra la base demo y las imágenes demo-*
 //   npm run dev:demo      arranca el backend con la base demo
 const path = require("path");
@@ -18,7 +20,7 @@ const Analysis = require("../models/Analysis");
 const { medirImagen } = require("../services/medicionImagen");
 const { validarPassword } = require("../utils/password");
 const { nombreBaseDemo } = require("./demo/base");
-const { USUARIO_DEMO, azar, generarBanco, resultadoIA } = require("./demo/datos");
+const { USUARIO_DEMO, azar, fechaBanco, generarBanco, resultadoIA } = require("./demo/datos");
 const { dibujo, GRUPOS_DIBUJO } = require("./demo/dibujos");
 
 const UPLOADS = path.join(__dirname, "..", "uploads");
@@ -42,7 +44,8 @@ async function borrar() {
     console.log(`Base «${base}» borrada y ${imagenes.length} imágenes demo eliminadas.`);
 }
 
-async function crear() {
+async function crear(textoFecha) {
+    const hoy = fechaBanco(textoFecha); // antes de borrar: una fecha mal escrita no toca nada
     await borrar();
     fs.mkdirSync(UPLOADS, { recursive: true });
     const r = azar(7);
@@ -62,7 +65,7 @@ async function crear() {
     const errorPassword = validarPassword(USUARIO_DEMO.password);
     if (errorPassword) throw new Error(`Contraseña demo no válida: ${errorPassword}.`);
     const usuario = await User.create({ ...USUARIO_DEMO, password: await bcrypt.hash(USUARIO_DEMO.password, 12) });
-    const banco = generarBanco(new Date());
+    const banco = generarBanco(hoy);
     const docs = banco.map((item, i) => {
         const d = dibujos[item.grupo][Math.floor(r() * VERSIONES)];
         // Un archivo por análisis: al borrar un análisis la app borra su imagen.
@@ -88,16 +91,19 @@ async function crear() {
     console.log(`\nBanco de prueba creado en «${mongoose.connection.db.databaseName}»: ${docs.length} análisis.`);
     console.log(Object.entries(porNino).map(([n, c]) => `  ${n}: ${c}`).join("\n"));
     console.log(`\nPara verlo: npm run dev:demo (en lugar de npm run dev) y entra con ${USUARIO_DEMO.email} / ${USUARIO_DEMO.password}.`);
-    console.log("Luna cumple años hoy y Tomi en 2 días. Alertas: Tomi (seguidos), Sofi (semana) y Mateo (mes).");
+    console.log(textoFecha
+        ? `Armado para el ${textoFecha}: ese día Luna cumple años y Tomi 2 días después.`
+        : "Luna cumple años hoy y Tomi en 2 días.");
+    console.log("Alertas: Tomi (seguidos), Sofi (semana) y Mateo (mes).");
 }
 
 const acciones = { crear, borrar };
 const accion = acciones[process.argv[2]];
 if (!accion) {
-    console.log("Uso: node backend/scripts/demo.js crear | borrar");
+    console.log("Uso: node backend/scripts/demo.js crear [AAAA-MM-DD] | borrar");
     process.exit(1);
 }
-accion()
+accion(process.argv[3])
     .then(() => mongoose.disconnect())
     .catch(async (e) => {
         console.error(`Error: ${e.message}`);

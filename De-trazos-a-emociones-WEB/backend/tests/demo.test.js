@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { nombreBaseDemo } = require("../scripts/demo/base");
-const { generarBanco, USUARIO_DEMO } = require("../scripts/demo/datos");
+const { fechaBanco, generarBanco, USUARIO_DEMO } = require("../scripts/demo/datos");
 const { validarPassword } = require("../utils/password");
 const { dibujo, GRUPOS_DIBUJO } = require("../scripts/demo/dibujos");
 
@@ -14,6 +14,18 @@ test("demo: la base de prueba siempre termina en _demo", () => {
 
 test("demo: la contraseña del usuario demo cumple la política de contraseñas", () => {
     assert.equal(validarPassword(USUARIO_DEMO.password), null);
+});
+
+test("demo: el banco se puede armar para otro día (p. ej. una presentación)", () => {
+    const dia = fechaBanco("2026-11-05");
+    assert.deepEqual([dia.getFullYear(), dia.getMonth(), dia.getDate()], [2026, 10, 5]);
+    assert.throws(() => fechaBanco("05/11/2026"), /AAAA-MM-DD/);
+    assert.throws(() => fechaBanco("2026-02-30"), /AAAA-MM-DD/);
+    // Luna cumple años justo ese día y Tomi dos días después.
+    const banco = generarBanco(dia);
+    const nacimiento = (nombre) => banco.find((a) => a.contexto.nombre === nombre).contexto.fecha_nacimiento;
+    assert.equal(nacimiento("Luna").slice(5), "11-05");
+    assert.equal(nacimiento("Tomi").slice(5), "11-07");
 });
 
 test("demo: el banco trae los casos que se quieren ver", async () => {

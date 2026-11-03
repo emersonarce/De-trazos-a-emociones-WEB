@@ -23,6 +23,18 @@ function azar(semilla) {
 }
 const elegir = (r, lista) => lista[Math.floor(r() * lista.length)];
 
+// Día para el que se arma el banco: «AAAA-MM-DD» (por ejemplo, el de una
+// presentación) o, sin texto, hoy. A mediodía, así ningún cambio de hora mueve el día.
+function fechaBanco(texto) {
+    if (!texto) return new Date();
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(texto);
+    const fecha = m && new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12);
+    if (!fecha || fecha.getMonth() !== Number(m[2]) - 1 || fecha.getDate() !== Number(m[3])) {
+        throw new Error(`Fecha no válida: «${texto}». Usa AAAA-MM-DD, por ejemplo 2026-11-05.`);
+    }
+    return fecha;
+}
+
 // Nombres de emoción como los escribe el modelo, por grupo de la app.
 const EMOCIONES = {
     alegria: ["Alegría", "Felicidad", "Entusiasmo"],
@@ -221,4 +233,4 @@ function resultadoIA(item, dib, medicion, r) {
     };
 }
 
-module.exports = { USUARIO_DEMO, azar, generarBanco, resultadoIA };
+module.exports = { USUARIO_DEMO, azar, fechaBanco, generarBanco, resultadoIA };
