@@ -42,7 +42,9 @@ router.post("/register", async (req, res) => {
 
         if (usuarioExistente) {
             return res.status(409).json({
-                message: "El correo ya está registrado"
+                message: usuarioExistente.estado === "eliminado"
+                    ? "Ese correo es de una cuenta eliminada. Si quieres recuperarla, pídele al administrador que la restaure."
+                    : "El correo ya está registrado"
             });
         }
 
@@ -156,6 +158,12 @@ router.post("/login", async (req, res) => {
         if (usuario.estado === "rechazado") {
             return res.status(403).json({
                 message: "Tu solicitud de registro fue rechazada. Comunícate con el administrador."
+            });
+        }
+
+        if (usuario.estado === "eliminado") {
+            return res.status(403).json({
+                message: "Esta cuenta fue eliminada. Si fue un error, pídele al administrador que la restaure."
             });
         }
 

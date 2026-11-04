@@ -219,9 +219,17 @@ const Configuracion = () => {
               <button type="button" className="pwd-btn" onClick={cambiarDeCuenta}>
                 <Repeat size={16} /> Cambiar de cuenta
               </button>
-              <button type="button" className="cuenta-eliminar pequeno" onClick={() => setConfirmarPaso(1)}>
-                <Trash2 size={14} /> Eliminar cuenta
-              </button>
+              {/* Eliminar la cuenta exige un permiso que asigna el administrador
+                  (evita borrados por accidente); los administradores no pueden. */}
+              {perfil.esAdmin ? (
+                <p className="cuenta-nota">Un administrador no puede eliminar su propia cuenta.</p>
+              ) : perfil.permisos?.eliminarCuenta ? (
+                <button type="button" className="cuenta-eliminar pequeno" onClick={() => setConfirmarPaso(1)}>
+                  <Trash2 size={14} /> Eliminar cuenta
+                </button>
+              ) : (
+                <p className="cuenta-nota">Para eliminar tu cuenta, pídele el permiso al administrador.</p>
+              )}
             </div>
           </section>
         )}
@@ -331,8 +339,8 @@ const Configuracion = () => {
         abierto={confirmarPaso === 1}
         peligro
         titulo="Eliminar cuenta"
-        mensaje="Se borrarán tu cuenta y todos tus análisis e imágenes."
-        detalle="Es permanente y no se puede deshacer."
+        mensaje="Tu cuenta quedará desactivada y ya no podrás iniciar sesión."
+        detalle="El administrador podrá restaurarla, si fue un error, o eliminarla definitivamente con todos tus análisis e imágenes."
         textoConfirmar="Continuar"
         onConfirmar={() => setConfirmarPaso(2)}
         onCancelar={() => setConfirmarPaso(0)}
@@ -341,9 +349,9 @@ const Configuracion = () => {
         abierto={confirmarPaso === 2}
         peligro
         titulo="Confirmar eliminación"
-        mensaje="¿Seguro que quieres eliminar tu cuenta definitivamente?"
-        detalle="Esta acción no se puede deshacer."
-        textoConfirmar="Eliminar definitivamente"
+        mensaje="¿Seguro que quieres eliminar tu cuenta?"
+        detalle="Se cerrará tu sesión."
+        textoConfirmar="Eliminar cuenta"
         cargando={eliminando}
         onConfirmar={eliminarCuenta}
         onCancelar={() => setConfirmarPaso(0)}

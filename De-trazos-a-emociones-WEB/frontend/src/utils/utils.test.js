@@ -243,3 +243,11 @@ test('tiempo exacto en un solo campo «hh:mm» (duración, sin a. m. ni p. m.)',
   assert.equal(textoDuracion('un buen rato'), '');
   assert.equal(textoDuracion(''), '');
 });
+
+test('avisos de cuenta eliminada: al iniciar sesión y al registrarse con ese correo', () => {
+  const login = avisoDeError(new Error('Esta cuenta fue eliminada. Si fue un error, pídele al administrador que la restaure.'));
+  assert.equal(login.titulo, 'Esta cuenta fue eliminada');
+  const registro = avisoDeError(new Error('Ese correo es de una cuenta eliminada. Si quieres recuperarla, pídele al administrador que la restaure.'));
+  assert.equal(registro.titulo, 'Este correo es de una cuenta eliminada');
+  assert.deepEqual(registro.campos, ['email']);
+});

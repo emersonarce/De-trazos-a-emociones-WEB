@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Check, X, Inbox, RefreshCw, Ban, Trash2 } from 'lucide-react';
+import { ShieldCheck, Check, X, Inbox, RefreshCw, Ban, Trash2, RotateCcw } from 'lucide-react';
 import { api } from '../api';
 import Sidebar from '../components/layout/Sidebar';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -11,7 +11,17 @@ const FILTROS = [
   { key: 'pendiente', label: 'Pendientes' },
   { key: 'aprobado', label: 'Aprobados' },
   { key: 'rechazado', label: 'Rechazados' },
+  // Cuentas que su usuario eliminó (con permiso): están desactivadas, con sus
+  // datos, hasta que el administrador las restaure o las elimine definitivamente.
+  { key: 'eliminado', label: 'Cuentas eliminadas' },
 ];
+
+const VACIO = {
+  pendiente: 'pendientes',
+  aprobado: 'aprobadas',
+  rechazado: 'rechazadas',
+  eliminado: 'eliminadas',
+};
 
 const ROL_LABEL = {
   padre: 'Padre / Madre',
@@ -157,15 +167,7 @@ const Admin = () => {
         ) : visibles.length === 0 ? (
           <div className="admin-empty">
             <Inbox size={40} />
-            <p>
-              No hay cuentas{' '}
-              {filtro === 'pendiente'
-                ? 'pendientes'
-                : filtro === 'aprobado'
-                ? 'aprobadas'
-                : 'rechazadas'}
-              .
-            </p>
+            <p>No hay cuentas {VACIO[filtro]}.</p>
           </div>
         ) : (
           <div className="admin-list">
@@ -183,7 +185,9 @@ const Admin = () => {
                     ) : (
                       <span className="admin-chip vacio">Sin institución</span>
                     )}
-                    <span className="admin-fecha">{formatFecha(u.createdAt)}</span>
+                    <span className="admin-fecha">
+                      {filtro === 'eliminado' ? `Eliminada el ${formatFecha(u.eliminadoEn)}` : formatFecha(u.createdAt)}
+                    </span>
                   </div>
                 </div>
 
@@ -208,11 +212,17 @@ const Admin = () => {
                       <Check size={16} /> Habilitar
                     </button>
                   )}
+                  {filtro === 'eliminado' && (
+                    <button className="btn-aprobar" disabled={procesando === u._id} onClick={() => resolver(u._id, 'restaurar')}>
+                      <RotateCcw size={16} /> Restaurar
+                    </button>
+                  )}
                   <button className="btn-eliminar-admin" disabled={procesando === u._id} onClick={() => setPorBorrar(u)}>
-                    <Trash2 size={16} /> Eliminar
+                    <Trash2 size={16} /> {filtro === 'eliminado' ? 'Eliminar definitivamente' : 'Eliminar'}
                   </button>
                 </div>
 
+                {filtro !== 'eliminado' && (
                 <div className="admin-gestion">
                   <label className="adm-g-field">
                     <span>Rol</span>
@@ -244,6 +254,20 @@ const Admin = () => {
                     />
                     Descargar PDF
                   </label>
+                  <label
+                    className="adm-g-check"
+                    title={u.esAdmin
+                      ? 'Un administrador no puede eliminar su propia cuenta'
+                      : 'Aun con este permiso, la cuenta no se borra: queda en «Cuentas eliminadas» hasta que decidas'}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!u.permisos?.eliminarCuenta}
+                      disabled={u.esAdmin || guardandoGestion === u._id}
+                      onChange={(e) => actualizar(u, { permisos: { eliminarCuenta: e.target.checked } })}
+                    />
+                    Eliminar su cuenta
+                  </label>
                   <label className="adm-g-check" title={u._id === miId ? 'No puedes cambiar tu propio rol de administrador' : ''}>
                     <input
                       type="checkbox"
@@ -254,6 +278,7 @@ const Admin = () => {
                     Administrador
                   </label>
                 </div>
+                )}
               </div>
             ))}
           </div>
@@ -263,10 +288,12 @@ const Admin = () => {
       <ConfirmDialog
         abierto={!!porBorrar}
         peligro
-        titulo="Eliminar cuenta"
-        mensaje={porBorrar ? `¿Eliminar la cuenta de ${porBorrar.nombre} ${porBorrar.apellido} (${porBorrar.email})?` : ''}
-        detalle="Se borrarán también todos sus análisis. Esta acción no se puede deshacer."
-        textoConfirmar="Eliminar"
+        titulo={filtro === 'eliminado' ? 'Eliminar definitivamente' : 'Eliminar cuenta'}
+        mensaje={porBorrar
+          ? `¿Eliminar ${filtro === 'eliminado' ? 'definitivamente ' : ''}la cuenta de ${porBorrar.nombre} ${porBorrar.apellido} (${porBorrar.email})?`
+          : ''}
+        detalle="Se borrarán también todos sus análisis e imágenes. Esta acción no se puede deshacer."
+        textoConfirmar={filtro === 'eliminado' ? 'Eliminar definitivamente' : 'Eliminar'}
         cargando={procesando === porBorrar?._id}
         onConfirmar={confirmarEliminar}
         onCancelar={() => setPorBorrar(null)}

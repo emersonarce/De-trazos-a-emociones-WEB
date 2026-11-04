@@ -316,6 +316,14 @@
   opacity: 1;
 }
 
+/* En lugar de "Eliminar cuenta" cuando no hay permiso (o es administrador) */
+.cuenta-nota {
+  margin: 0;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 /* Encabezado del recuadro Cuenta (título + switch de tema a un lado) */
 .cuenta-top {
   display: flex;

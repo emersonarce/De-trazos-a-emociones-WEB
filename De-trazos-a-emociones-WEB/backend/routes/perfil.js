@@ -5,7 +5,6 @@ const bcrypt = require("bcryptjs");
 const fs = require("fs");
 const path = require("path");
 const User = require("../models/User");
-const Analysis = require("../models/Analysis");
 const verificarToken = require("../middleware/authMiddleware");
 const { validarPassword } = require("../utils/password");
 const { permisosEfectivos } = require("../utils/permisos");
@@ -40,10 +39,16 @@ GET /perfil/me
 router.get("/me", verificarToken, async (req, res) => {
     try {
         const usuario = await User.findById(req.usuario.id)
-            .select("nombre apellido email rol institucion esAdmin fotoPerfil permisos");
+            .select("nombre apellido email rol institucion estado esAdmin fotoPerfil permisos");
 
         if (!usuario) {
             return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        // Cuenta eliminada con una sesión aún abierta (p. ej. en otro equipo):
+        // el 401 hace que la app cierre la sesión.
+        if (usuario.estado === "eliminado") {
+            return res.status(401).json({ message: "Esta cuenta fue eliminada" });
         }
 
         return res.json({
@@ -160,33 +165,35 @@ router.post("/cambiar-password", verificarToken, async (req, res) => {
 
 /*
 ========================================
-ELIMINAR LA CUENTA Y TODOS SUS DATOS
+ELIMINAR LA CUENTA (QUEDA DESACTIVADA)
 DELETE /perfil
+Solo con el permiso eliminarCuenta, que asigna el administrador. La cuenta no
+se borra: queda con estado "eliminado", con todos sus datos, y ya no puede
+iniciar sesión. El administrador la ve en «Cuentas eliminadas» y decide si la
+restaura o la elimina definitivamente (DELETE /admin/usuarios/:id).
 ========================================
 */
 
 router.delete("/", verificarToken, async (req, res) => {
     try {
-        const userId = req.usuario.id;
-
-        // Borrar las imágenes de los análisis del usuario.
-        const analisis = await Analysis.find({ usuarioId: userId }).select("ruta_imagen");
-        for (const a of analisis) {
-            if (a.ruta_imagen) {
-                const rutaFisica = path.join(uploadsDir, path.basename(a.ruta_imagen));
-                fs.unlink(rutaFisica, () => {});
-            }
-        }
-        await Analysis.deleteMany({ usuarioId: userId });
-
-        // Borrar la foto de perfil.
-        const usuario = await User.findById(userId).select("fotoPerfil");
-        if (usuario && usuario.fotoPerfil) {
-            const rutaFoto = path.join(perfilesDir, path.basename(usuario.fotoPerfil));
-            fs.unlink(rutaFoto, () => {});
+        const usuario = await User.findById(req.usuario.id);
+        if (!usuario) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
         }
 
-        await User.findByIdAndDelete(userId);
+        if (usuario.esAdmin) {
+            return res.status(400).json({ message: "Un administrador no puede eliminar su propia cuenta" });
+        }
+
+        if (!permisosEfectivos(usuario).eliminarCuenta) {
+            return res.status(403).json({
+                message: "No tienes permiso para eliminar tu cuenta. Pídeselo al administrador."
+            });
+        }
+
+        usuario.estado = "eliminado";
+        usuario.eliminadoEn = new Date();
+        await usuario.save();
 
         return res.json({ message: "Cuenta eliminada" });
     } catch (error) {

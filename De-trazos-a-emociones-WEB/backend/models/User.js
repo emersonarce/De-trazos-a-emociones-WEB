@@ -41,12 +41,20 @@ const UserSchema = new mongoose.Schema(
             default: ""
         },
 
-        // Estado de aprobación de la cuenta. Hasta que no esté "aprobado"
-        // el usuario no puede iniciar sesión.
+        // Estado de la cuenta. Hasta que no esté "aprobado" el usuario no
+        // puede iniciar sesión. "eliminado": el usuario eliminó su cuenta (con
+        // el permiso eliminarCuenta). No se borra: queda desactivada y con sus
+        // datos hasta que el administrador la restaure o la elimine
+        // definitivamente.
         estado: {
             type: String,
-            enum: ["pendiente", "aprobado", "rechazado"],
+            enum: ["pendiente", "aprobado", "rechazado", "eliminado"],
             default: "pendiente"
+        },
+
+        // Cuándo el usuario eliminó su cuenta (solo con estado "eliminado").
+        eliminadoEn: {
+            type: Date
         },
 
         // Administrador: puede aprobar o rechazar registros.
@@ -71,7 +79,11 @@ const UserSchema = new mongoose.Schema(
             // analizar un dibujo suelto con su descripción.
             conContexto: { type: Boolean },
             // Exportar / descargar PDF.
-            descargarPdf: { type: Boolean }
+            descargarPdf: { type: Boolean },
+            // Eliminar su propia cuenta. Nunca es automático (tampoco en las
+            // cuentas heredadas): lo asigna el administrador, para evitar
+            // borrados por accidente. Aun con él, la cuenta solo se desactiva.
+            eliminarCuenta: { type: Boolean }
         }
     },
     {

@@ -164,7 +164,8 @@ Definidas en `De-trazos-a-emociones-WEB/backend/.env` (ver plantilla en [`backen
 - Modo simulado (`AI_MODE=mock`) para probar el flujo sin Ollama.
 - **Acceso protegido:** todas las páginas privadas exigen sesión válida; si el token (24 h) expira, la app redirige al login.
 - **Registro con aprobación del administrador:** las cuentas nuevas quedan pendientes; el admin (definido por `ADMIN_EMAILS`) las aprueba o rechaza en `/admin` viendo nombre, correo, rol e institución.
-- **Menú de perfil/cuenta:** foto de perfil, ver correo, cerrar sesión, cambiar de cuenta y eliminar cuenta (con borrado en cascada).
+- **Menú de perfil/cuenta:** foto de perfil, ver correo, cerrar sesión, cambiar de cuenta y eliminar cuenta.
+- **Eliminar cuenta con permiso y sin borrados por accidente:** solo puede eliminar su cuenta quien tenga el permiso «Eliminar su cuenta», que asigna el administrador (nunca viene por defecto, tampoco en cuentas antiguas; un administrador no puede eliminar la suya). La cuenta no se borra: queda desactivada, con sus datos, y no puede iniciar sesión. El administrador la ve en «Cuentas eliminadas» de `/admin` y la restaura o la elimina definitivamente, con todos sus análisis e imágenes.
 - **Tema claro/oscuro y 4 paletas de color** (página de Configuración), guardado por dispositivo.
 - **Exportar a PDF** con selección de contenido (detalle del análisis y/o historial del niño).
 

@@ -38,6 +38,21 @@ export const avisoDeError = (error) => {
       texto: 'Si crees que es un error, comunícate con el administrador.',
     };
   }
+  if (/cuenta fue eliminada/i.test(msg)) {
+    return {
+      tipo: 'error',
+      titulo: 'Esta cuenta fue eliminada',
+      texto: 'Si fue un error, pídele al administrador que la restaure.',
+    };
+  }
+  if (/de una cuenta eliminada/i.test(msg)) {
+    return {
+      tipo: 'error',
+      titulo: 'Este correo es de una cuenta eliminada',
+      texto: 'Si quieres recuperarla, pídele al administrador que la restaure.',
+      campos: ['email'],
+    };
+  }
   if (/ya está registrado/i.test(msg)) {
     return {
       tipo: 'error',

@@ -15,8 +15,9 @@ const perfilesDir = path.join(uploadsDir, "perfiles");
 /*
 ========================================
 LISTAR USUARIOS POR ESTADO
-GET /admin/usuarios?estado=pendiente|aprobado|rechazado
-Por defecto devuelve los pendientes.
+GET /admin/usuarios?estado=pendiente|aprobado|rechazado|eliminado
+Por defecto devuelve los pendientes. Las eliminadas salen de la más reciente
+a la más antigua según cuándo se eliminaron.
 ========================================
 */
 
@@ -25,15 +26,15 @@ router.get("/usuarios", verificarToken, verificarAdmin, async (req, res) => {
         const { estado } = req.query;
 
         const filtro = {};
-        if (["pendiente", "aprobado", "rechazado"].includes(estado)) {
+        if (["pendiente", "aprobado", "rechazado", "eliminado"].includes(estado)) {
             filtro.estado = estado;
         } else {
             filtro.estado = "pendiente";
         }
 
         const usuarios = await User.find(filtro)
-            .select("nombre apellido email rol institucion estado esAdmin permisos createdAt")
-            .sort({ createdAt: -1 });
+            .select("nombre apellido email rol institucion estado esAdmin permisos createdAt eliminadoEn")
+            .sort(filtro.estado === "eliminado" ? { eliminadoEn: -1 } : { createdAt: -1 });
 
         // Se devuelven los permisos EFECTIVOS (admin = todo; cuentas heredadas =
         // acceso completo) para que el panel muestre el estado real.
@@ -47,6 +48,7 @@ router.get("/usuarios", verificarToken, verificarAdmin, async (req, res) => {
             estado: u.estado,
             esAdmin: u.esAdmin,
             createdAt: u.createdAt,
+            eliminadoEn: u.eliminadoEn,
             permisos: permisosEfectivos(u)
         }));
 
@@ -59,15 +61,18 @@ router.get("/usuarios", verificarToken, verificarAdmin, async (req, res) => {
 
 /*
 ========================================
-APROBAR O RECHAZAR UNA SOLICITUD
-PATCH /admin/usuarios/:id   body: { accion: "aprobar" | "rechazar" }
+APROBAR, RECHAZAR O RESTAURAR UNA CUENTA
+PATCH /admin/usuarios/:id   body: { accion: "aprobar" | "rechazar" | "restaurar" }
+"restaurar" devuelve una cuenta eliminada por su usuario a "aprobado", con
+todos sus datos. Una cuenta eliminada solo se restaura o se elimina
+definitivamente (DELETE).
 ========================================
 */
 
 router.patch("/usuarios/:id", verificarToken, verificarAdmin, async (req, res) => {
     try {
         const { accion } = req.body;
-        const mapa = { aprobar: "aprobado", rechazar: "rechazado" };
+        const mapa = { aprobar: "aprobado", rechazar: "rechazado", restaurar: "aprobado" };
         const nuevoEstado = mapa[accion];
 
         if (!nuevoEstado) {
@@ -84,11 +89,21 @@ router.patch("/usuarios/:id", verificarToken, verificarAdmin, async (req, res) =
             return res.status(400).json({ message: "No se puede cambiar el estado de un administrador" });
         }
 
+        const eliminada = usuario.estado === "eliminado";
+        if (accion === "restaurar" && !eliminada) {
+            return res.status(400).json({ message: "La cuenta no está eliminada" });
+        }
+        if (accion !== "restaurar" && eliminada) {
+            return res.status(400).json({ message: "La cuenta está eliminada: restáurala o elimínala definitivamente" });
+        }
+
         usuario.estado = nuevoEstado;
+        usuario.eliminadoEn = undefined;
         await usuario.save();
 
+        const mensajes = { aprobar: "Cuenta aprobada", rechazar: "Cuenta rechazada", restaurar: "Cuenta restaurada" };
         return res.json({
-            message: nuevoEstado === "aprobado" ? "Cuenta aprobada" : "Cuenta rechazada",
+            message: mensajes[accion],
             id: usuario._id,
             estado: usuario.estado
         });
@@ -100,8 +115,10 @@ router.patch("/usuarios/:id", verificarToken, verificarAdmin, async (req, res) =
 
 /*
 ========================================
-ELIMINAR UNA CUENTA Y SUS DATOS
+ELIMINAR UNA CUENTA Y SUS DATOS (DEFINITIVO)
 DELETE /admin/usuarios/:id
+También es el «Eliminar definitivamente» de las cuentas que su usuario
+eliminó (estado "eliminado").
 ========================================
 */
 
@@ -144,7 +161,7 @@ router.delete("/usuarios/:id", verificarToken, verificarAdmin, async (req, res) 
 ========================================
 GESTIONAR ROL, PERMISOS Y ADMIN DE UN USUARIO
 PATCH /admin/usuarios/:id/gestion
-body: { rol?, permisos?: { conContexto, descargarPdf }, esAdmin? }
+body: { rol?, permisos?: { conContexto, descargarPdf, eliminarCuenta }, esAdmin? }
 ========================================
 */
 
@@ -171,6 +188,9 @@ router.patch("/usuarios/:id/gestion", verificarToken, verificarAdmin, async (req
             }
             if (permisos.descargarPdf !== undefined) {
                 usuario.permisos.descargarPdf = !!permisos.descargarPdf;
+            }
+            if (permisos.eliminarCuenta !== undefined) {
+                usuario.permisos.eliminarCuenta = !!permisos.eliminarCuenta;
             }
             usuario.markModified("permisos");
         }
