@@ -370,6 +370,22 @@ export const api = {
     return data;
   },
 
+  // Olvido de contraseña: el backend genera una temporal y la devuelve UNA vez
+  // ({ temporal }) para que el administrador se la dé al usuario.
+  restablecerPassword: async (id) => {
+    const response = await authFetch(`${API_URL}/admin/usuarios/${id}/restablecer-password`, {
+      method: "POST",
+    });
+
+    const data = await jsonSeguro(response);
+
+    if (!response.ok) {
+      throw new Error(data.message || "Error al restablecer la contraseña");
+    }
+
+    return data;
+  },
+
   // --- Perfil / cuenta ---
 
   getPerfil: async () => {

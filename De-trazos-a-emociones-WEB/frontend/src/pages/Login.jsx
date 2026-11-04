@@ -77,8 +77,22 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(datosLogin.usuario));
     }
     nuevaSesion();
-    navigate('/app');
+    // Contraseña temporal (la restableció el administrador): primero se cambia.
+    if (datosLogin.usuario?.passwordTemporal) {
+      navigate('/configuracion', { state: { tab: 'seguridad' } });
+    } else {
+      navigate('/app');
+    }
   };
+
+  // Olvido de contraseña: nadie puede ver las contraseñas (se guardan
+  // cifradas); el administrador genera una temporal desde su panel.
+  const avisarOlvido = () =>
+    mostrarAviso({
+      tipo: 'info',
+      titulo: '¿Olvidaste tu contraseña?',
+      texto: 'Contacta al administrador: te dará una contraseña temporal para entrar, y luego la cambias por una tuya.',
+    });
 
   return (
     <div className="form-container">
@@ -151,6 +165,11 @@ const Login = () => {
                   aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {verPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              <div className="olvido-fila">
+                <button type="button" className="olvido-link" onClick={avisarOlvido}>
+                  ¿Olvidaste tu contraseña?
                 </button>
               </div>
             </div>

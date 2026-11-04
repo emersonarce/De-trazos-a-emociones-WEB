@@ -39,7 +39,7 @@ GET /perfil/me
 router.get("/me", verificarToken, async (req, res) => {
     try {
         const usuario = await User.findById(req.usuario.id)
-            .select("nombre apellido email rol institucion estado esAdmin fotoPerfil permisos");
+            .select("nombre apellido email rol institucion estado esAdmin fotoPerfil permisos passwordTemporal");
 
         if (!usuario) {
             return res.status(404).json({ message: "Usuario no encontrado" });
@@ -60,7 +60,8 @@ router.get("/me", verificarToken, async (req, res) => {
             institucion: usuario.institucion,
             esAdmin: usuario.esAdmin,
             permisos: permisosEfectivos(usuario),
-            tieneFoto: Boolean(usuario.fotoPerfil)
+            tieneFoto: Boolean(usuario.fotoPerfil),
+            passwordTemporal: Boolean(usuario.passwordTemporal)
         });
     } catch (error) {
         console.error("Error al obtener el perfil:", error);
@@ -154,6 +155,8 @@ router.post("/cambiar-password", verificarToken, async (req, res) => {
         }
 
         usuario.password = await bcrypt.hash(nueva, 12);
+        // Si entró con una contraseña temporal del administrador, ya es suya.
+        usuario.passwordTemporal = false;
         await usuario.save();
 
         return res.json({ message: "Contraseña actualizada" });

@@ -190,7 +190,10 @@ router.post("/login", async (req, res) => {
                 email: usuario.email,
                 rol: usuario.rol,
                 esAdmin: usuario.esAdmin,
-                permisos: permisosEfectivos(usuario)
+                permisos: permisosEfectivos(usuario),
+                // Contraseña temporal (la restableció el administrador): la app
+                // pide cambiarla antes de seguir.
+                passwordTemporal: Boolean(usuario.passwordTemporal)
             }
         });
 

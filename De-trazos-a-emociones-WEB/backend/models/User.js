@@ -27,6 +27,14 @@ const UserSchema = new mongoose.Schema(
             required: true
         },
 
+        // La contraseña es temporal: la generó el administrador al
+        // restablecerla (olvido). Al entrar, la app pide cambiarla; al
+        // cambiarla vuelve a false.
+        passwordTemporal: {
+            type: Boolean,
+            default: false
+        },
+
         rol: {
             type: String,
             required: true,

@@ -1,11 +1,13 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const Analysis = require("../models/Analysis");
 const verificarToken = require("../middleware/authMiddleware");
 const verificarAdmin = require("../middleware/adminMiddleware");
 const { permisosEfectivos } = require("../utils/permisos");
+const { generarPasswordTemporal } = require("../utils/password");
 
 const router = express.Router();
 
@@ -33,7 +35,7 @@ router.get("/usuarios", verificarToken, verificarAdmin, async (req, res) => {
         }
 
         const usuarios = await User.find(filtro)
-            .select("nombre apellido email rol institucion estado esAdmin permisos createdAt eliminadoEn")
+            .select("nombre apellido email rol institucion estado esAdmin permisos createdAt eliminadoEn passwordTemporal")
             .sort(filtro.estado === "eliminado" ? { eliminadoEn: -1 } : { createdAt: -1 });
 
         // Se devuelven los permisos EFECTIVOS (admin = todo; cuentas heredadas =
@@ -49,6 +51,8 @@ router.get("/usuarios", verificarToken, verificarAdmin, async (req, res) => {
             esAdmin: u.esAdmin,
             createdAt: u.createdAt,
             eliminadoEn: u.eliminadoEn,
+            // Tiene la contraseña temporal del administrador y aún no la cambia.
+            passwordTemporal: Boolean(u.passwordTemporal),
             permisos: permisosEfectivos(u)
         }));
 
@@ -154,6 +158,45 @@ router.delete("/usuarios/:id", verificarToken, verificarAdmin, async (req, res) 
     } catch (error) {
         console.error("Error eliminando usuario:", error);
         return res.status(500).json({ message: "Error al eliminar la cuenta" });
+    }
+});
+
+/*
+========================================
+RESTABLECER LA CONTRASEÑA (CONTRASEÑA TEMPORAL)
+POST /admin/usuarios/:id/restablecer-password
+Para quien olvidó su contraseña. Las contraseñas se guardan cifradas (bcrypt)
+y nadie puede verlas, ni el administrador: se genera una temporal, que la
+respuesta trae UNA sola vez para que el administrador se la dé al usuario. No
+se guarda legible ni se escribe en el registro. Al entrar con ella, la app
+pide cambiarla (passwordTemporal).
+========================================
+*/
+
+router.post("/usuarios/:id/restablecer-password", verificarToken, verificarAdmin, async (req, res) => {
+    try {
+        const usuario = await User.findById(req.params.id);
+        if (!usuario) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        if (String(usuario._id) === String(req.usuario.id)) {
+            return res.status(400).json({ message: "Tu propia contraseña se cambia en Configuración" });
+        }
+
+        if (usuario.estado !== "aprobado") {
+            return res.status(400).json({ message: "Solo se puede restablecer la contraseña de una cuenta aprobada" });
+        }
+
+        const temporal = generarPasswordTemporal();
+        usuario.password = await bcrypt.hash(temporal, 12);
+        usuario.passwordTemporal = true;
+        await usuario.save();
+
+        return res.json({ message: "Contraseña restablecida", id: usuario._id, temporal });
+    } catch (error) {
+        console.error("Error restableciendo la contraseña:", error.message);
+        return res.status(500).json({ message: "Error al restablecer la contraseña" });
     }
 });
 

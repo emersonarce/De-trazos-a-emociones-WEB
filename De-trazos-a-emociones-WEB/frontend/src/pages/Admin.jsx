@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Check, X, Inbox, RefreshCw, Ban, Trash2, RotateCcw } from 'lucide-react';
+import { ShieldCheck, Check, X, Inbox, RefreshCw, Ban, Trash2, RotateCcw, KeyRound } from 'lucide-react';
 import { api } from '../api';
 import Sidebar from '../components/layout/Sidebar';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -29,6 +29,31 @@ const ROL_LABEL = {
   profesor: 'Profesor(a)',
 };
 
+// Copia al portapapeles. Por http (p. ej. el servidor por su IP) no existe
+// navigator.clipboard: se usa el método antiguo con un textarea.
+async function copiarTexto(texto) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(texto);
+      return true;
+    }
+  } catch { /* se intenta el método antiguo */ }
+  try {
+    const area = document.createElement('textarea');
+    area.value = texto;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(area);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
 const Admin = () => {
   const { avisarError } = useAvisos();
   const [filtro, setFiltro] = useState('pendiente');
@@ -40,7 +65,33 @@ const Admin = () => {
   const [porBorrar, setPorBorrar] = useState(null);
   const [guardandoGestion, setGuardandoGestion] = useState(null);
   const [cambioRol, setCambioRol] = useState(null);
+  // Olvido de contraseña: a quién se le va a restablecer y la temporal que
+  // devolvió el backend (se muestra una sola vez).
+  const [porRestablecer, setPorRestablecer] = useState(null);
+  const [temporal, setTemporal] = useState(null); // { u, password, copiada }
   const miId = leerUsuario().id;
+
+  const confirmarRestablecer = async () => {
+    const u = porRestablecer;
+    if (!u) return;
+    setProcesando(u._id);
+    try {
+      const r = await api.restablecerPassword(u._id);
+      setUsuarios((prev) => prev.map((x) => (x._id === u._id ? { ...x, passwordTemporal: true } : x)));
+      setPorRestablecer(null);
+      setTemporal({ u, password: r.temporal, copiada: false });
+    } catch (e) {
+      avisarError('No se pudo restablecer la contraseña', e);
+    } finally {
+      setProcesando(null);
+    }
+  };
+
+  const copiarTemporal = async () => {
+    if (!temporal) return;
+    const copiada = await copiarTexto(temporal.password);
+    setTemporal((t) => (t ? { ...t, copiada } : t));
+  };
 
   const actualizar = async (u, cambios) => {
     setGuardandoGestion(u._id);
@@ -185,6 +236,7 @@ const Admin = () => {
                     ) : (
                       <span className="admin-chip vacio">Sin institución</span>
                     )}
+                    {u.passwordTemporal && <span className="admin-chip vacio">Contraseña temporal sin cambiar</span>}
                     <span className="admin-fecha">
                       {filtro === 'eliminado' ? `Eliminada el ${formatFecha(u.eliminadoEn)}` : formatFecha(u.createdAt)}
                     </span>
@@ -203,9 +255,14 @@ const Admin = () => {
                     </>
                   )}
                   {filtro === 'aprobado' && (
-                    <button className="btn-rechazar" disabled={procesando === u._id} onClick={() => resolver(u._id, 'rechazar')}>
-                      <Ban size={16} /> Deshabilitar
-                    </button>
+                    <>
+                      <button className="btn-neutro-admin" disabled={procesando === u._id} onClick={() => setPorRestablecer(u)}>
+                        <KeyRound size={16} /> Restablecer contraseña
+                      </button>
+                      <button className="btn-rechazar" disabled={procesando === u._id} onClick={() => resolver(u._id, 'rechazar')}>
+                        <Ban size={16} /> Deshabilitar
+                      </button>
+                    </>
                   )}
                   {filtro === 'rechazado' && (
                     <button className="btn-aprobar" disabled={procesando === u._id} onClick={() => resolver(u._id, 'aprobar')}>
@@ -297,6 +354,35 @@ const Admin = () => {
         cargando={procesando === porBorrar?._id}
         onConfirmar={confirmarEliminar}
         onCancelar={() => setPorBorrar(null)}
+      />
+
+      <ConfirmDialog
+        abierto={!!porRestablecer}
+        titulo="Restablecer contraseña"
+        mensaje={porRestablecer
+          ? `¿Restablecer la contraseña de ${porRestablecer.nombre} ${porRestablecer.apellido} (${porRestablecer.email})?`
+          : ''}
+        detalle="Se generará una contraseña temporal para que se la des. La actual dejará de funcionar y, al entrar, tendrá que cambiarla."
+        textoConfirmar="Restablecer"
+        cargando={procesando === porRestablecer?._id}
+        onConfirmar={confirmarRestablecer}
+        onCancelar={() => setPorRestablecer(null)}
+      />
+
+      <ConfirmDialog
+        abierto={!!temporal}
+        titulo="Contraseña temporal"
+        mensaje={temporal ? (
+          <>
+            Para {temporal.u.nombre} {temporal.u.apellido}:<br />
+            <code className="admin-temporal">{temporal.password}</code>
+          </>
+        ) : ''}
+        detalle="Dásela por un medio seguro. No se volverá a mostrar (si se pierde, restablécela otra vez). Al entrar, tendrá que cambiarla por una suya."
+        textoConfirmar={temporal?.copiada ? 'Copiada' : 'Copiar'}
+        textoCancelar="Cerrar"
+        onConfirmar={copiarTemporal}
+        onCancelar={() => setTemporal(null)}
       />
 
       <ConfirmDialog

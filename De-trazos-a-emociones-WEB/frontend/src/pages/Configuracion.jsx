@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Sun, Moon, KeyRound, Eye, EyeOff, HelpCircle, Camera, Repeat, Trash2,
   User, Palette, ShieldCheck,
@@ -41,9 +41,14 @@ const Configuracion = () => {
   const { avisarError } = useAvisos();
   const { tema, setTema } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const { start: iniciarRecorrido } = useTour();
 
-  const [tab, setTab] = useState('cuenta');
+  // Pestaña inicial: la pedida al llegar (p. ej. Seguridad tras entrar con una
+  // contraseña temporal) o Cuenta.
+  const [tab, setTab] = useState(
+    () => location.state?.tab || (leerUsuarioLocal().passwordTemporal ? 'seguridad' : 'cuenta')
+  );
 
   const [pwd, setPwd] = useState({ actual: '', nueva: '', confirmar: '' });
   const [pwdMsg, setPwdMsg] = useState(null);
@@ -143,7 +148,19 @@ const Configuracion = () => {
     setGuardandoPwd(true);
     try {
       await api.cambiarPassword(pwd.actual, pwd.nueva);
-      setPwdMsg({ tipo: 'ok', texto: 'Contraseña actualizada correctamente.' });
+      const eraTemporal = Boolean(perfil.passwordTemporal);
+      // Ya no es temporal: se libera el resto de la app (ver ProtectedRoute).
+      try {
+        const u = JSON.parse(localStorage.getItem('user') || '{}');
+        localStorage.setItem('user', JSON.stringify({ ...u, passwordTemporal: false }));
+      } catch { /* sin almacenamiento: lo corrige el próximo inicio de sesión */ }
+      setPerfil((p) => ({ ...p, passwordTemporal: false }));
+      setPwdMsg({
+        tipo: 'ok',
+        texto: eraTemporal
+          ? 'Contraseña actualizada. Ya puedes usar la app con tu nueva contraseña.'
+          : 'Contraseña actualizada correctamente.',
+      });
       setPwd({ actual: '', nueva: '', confirmar: '' });
     } catch (err) {
       setPwdMsg({ tipo: 'error', texto: err.message });
@@ -264,6 +281,12 @@ const Configuracion = () => {
         {tab === 'seguridad' && (
           <section className="config-section">
             <h2>Seguridad · cambiar contraseña</h2>
+            {perfil.passwordTemporal && (
+              <div className="pwd-temporal" role="status">
+                Entraste con una contraseña temporal que te dio el administrador. Cámbiala por una tuya para seguir
+                usando la app: en «Contraseña actual» escribe la temporal.
+              </div>
+            )}
             <form className="pwd-form" onSubmit={cambiarPassword}>
               <div className="pwd-field">
                 <input

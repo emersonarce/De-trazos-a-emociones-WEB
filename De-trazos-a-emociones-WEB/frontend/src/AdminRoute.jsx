@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { tokenVigente } from './api';
+import { leerUsuario } from './utils/permisos';
 
 const AdminRoute = ({ children }) => {
   // Igual que ProtectedRoute: sin sesión válida, fuera.
@@ -20,6 +21,11 @@ const AdminRoute = ({ children }) => {
 
   if (!esAdmin) {
     return <Navigate to="/app" replace />;
+  }
+
+  // Con una contraseña temporal, primero hay que cambiarla (ver ProtectedRoute).
+  if (leerUsuario().passwordTemporal === true) {
+    return <Navigate to="/configuracion" state={{ tab: 'seguridad' }} replace />;
   }
 
   return children;

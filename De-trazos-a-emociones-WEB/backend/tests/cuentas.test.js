@@ -165,3 +165,39 @@ test("el administrador asigna y quita el permiso de eliminar la cuenta", async (
     const no = await pedir("PATCH", ruta, { token: token(ID_ADMIN), json: { permisos: { eliminarCuenta: false } } });
     assert.equal(no.cuerpo.permisos.eliminarCuenta, false);
 });
+
+test("restablecer la contraseña: el admin recibe una temporal una sola vez y el usuario debe cambiarla", async () => {
+    const { validarPassword, generarPasswordTemporal } = require("../utils/password");
+    for (let i = 0; i < 50; i++) assert.equal(validarPassword(generarPasswordTemporal()), null);
+
+    const u = crear(ID_USUARIO, { email: "ana@prueba.test", password: await bcrypt.hash("Vieja123!", 4) });
+    const r = await pedir("POST", `/admin/usuarios/${ID_USUARIO}/restablecer-password`, { token: token(ID_ADMIN) });
+    assert.equal(r.status, 200);
+    const temporal = r.cuerpo.temporal;
+    assert.equal(validarPassword(temporal), null);
+    assert.equal(u.passwordTemporal, true);
+    assert.equal(await bcrypt.compare(temporal, u.password), true); // se guarda cifrada
+    assert.notEqual(u.password, temporal);
+
+    // La anterior deja de servir; con la temporal entra y el login avisa que es temporal.
+    assert.equal((await pedir("POST", "/auth/login", { json: { email: "ana@prueba.test", password: "Vieja123!" } })).status, 401);
+    const login = await pedir("POST", "/auth/login", { json: { email: "ana@prueba.test", password: temporal } });
+    assert.equal(login.status, 200);
+    assert.equal(login.cuerpo.usuario.passwordTemporal, true);
+    assert.equal((await pedir("GET", "/perfil/me", { token: token(ID_USUARIO) })).cuerpo.passwordTemporal, true);
+
+    // Al cambiarla, deja de ser temporal.
+    const cambio = await pedir("POST", "/perfil/cambiar-password", { token: token(ID_USUARIO), json: { actual: temporal, nueva: "Nueva123!" } });
+    assert.equal(cambio.status, 200);
+    assert.equal(u.passwordTemporal, false);
+    assert.equal(await bcrypt.compare("Nueva123!", u.password), true);
+});
+
+test("restablecer la contraseña: solo un admin, no la propia y solo en cuentas aprobadas", async () => {
+    crear(ID_USUARIO, { estado: "pendiente" });
+    const ruta = `/admin/usuarios/${ID_USUARIO}/restablecer-password`;
+    assert.equal((await pedir("POST", ruta, { token: token(ID_ADMIN) })).status, 400); // pendiente
+    assert.equal((await pedir("POST", `/admin/usuarios/${ID_ADMIN}/restablecer-password`, { token: token(ID_ADMIN) })).status, 400); // la propia
+    usuarios.get(ID_USUARIO).estado = "aprobado";
+    assert.equal((await pedir("POST", ruta, { token: token(ID_USUARIO) })).status, 403); // no es admin
+});

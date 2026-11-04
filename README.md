@@ -166,6 +166,7 @@ Definidas en `De-trazos-a-emociones-WEB/backend/.env` (ver plantilla en [`backen
 - **Registro con aprobación del administrador:** las cuentas nuevas quedan pendientes; el admin (definido por `ADMIN_EMAILS`) las aprueba o rechaza en `/admin` viendo nombre, correo, rol e institución.
 - **Menú de perfil/cuenta:** foto de perfil, ver correo, cerrar sesión, cambiar de cuenta y eliminar cuenta.
 - **Eliminar cuenta con permiso y sin borrados por accidente:** solo puede eliminar su cuenta quien tenga el permiso «Eliminar su cuenta», que asigna el administrador (nunca viene por defecto, tampoco en cuentas antiguas; un administrador no puede eliminar la suya). La cuenta no se borra: queda desactivada, con sus datos, y no puede iniciar sesión. El administrador la ve en «Cuentas eliminadas» de `/admin` y la restaura o la elimina definitivamente, con todos sus análisis e imágenes.
+- **Contraseña olvidada:** en el inicio de sesión, «¿Olvidaste tu contraseña?» indica contactar al administrador. Las contraseñas se guardan cifradas (bcrypt) y nadie puede verlas, ni el administrador: en `/admin` (Aprobados), «Restablecer contraseña» genera una temporal que se muestra una sola vez para dársela al usuario. Al entrar con ella, la app solo deja ir a Configuración › Seguridad hasta que la cambie por una suya.
 - **Tema claro/oscuro y 4 paletas de color** (página de Configuración), guardado por dispositivo.
 - **Exportar a PDF** con selección de contenido (detalle del análisis y/o historial del niño).
 
