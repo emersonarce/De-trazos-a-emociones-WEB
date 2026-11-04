@@ -3,8 +3,9 @@ import { ArrowRight, Pencil } from 'lucide-react';
 import '../common/ContextoNino.css';
 import './AnalyzerContext.css';
 import AvisoCumple from '../common/AvisoCumple';
+import CampoDuracion from '../common/CampoDuracion';
 import { textoEdad, edadDesde, infoCumple } from '../../utils/emociones';
-import { OPCIONES, normalizarGenero, textoGenero, opcionDiagnostico, opcionTiempo, tiempoExacto } from '../../utils/contextoNino';
+import { OPCIONES, normalizarGenero, textoGenero, opcionDiagnostico } from '../../utils/contextoNino';
 
 const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onContinuar, ninoConocido, faltaAlias = false }) => {
   // Niño ya conocido: sus datos básicos se muestran resumidos y se pueden editar.
@@ -18,7 +19,6 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
     setOtroDiag(v === 'otro');
     handleRadioChange('diagnostico_previo', v === 'otro' ? '' : v);
   };
-  const tiempo = opcionTiempo(formData.tiempo_dibujo);
   // Edad: si hay fecha de nacimiento se calcula sola; si no, se escribe.
   const edadCalculada = edadDesde(formData.fecha_nacimiento);
   const conFecha = Boolean(formData.fecha_nacimiento);
@@ -182,16 +182,11 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onCon
                   <span className="radio-dot"></span>{opt}
                 </label>
               ))}
-              <div className="tiempo-exacto">
-                <label>
-                  <input type="number" min="0" max="12" inputMode="numeric" value={tiempo.horas} onChange={(e) => handleRadioChange('tiempo_dibujo', tiempoExacto(e.target.value, tiempo.minutos))} placeholder="—" aria-label="Horas exactas" />
-                  h
-                </label>
-                <label>
-                  <input type="number" min="0" max="59" inputMode="numeric" value={tiempo.minutos} onChange={(e) => handleRadioChange('tiempo_dibujo', tiempoExacto(tiempo.horas, e.target.value))} placeholder="—" aria-label="Minutos exactos" />
-                  min
-                </label>
-              </div>
+              <CampoDuracion
+                className="tiempo-exacto"
+                valor={formData.tiempo_dibujo}
+                onCambiar={(v) => handleRadioChange('tiempo_dibujo', v)}
+              />
             </div>
           </div>
         </div>

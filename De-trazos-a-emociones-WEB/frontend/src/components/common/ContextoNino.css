@@ -197,19 +197,18 @@
 .ctx-campo select + input {
   margin-top: 8px;
 }
+/* Tiempo exacto que tardó: un solo campo «hh:mm» */
 .ctx-minutos {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   margin-top: 8px;
   font-size: 13px;
   color: var(--muted);
 }
-.ctx-minutos label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
 .ctx-campo .ctx-minutos input {
-  width: 64px;
+  width: 88px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }

@@ -62,6 +62,34 @@ export function tiempoExacto(horas, minutos) {
   ].filter(Boolean).join(' y ');
 }
 
+// Tiempo exacto en un solo campo «hh:mm»: es una duración, así que no lleva
+// a. m. ni p. m. Las cifras entran por la derecha, como en un cronómetro:
+// «15» se ve 00:15 (15 minutos) y «130», 01:30. Se guarda igual que antes
+// («1 hora y 30 minutos»), así que el análisis y el historial no cambian.
+export function mascaraDuracion(entrada) {
+  const cifras = String(entrada ?? '').replace(/\D/g, '').replace(/^0+/, '').slice(0, 4);
+  if (!cifras) return '';
+  const p = cifras.padStart(4, '0');
+  return `${p.slice(0, 2)}:${p.slice(2)}`;
+}
+// «hh:mm» → valor guardado. Si los minutos pasan de 59, se llevan a horas
+// (00:90 → «1 hora y 30 minutos»).
+export function duracionDesdeTexto(texto) {
+  const m = String(texto ?? '').match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return '';
+  const total = Number(m[1]) * 60 + Number(m[2]);
+  return tiempoExacto(Math.floor(total / 60), total % 60);
+}
+// Valor guardado → «hh:mm». Queda vacío si es una de las opciones o no es un
+// tiempo exacto.
+export function textoDuracion(valor) {
+  const { horas, minutos } = opcionTiempo(valor);
+  const total = (parseInt(horas, 10) || 0) * 60 + (parseInt(minutos, 10) || 0);
+  if (!total) return '';
+  const h = Math.min(Math.floor(total / 60), 99);
+  return `${String(h).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
+
 // Contexto más completo del niño a partir de sus análisis (del más reciente al
 // más antiguo): para cada dato, el valor más reciente que no esté vacío. Así no
 // se pierde lo que se escribió antes aunque el último análisis se hiciera sin

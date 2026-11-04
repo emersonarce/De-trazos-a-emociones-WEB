@@ -136,21 +136,22 @@
   cursor: default;
 }
 
-/* «Otro» diagnóstico y tiempo exacto (horas y minutos) */
+/* «Otro» diagnóstico */
 .field select + input {
   margin-top: 8px;
 }
-.tiempo-exacto {
+/* Tiempo exacto que tardó: un solo campo «hh:mm» */
+.field .tiempo-exacto {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-}
-.field .tiempo-exacto label {
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   color: var(--muted);
 }
 .field .tiempo-exacto input {
-  width: 64px;
+  width: 88px;
   padding: 8px 10px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }

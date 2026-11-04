@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Pencil, UserRound } from 'lucide-react';
-import { filasContexto, OPCIONES, normalizarGenero, opcionDiagnostico, opcionTiempo, tiempoExacto } from '../../utils/contextoNino';
+import { filasContexto, OPCIONES, normalizarGenero, opcionDiagnostico } from '../../utils/contextoNino';
 import { edadDesde } from '../../utils/emociones';
+import CampoDuracion from './CampoDuracion';
 import './ContextoNino.css';
 
 const LARGOS = ['Situación actual', 'Diagnóstico previo', 'Descripción del dibujo', 'Comentó mientras dibujaba'];
@@ -68,7 +69,6 @@ export const ContextoEditor = ({ valor = {}, onChange, conDibujo = true }) => {
   const [otroDiag, setOtroDiag] = useState(false);
   const diag = opcionDiagnostico(valor.diagnostico_previo);
   const opcionDiag = otroDiag || diag.opcion === 'otro' ? 'otro' : diag.opcion;
-  const tiempo = opcionTiempo(valor.tiempo_dibujo);
   // Edad: si hay fecha de nacimiento se calcula sola; si no, se escribe.
   const conFecha = Boolean(valor.fecha_nacimiento);
   const cambiarFecha = (e) => {
@@ -133,16 +133,11 @@ export const ContextoEditor = ({ valor = {}, onChange, conDibujo = true }) => {
           <div className="ctx-campo">
             <span>Tiempo que tardó</span>
             <Pildoras nombre="tiempo_dibujo" opciones={OPCIONES.tiempo_dibujo} valor={valor.tiempo_dibujo || ''} onElegir={poner} />
-            <div className="ctx-minutos">
-              <label>
-                <input type="number" min="0" max="12" inputMode="numeric" value={tiempo.horas} onChange={(e) => poner('tiempo_dibujo', tiempoExacto(e.target.value, tiempo.minutos))} placeholder="—" aria-label="Horas exactas" />
-                h
-              </label>
-              <label>
-                <input type="number" min="0" max="59" inputMode="numeric" value={tiempo.minutos} onChange={(e) => poner('tiempo_dibujo', tiempoExacto(tiempo.horas, e.target.value))} placeholder="—" aria-label="Minutos exactos" />
-                min
-              </label>
-            </div>
+            <CampoDuracion
+              className="ctx-minutos"
+              valor={valor.tiempo_dibujo || ''}
+              onCambiar={(v) => poner('tiempo_dibujo', v)}
+            />
           </div>
         </>
       )}

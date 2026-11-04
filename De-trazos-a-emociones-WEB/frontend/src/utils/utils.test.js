@@ -216,3 +216,30 @@ test('contexto: género, diagnóstico previo y tiempo con opciones', async () =>
   assert.equal(tiempoExacto('', ''), '');
   assert.equal(tiempoExacto('0', '0'), '');
 });
+
+test('tiempo exacto en un solo campo «hh:mm» (duración, sin a. m. ni p. m.)', async () => {
+  const { mascaraDuracion, duracionDesdeTexto, textoDuracion } = await import('./contextoNino.js');
+  // Las cifras entran por la derecha, como en un cronómetro.
+  assert.equal(mascaraDuracion(''), '');
+  assert.equal(mascaraDuracion('0'), '');
+  assert.equal(mascaraDuracion('1'), '00:01');
+  assert.equal(mascaraDuracion('00:015'), '00:15');
+  assert.equal(mascaraDuracion('00:150'), '01:50');
+  assert.equal(mascaraDuracion('1:30'), '01:30');
+  assert.equal(mascaraDuracion('15:001'), '15:00'); // máximo 4 cifras
+  assert.equal(mascaraDuracion('00:1'), '00:01'); // borrar corre las cifras
+  // Se guarda igual que antes.
+  assert.equal(duracionDesdeTexto('00:15'), '15 minutos');
+  assert.equal(duracionDesdeTexto('01:00'), '1 hora');
+  assert.equal(duracionDesdeTexto('01:20'), '1 hora y 20 minutos');
+  assert.equal(duracionDesdeTexto('00:90'), '1 hora y 30 minutos');
+  assert.equal(duracionDesdeTexto(''), '');
+  // Y se vuelve a mostrar desde lo guardado (las opciones no van en el campo).
+  assert.equal(textoDuracion('1 hora y 20 minutos'), '01:20');
+  assert.equal(textoDuracion('12 minutos'), '00:12');
+  assert.equal(textoDuracion('2 horas'), '02:00');
+  assert.equal(textoDuracion('90 minutos'), '01:30');
+  assert.equal(textoDuracion('5 a 15 minutos'), '');
+  assert.equal(textoDuracion('un buen rato'), '');
+  assert.equal(textoDuracion(''), '');
+});
