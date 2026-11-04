@@ -236,10 +236,11 @@ const Admin = () => {
                     ) : (
                       <span className="admin-chip vacio">Sin institución</span>
                     )}
-                    {u.passwordTemporal && <span className="admin-chip vacio">Contraseña temporal sin cambiar</span>}
                     <span className="admin-fecha">
                       {filtro === 'eliminado' ? `Eliminada el ${formatFecha(u.eliminadoEn)}` : formatFecha(u.createdAt)}
                     </span>
+                    {/* Al final, para que al aparecer no corra lo que ya estaba. */}
+                    {u.passwordTemporal && <span className="admin-chip vacio">Contraseña temporal sin cambiar</span>}
                   </div>
                 </div>
 

@@ -157,13 +157,19 @@
   border-radius: 14px;
   padding: 1.1rem 1.25rem;
   display: flex;
-  align-items: center;
+  /* Botones arriba (no centrados): si los datos de la izquierda crecen (p. ej.
+     aparece «Contraseña temporal sin cambiar»), los botones no se mueven. */
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
+/* Los datos ocupan el espacio libre y sus etiquetas bajan de línea dentro de
+   él, en vez de empujar los botones a otra fila. Que los botones bajen o no
+   depende solo del ancho de la tarjeta, no de lo que diga. */
 .admin-card-main {
+  flex: 1 1 260px;
   min-width: 0;
 }
 
@@ -341,10 +347,12 @@
   }
   .admin-actions {
     width: 100%;
+    flex-wrap: wrap;
   }
   .btn-aprobar,
   .btn-rechazar,
-  .btn-eliminar-admin {
+  .btn-eliminar-admin,
+  .btn-neutro-admin {
     flex: 1;
     justify-content: center;
   }
