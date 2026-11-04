@@ -6,6 +6,9 @@
 //   npm run demo:crear -- 2026-11-05   igual, armado para ese día: los
 //                         cumpleaños y las alertas caen ahí (p. ej. una presentación)
 //   npm run demo:borrar   borra la base demo y las imágenes demo-*
+//   npm run demo:usuarios [-- AAAA-MM-DD]   vuelve a crear SOLO las cuentas del
+//                         panel (administrador demo, solicitudes pendientes, una
+//                         cuenta limitada y una eliminada), sin tocar los análisis
 //   npm run dev:demo      arranca el backend con la base demo
 const path = require("path");
 const fs = require("fs");
@@ -20,7 +23,7 @@ const Analysis = require("../models/Analysis");
 const { medirImagen } = require("../services/medicionImagen");
 const { validarPassword } = require("../utils/password");
 const { nombreBaseDemo } = require("./demo/base");
-const { USUARIO_DEMO, azar, fechaBanco, generarBanco, resultadoIA } = require("./demo/datos");
+const { USUARIO_DEMO, USUARIO_ADMIN_DEMO, cuentasPanelDemo, azar, fechaBanco, generarBanco, resultadoIA } = require("./demo/datos");
 const { dibujo, GRUPOS_DIBUJO } = require("./demo/dibujos");
 
 const UPLOADS = path.join(__dirname, "..", "uploads");
@@ -95,12 +98,44 @@ async function crear(textoFecha) {
         ? `Armado para el ${textoFecha}: ese día Luna cumple años y Tomi 2 días después.`
         : "Luna cumple años hoy y Tomi en 2 días.");
     console.log("Alertas: Tomi (seguidos), Sofi (semana) y Mateo (mes).");
+
+    await crearCuentasPanel(hoy);
+    console.log(`Panel del administrador: entra con ${USUARIO_ADMIN_DEMO.email} / ${USUARIO_ADMIN_DEMO.password}.`);
 }
 
-const acciones = { crear, borrar };
+// Cuentas del panel del administrador: el admin demo, solicitudes pendientes,
+// una cuenta con permisos limitados y una eliminada. Solo toca esas cuentas
+// (por su correo): se pueden volver a crear sin regenerar el banco, por
+// ejemplo para dejar otra vez pendientes las solicitudes tras un ensayo.
+async function crearCuentasPanel(hoy) {
+    const cuentas = [USUARIO_ADMIN_DEMO, ...cuentasPanelDemo(hoy)];
+    for (const c of cuentas) {
+        const error = validarPassword(c.password);
+        if (error) throw new Error(`Contraseña demo no válida (${c.email}): ${error}.`);
+    }
+    await User.deleteMany({ email: { $in: cuentas.map((c) => c.email) } });
+    for (const { password, ...datos } of cuentas) {
+        const fecha = datos.createdAt || hoy;
+        const doc = new User({ ...datos, createdAt: fecha, updatedAt: fecha, password: await bcrypt.hash(password, 12) });
+        await doc.save({ timestamps: false }); // conserva las fechas inventadas
+    }
+    return cuentas;
+}
+
+async function usuarios(textoFecha) {
+    const hoy = fechaBanco(textoFecha); // antes de conectar: una fecha mal escrita no toca nada
+    const base = await conectar();
+    const cuentas = await crearCuentasPanel(hoy);
+    console.log(`Cuentas del panel creadas en «${base}» (los análisis no se tocaron):`);
+    for (const c of cuentas) console.log(`  ${c.email} · ${c.esAdmin ? "administrador" : c.estado}`);
+    console.log(`\nAdministrador: ${USUARIO_ADMIN_DEMO.email} / ${USUARIO_ADMIN_DEMO.password}`);
+    console.log(`Las demás usan la contraseña ${USUARIO_DEMO.password}.`);
+}
+
+const acciones = { crear, borrar, usuarios };
 const accion = acciones[process.argv[2]];
 if (!accion) {
-    console.log("Uso: node backend/scripts/demo.js crear [AAAA-MM-DD] | borrar");
+    console.log("Uso: node backend/scripts/demo.js crear [AAAA-MM-DD] | usuarios [AAAA-MM-DD] | borrar");
     process.exit(1);
 }
 accion(process.argv[3])

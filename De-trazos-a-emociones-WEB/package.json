@@ -9,6 +9,7 @@
     "comparar": "node backend/scripts/comparar-variantes.js",
     "demo:crear": "node backend/scripts/demo.js crear",
     "demo:borrar": "node backend/scripts/demo.js borrar",
+    "demo:usuarios": "node backend/scripts/demo.js usuarios",
     "dev:demo": "node --watch backend/scripts/servidor-demo.js"
   },
   "keywords": [],

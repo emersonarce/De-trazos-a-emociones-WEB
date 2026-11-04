@@ -62,3 +62,22 @@ test("demo: cada emoción tiene su dibujo", () => {
         assert.ok(d.rasgos.length >= 3 && d.descripcion, grupo);
     }
 });
+
+test("demo: administrador y cuentas del panel (solicitudes, cuenta limitada y eliminada)", () => {
+    const { USUARIO_ADMIN_DEMO, cuentasPanelDemo } = require("../scripts/demo/datos");
+    assert.equal(validarPassword(USUARIO_ADMIN_DEMO.password), null);
+    assert.equal(USUARIO_ADMIN_DEMO.esAdmin, true);
+    assert.equal(USUARIO_ADMIN_DEMO.estado, "aprobado");
+    const cuentas = cuentasPanelDemo(fechaBanco("2026-11-05"));
+    for (const c of cuentas) {
+        assert.equal(validarPassword(c.password), null);
+        assert.match(c.email, /@detrazos\.test$/);
+        assert.ok(c.createdAt instanceof Date);
+    }
+    assert.ok(cuentas.filter((c) => c.estado === "pendiente").length >= 2);
+    const eliminada = cuentas.find((c) => c.estado === "eliminado");
+    assert.ok(eliminada.eliminadoEn instanceof Date);
+    assert.equal(eliminada.eliminadoEn.getDate(), 4); // un día antes del 5
+    const correos = [USUARIO_DEMO.email, USUARIO_ADMIN_DEMO.email, ...cuentas.map((c) => c.email)];
+    assert.equal(new Set(correos).size, correos.length); // sin correos repetidos
+});

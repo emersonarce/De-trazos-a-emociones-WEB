@@ -10,6 +10,39 @@ const USUARIO_DEMO = {
     permisos: { conContexto: true, descargarPdf: true },
 };
 
+// Administrador de la demo: aprueba registros, gestiona permisos y restablece
+// contraseñas en /admin. Por ser administrador tiene todos los permisos (menos
+// eliminar su propia cuenta). No tiene análisis propios.
+const USUARIO_ADMIN_DEMO = {
+    nombre: "Admin", apellido: "Demo", email: "admin@detrazos.test", password: "Admin2026!", // cumple utils/password.js
+    rol: "profesor", institucion: "Universidad (datos inventados)", estado: "aprobado", esAdmin: true,
+};
+
+// Cuentas inventadas para mostrar el panel del administrador: solicitudes por
+// aprobar, una cuenta aprobada con permisos limitados (solo dibujo suelto) y
+// una que su usuario eliminó. Las fechas son relativas al día del banco. Todas
+// usan la contraseña del usuario demo, por si se quiere entrar con una después
+// de aprobarla.
+function cuentasPanelDemo(hoy = new Date()) {
+    const hace = (dias, hora) => {
+        const f = new Date(hoy);
+        f.setDate(f.getDate() - dias);
+        f.setHours(hora, 0, 0, 0);
+        return f;
+    };
+    const nueva = { password: USUARIO_DEMO.password, institucion: "", permisos: { conContexto: false, descargarPdf: false } };
+    return [
+        { ...nueva, nombre: "Camila", apellido: "Restrepo", email: "camila.restrepo@detrazos.test", rol: "profesor", institucion: "Colegio Los Pinos (demo)", estado: "pendiente", createdAt: hace(0, 8) },
+        { ...nueva, nombre: "Andrés", apellido: "Gómez", email: "andres.gomez@detrazos.test", rol: "padre", estado: "pendiente", createdAt: hace(1, 18) },
+        { ...nueva, nombre: "Luisa", apellido: "Ortiz", email: "luisa.ortiz@detrazos.test", rol: "psicologo", institucion: "Consultorio Crecer (demo)", estado: "pendiente", createdAt: hace(2, 11) },
+        { ...nueva, nombre: "Paula", apellido: "Díaz", email: "paula.diaz@detrazos.test", rol: "profesor", institucion: "Colegio de prueba (datos inventados)", estado: "aprobado", createdAt: hace(20, 9) },
+        {
+            ...nueva, nombre: "Martín", apellido: "Pérez", email: "martin.perez@detrazos.test", rol: "padre", estado: "eliminado",
+            permisos: { conContexto: false, descargarPdf: false, eliminarCuenta: true }, createdAt: hace(30, 15), eliminadoEn: hace(1, 16),
+        },
+    ];
+}
+
 // Números pseudoaleatorios con semilla (mulberry32): el mismo banco cada vez.
 function azar(semilla) {
     let a = semilla >>> 0;
@@ -233,4 +266,4 @@ function resultadoIA(item, dib, medicion, r) {
     };
 }
 
-module.exports = { USUARIO_DEMO, azar, fechaBanco, generarBanco, resultadoIA };
+module.exports = { USUARIO_DEMO, USUARIO_ADMIN_DEMO, cuentasPanelDemo, azar, fechaBanco, generarBanco, resultadoIA };
