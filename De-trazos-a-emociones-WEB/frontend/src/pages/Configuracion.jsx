@@ -210,7 +210,7 @@ const Configuracion = () => {
                 <div className="cuenta-chips">
                   <span className="cuenta-chip">{ROL_LABEL[perfil.rol] || perfil.rol || 'Sin rol'}</span>
                   {perfil.esAdmin ? (
-                    <span className="cuenta-chip admin">Administrador</span>
+                    <span className="cuenta-chip admin">{perfil.esSuperAdmin ? 'Super administrador' : 'Administrador'}</span>
                   ) : (
                     <>
                       {perfil.permisos?.conContexto && <span className="cuenta-chip">Análisis con contexto</span>}

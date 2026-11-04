@@ -7,8 +7,8 @@
 //                         cumpleaños y las alertas caen ahí (p. ej. una presentación)
 //   npm run demo:borrar   borra la base demo y las imágenes demo-*
 //   npm run demo:usuarios [-- AAAA-MM-DD]   vuelve a crear SOLO las cuentas del
-//                         panel (administrador demo, solicitudes pendientes, una
-//                         cuenta limitada y una eliminada) y su historial de
+//                         panel (super administrador demo, una administradora,
+//                         solicitudes pendientes, una cuenta limitada y una eliminada) y su historial de
 //                         ejemplo, y devuelve a Docente su contraseña, estado y
 //                         permisos de demo, sin tocar los análisis
 //   npm run dev:demo      arranca el backend con la base demo
@@ -150,6 +150,7 @@ async function crearCuentasPanel(hoy) {
                 passwordTemporal: false,
                 estado: USUARIO_DEMO.estado,
                 esAdmin: false,
+                esSuperAdmin: false,
                 permisos: USUARIO_DEMO.permisos,
             },
             $unset: { eliminadoEn: "" },
@@ -163,7 +164,7 @@ async function usuarios(textoFecha) {
     const base = await conectar();
     const cuentas = await crearCuentasPanel(hoy);
     console.log(`Cuentas del panel creadas en «${base}» (los análisis no se tocaron):`);
-    for (const c of cuentas) console.log(`  ${c.email} · ${c.esAdmin ? "administrador" : c.estado}`);
+    for (const c of cuentas) console.log(`  ${c.email} · ${c.esSuperAdmin ? "super administrador" : c.esAdmin ? "administradora" : c.estado}`);
     console.log("El historial del panel quedó con las acciones de ejemplo.");
     console.log(`${USUARIO_DEMO.email} (Docente) volvió a su contraseña, estado y permisos de demo.`);
     console.log(`\nAdministrador: ${USUARIO_ADMIN_DEMO.email} / ${USUARIO_ADMIN_DEMO.password}`);

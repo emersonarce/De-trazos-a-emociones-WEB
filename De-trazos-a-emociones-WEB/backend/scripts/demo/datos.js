@@ -10,19 +10,16 @@ const USUARIO_DEMO = {
     permisos: { conContexto: true, descargarPdf: true },
 };
 
-// Administrador de la demo: aprueba registros, gestiona permisos y restablece
-// contraseñas en /admin. Por ser administrador tiene todos los permisos (menos
-// eliminar su propia cuenta). No tiene análisis propios.
+// Super administrador de la demo: aprueba registros, gestiona permisos,
+// restablece contraseñas y, por ser super administrador, puede quitarles el rol
+// o eliminar a otros administradores (a él nadie lo modifica desde el panel).
+// Tiene todos los permisos (menos eliminar su propia cuenta). No tiene análisis
+// propios.
 const USUARIO_ADMIN_DEMO = {
     nombre: "Admin", apellido: "Demo", email: "admin@detrazos.test", password: "Admin2026!", // cumple utils/password.js
-    rol: "profesor", institucion: "Universidad (datos inventados)", estado: "aprobado", esAdmin: true,
+    rol: "profesor", institucion: "Universidad (datos inventados)", estado: "aprobado", esAdmin: true, esSuperAdmin: true,
 };
 
-// Cuentas inventadas para mostrar el panel del administrador: solicitudes por
-// aprobar, una cuenta aprobada con permisos limitados (solo dibujo suelto) y
-// una que su usuario eliminó. Las fechas son relativas al día del banco. Todas
-// usan la contraseña del usuario demo, por si se quiere entrar con una después
-// de aprobarla.
 // Fecha «hace n días, a tal hora» contando desde el día del banco.
 const haceDesde = (hoy) => (dias, hora) => {
     const f = new Date(hoy);
@@ -31,13 +28,20 @@ const haceDesde = (hoy) => (dias, hora) => {
     return f;
 };
 
+// Cuentas inventadas para mostrar el panel del administrador: solicitudes por
+// aprobar, una administradora normal (para mostrar lo que solo puede hacer el
+// super administrador), una cuenta aprobada con permisos limitados (solo
+// dibujo suelto) y una que su usuario eliminó. Las fechas son relativas al día
+// del banco. Todas usan la contraseña del usuario demo, por si se quiere entrar
+// con una (por ejemplo, después de aprobarla).
 function cuentasPanelDemo(hoy = new Date()) {
     const hace = haceDesde(hoy);
-    const nueva ={ password: USUARIO_DEMO.password, institucion: "", permisos: { conContexto: false, descargarPdf: false } };
+    const nueva = { password: USUARIO_DEMO.password, institucion: "", permisos: { conContexto: false, descargarPdf: false } };
     return [
         { ...nueva, nombre: "Camila", apellido: "Restrepo", email: "camila.restrepo@detrazos.test", rol: "profesor", institucion: "Colegio Los Pinos (demo)", estado: "pendiente", createdAt: hace(0, 8) },
         { ...nueva, nombre: "Andrés", apellido: "Gómez", email: "andres.gomez@detrazos.test", rol: "padre", estado: "pendiente", createdAt: hace(1, 18) },
         { ...nueva, nombre: "Luisa", apellido: "Ortiz", email: "luisa.ortiz@detrazos.test", rol: "psicologo", institucion: "Consultorio Crecer (demo)", estado: "pendiente", createdAt: hace(2, 11) },
+        { ...nueva, nombre: "Valeria", apellido: "Castro", email: "valeria.castro@detrazos.test", rol: "psicologo", institucion: "Consultorio Crecer (demo)", estado: "aprobado", esAdmin: true, createdAt: hace(12, 9) },
         { ...nueva, nombre: "Paula", apellido: "Díaz", email: "paula.diaz@detrazos.test", rol: "profesor", institucion: "Colegio de prueba (datos inventados)", estado: "aprobado", createdAt: hace(20, 9) },
         {
             ...nueva, nombre: "Martín", apellido: "Pérez", email: "martin.perez@detrazos.test", rol: "padre", estado: "eliminado",
@@ -47,15 +51,18 @@ function cuentasPanelDemo(hoy = new Date()) {
 }
 
 // Historial de ejemplo del panel, coherente con esas cuentas: lo que el
-// administrador demo «hizo» antes (aprobó a Martín y a Paula, y a Martín le
-// dio el permiso de eliminar su cuenta, que él usó ayer). Cada entrada se
-// completa con los datos del administrador y de la cuenta al crearla.
+// administrador demo «hizo» antes (aprobó a Martín, a Paula y a Valeria, nombró
+// administradora a Valeria y le dio a Martín el permiso de eliminar su cuenta,
+// que él usó ayer). Cada entrada se completa con los datos del administrador y
+// de la cuenta al crearla.
 function historialPanelDemo(hoy = new Date()) {
     const hace = haceDesde(hoy);
     const aprobada = { estadoAnterior: "pendiente", estadoNuevo: "aprobado" };
     return [
         { accion: "aprobar_solicitud", usuarioEmail: "martin.perez@detrazos.test", detalle: aprobada, fecha: hace(30, 17) },
         { accion: "aprobar_solicitud", usuarioEmail: "paula.diaz@detrazos.test", detalle: aprobada, fecha: hace(20, 10) },
+        { accion: "aprobar_solicitud", usuarioEmail: "valeria.castro@detrazos.test", detalle: aprobada, fecha: hace(12, 10) },
+        { accion: "nombrar_admin", usuarioEmail: "valeria.castro@detrazos.test", detalle: {}, fecha: hace(10, 15) },
         { accion: "cambiar_permiso", usuarioEmail: "martin.perez@detrazos.test", detalle: { permiso: "eliminarCuenta", valor: true }, fecha: hace(5, 11) },
     ];
 }

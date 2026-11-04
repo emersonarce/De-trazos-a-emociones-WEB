@@ -39,7 +39,7 @@ GET /perfil/me
 router.get("/me", verificarToken, async (req, res) => {
     try {
         const usuario = await User.findById(req.usuario.id)
-            .select("nombre apellido email rol institucion estado esAdmin fotoPerfil permisos passwordTemporal");
+            .select("nombre apellido email rol institucion estado esAdmin esSuperAdmin fotoPerfil permisos passwordTemporal");
 
         if (!usuario) {
             return res.status(404).json({ message: "Usuario no encontrado" });
@@ -59,6 +59,7 @@ router.get("/me", verificarToken, async (req, res) => {
             rol: usuario.rol,
             institucion: usuario.institucion,
             esAdmin: usuario.esAdmin,
+            esSuperAdmin: Boolean(usuario.esSuperAdmin),
             permisos: permisosEfectivos(usuario),
             tieneFoto: Boolean(usuario.fotoPerfil),
             passwordTemporal: Boolean(usuario.passwordTemporal)

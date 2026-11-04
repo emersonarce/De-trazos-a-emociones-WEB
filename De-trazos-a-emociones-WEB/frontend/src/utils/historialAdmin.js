@@ -42,7 +42,8 @@ export function describirAccion(a = {}) {
         ? 'No tenía análisis.'
         : n === 1 ? 'Se borró 1 análisis con su imagen.' : `Se borraron ${n} análisis con sus imágenes.`;
       const antes = d.estadoAnterior ? ` La cuenta estaba ${ESTADO[d.estadoAnterior] || d.estadoAnterior}.` : '';
-      return { texto: `${admin} eliminó definitivamente la cuenta de ${quien}`, detalle: borrados + antes, tono: 'peligro' };
+      const eraAdmin = d.eraAdmin ? ' Era administrador(a).' : '';
+      return { texto: `${admin} eliminó definitivamente la cuenta de ${quien}`, detalle: borrados + antes + eraAdmin, tono: 'peligro' };
     }
     case 'restablecer_password':
       return { texto: `${admin} restableció la contraseña de ${quien}`, detalle: 'Se le dio una contraseña temporal para cambiar al entrar.', tono: 'neutro' };

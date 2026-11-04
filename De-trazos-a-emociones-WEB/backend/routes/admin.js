@@ -9,6 +9,7 @@ const verificarToken = require("../middleware/authMiddleware");
 const verificarAdmin = require("../middleware/adminMiddleware");
 const { permisosEfectivos } = require("../utils/permisos");
 const { generarPasswordTemporal } = require("../utils/password");
+const { bloqueoSobreAdmin } = require("../utils/admin");
 const { registrarAccion } = require("../utils/auditoria");
 
 const router = express.Router();
@@ -37,7 +38,7 @@ router.get("/usuarios", verificarToken, verificarAdmin, async (req, res) => {
         }
 
         const usuarios = await User.find(filtro)
-            .select("nombre apellido email rol institucion estado esAdmin permisos createdAt eliminadoEn passwordTemporal")
+            .select("nombre apellido email rol institucion estado esAdmin esSuperAdmin permisos createdAt eliminadoEn passwordTemporal")
             .sort(filtro.estado === "eliminado" ? { eliminadoEn: -1 } : { createdAt: -1 });
 
         // Se devuelven los permisos EFECTIVOS (admin = todo; cuentas heredadas =
@@ -51,6 +52,7 @@ router.get("/usuarios", verificarToken, verificarAdmin, async (req, res) => {
             institucion: u.institucion,
             estado: u.estado,
             esAdmin: u.esAdmin,
+            esSuperAdmin: Boolean(u.esSuperAdmin),
             createdAt: u.createdAt,
             eliminadoEn: u.eliminadoEn,
             // Tiene la contraseña temporal del administrador y aún no la cambia.
@@ -144,9 +146,11 @@ router.delete("/usuarios/:id", verificarToken, verificarAdmin, async (req, res) 
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
 
-        // No permitir eliminar administradores desde el panel.
-        if (usuario.esAdmin) {
-            return res.status(400).json({ message: "No se puede eliminar a un administrador" });
+        // Un administrador solo lo elimina el super administrador; al super
+        // administrador no lo elimina nadie desde el panel.
+        const bloqueo = bloqueoSobreAdmin(req.admin, usuario);
+        if (bloqueo) {
+            return res.status(403).json({ message: bloqueo });
         }
 
         // Borrar las imágenes de sus análisis.
@@ -167,6 +171,7 @@ router.delete("/usuarios/:id", verificarToken, verificarAdmin, async (req, res) 
         await registrarAccion(req, usuario, "eliminar_definitivo", {
             estadoAnterior: usuario.estado,
             analisis: analisis.length,
+            ...(usuario.esAdmin && { eraAdmin: true }),
         });
 
         return res.json({ message: "Cuenta eliminada", id: usuario._id });
@@ -197,6 +202,11 @@ router.post("/usuarios/:id/restablecer-password", verificarToken, verificarAdmin
 
         if (String(usuario._id) === String(req.usuario.id)) {
             return res.status(400).json({ message: "Tu propia contraseña se cambia en Configuración" });
+        }
+
+        const bloqueo = bloqueoSobreAdmin(req.admin, usuario);
+        if (bloqueo) {
+            return res.status(403).json({ message: bloqueo });
         }
 
         if (usuario.estado !== "aprobado") {
@@ -231,6 +241,14 @@ router.patch("/usuarios/:id/gestion", verificarToken, verificarAdmin, async (req
         const usuario = await User.findById(req.params.id);
         if (!usuario) {
             return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        // A otro administrador (rol, permisos o quitarle el rol) solo lo
+        // modifica el super administrador; al super administrador, nadie.
+        // Nombrar administrador a una cuenta normal sí puede cualquiera.
+        const bloqueo = bloqueoSobreAdmin(req.admin, usuario);
+        if (bloqueo) {
+            return res.status(403).json({ message: bloqueo });
         }
 
         // Cómo estaba antes, para registrar en el historial solo lo que cambió.

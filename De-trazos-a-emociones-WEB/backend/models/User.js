@@ -71,6 +71,15 @@ const UserSchema = new mongoose.Schema(
             default: false
         },
 
+        // Super administrador: por encima de los demás administradores (solo él
+        // les quita el rol, elimina sus cuentas o restablece sus contraseñas) y
+        // nadie lo modifica desde el panel. Solo lo asigna SUPERADMIN_EMAILS
+        // (.env) o el banco demo, nunca la app. Ver utils/admin.js.
+        esSuperAdmin: {
+            type: Boolean,
+            default: false
+        },
+
         // Ruta de la foto de perfil (relativa). La imagen se sirve protegida.
         fotoPerfil: {
             type: String,

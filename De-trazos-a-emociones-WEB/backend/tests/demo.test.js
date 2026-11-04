@@ -67,6 +67,7 @@ test("demo: administrador y cuentas del panel (solicitudes, cuenta limitada y el
     const { USUARIO_ADMIN_DEMO, cuentasPanelDemo } = require("../scripts/demo/datos");
     assert.equal(validarPassword(USUARIO_ADMIN_DEMO.password), null);
     assert.equal(USUARIO_ADMIN_DEMO.esAdmin, true);
+    assert.equal(USUARIO_ADMIN_DEMO.esSuperAdmin, true); // el admin demo es el super administrador
     assert.equal(USUARIO_ADMIN_DEMO.estado, "aprobado");
     const cuentas = cuentasPanelDemo(fechaBanco("2026-11-05"));
     for (const c of cuentas) {
@@ -75,6 +76,8 @@ test("demo: administrador y cuentas del panel (solicitudes, cuenta limitada y el
         assert.ok(c.createdAt instanceof Date);
     }
     assert.ok(cuentas.filter((c) => c.estado === "pendiente").length >= 2);
+    // Una administradora normal (no super) para mostrar lo que solo hace el super administrador.
+    assert.deepEqual(cuentas.filter((c) => c.esAdmin).map((c) => [c.email, Boolean(c.esSuperAdmin)]), [["valeria.castro@detrazos.test", false]]);
     const eliminada = cuentas.find((c) => c.estado === "eliminado");
     assert.ok(eliminada.eliminadoEn instanceof Date);
     assert.equal(eliminada.eliminadoEn.getDate(), 4); // un día antes del 5

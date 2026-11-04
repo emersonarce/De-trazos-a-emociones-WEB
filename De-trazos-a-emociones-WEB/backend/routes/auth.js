@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const { esEmailAdmin } = require("../utils/admin");
+const { esEmailAdmin, esEmailSuperAdmin } = require("../utils/admin");
 const { validarPassword } = require("../utils/password");
 const { permisosEfectivos } = require("../utils/permisos");
 
@@ -51,9 +51,10 @@ router.post("/register", async (req, res) => {
         // Hashear contraseña
         const passwordHash = await bcrypt.hash(password, 12);
 
-        // Si el correo está en ADMIN_EMAILS, la cuenta es admin y queda aprobada;
-        // de lo contrario queda pendiente de aprobación por el administrador.
-        const admin = esEmailAdmin(emailNormalizado);
+        // Si el correo está en ADMIN_EMAILS (o SUPERADMIN_EMAILS), la cuenta es
+        // admin y queda aprobada; de lo contrario queda pendiente de aprobación.
+        const superAdmin = esEmailSuperAdmin(emailNormalizado);
+        const admin = superAdmin || esEmailAdmin(emailNormalizado);
 
         // Crear usuario
         const nuevoUsuario = new User({
@@ -64,6 +65,7 @@ router.post("/register", async (req, res) => {
             rol: rol,
             institucion: (institucion || "").trim(),
             esAdmin: admin,
+            esSuperAdmin: superAdmin,
             estado: admin ? "aprobado" : "pendiente",
             // Las cuentas nuevas arrancan restringidas: solo análisis de dibujo
             // suelto. El administrador habilita lo demás por usuario.
@@ -147,6 +149,13 @@ router.post("/login", async (req, res) => {
             usuario.estado = "aprobado";
             await usuario.save();
         }
+        // Igual con el super administrador (SUPERADMIN_EMAILS).
+        if (esEmailSuperAdmin(usuario.email) && (!usuario.esSuperAdmin || !usuario.esAdmin || usuario.estado !== "aprobado")) {
+            usuario.esSuperAdmin = true;
+            usuario.esAdmin = true;
+            usuario.estado = "aprobado";
+            await usuario.save();
+        }
 
         // Bloquear el acceso hasta que el administrador apruebe la cuenta.
         if (usuario.estado === "pendiente") {
@@ -190,6 +199,7 @@ router.post("/login", async (req, res) => {
                 email: usuario.email,
                 rol: usuario.rol,
                 esAdmin: usuario.esAdmin,
+                esSuperAdmin: Boolean(usuario.esSuperAdmin),
                 permisos: permisosEfectivos(usuario),
                 // Contraseña temporal (la restableció el administrador): la app
                 // pide cambiarla antes de seguir.

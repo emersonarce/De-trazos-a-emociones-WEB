@@ -34,6 +34,7 @@ User.findById = (id) => consulta(usuarios.get(String(id)) || null);
 User.findOne = ({ email }) => consulta([...usuarios.values()].find((u) => u.email === email) || null);
 User.find = ({ estado }) => consulta([...usuarios.values()].filter((u) => u.estado === estado), (o) => { ordenPedido = o; });
 User.findByIdAndDelete = async (id) => usuarios.delete(String(id));
+User.countDocuments = async (f = {}) => [...usuarios.values()].filter((u) => Object.entries(f).every(([k, v]) => u[k] === v)).length;
 Analysis.find = () => consulta([]);
 Analysis.deleteMany = async () => { borradosDeAnalisis++; };
 // Historial de acciones en memoria (de la más reciente a la más antigua, de a n).
@@ -59,6 +60,7 @@ const crear = (id, datos = {}) => {
 };
 const ID_ADMIN = "aaaaaaaaaaaaaaaaaaaaaaaa";
 const ID_USUARIO = "bbbbbbbbbbbbbbbbbbbbbbbb";
+const ID_SUPER = "dddddddddddddddddddddddd";
 const token = (id) => "Bearer " + jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
 let servidor;
@@ -266,4 +268,72 @@ test("historial: GET /admin/historial, de la más reciente a la más antigua y d
     assert.equal((await pedir("GET", "/admin/historial?antes=ayer", { token: token(ID_ADMIN) })).status, 400);
     crear(ID_USUARIO);
     assert.equal((await pedir("GET", "/admin/historial", { token: token(ID_USUARIO) })).status, 403); // solo admin
+});
+
+test("super administrador: solo él elimina, restablece o quita el rol a otros administradores", async () => {
+    crear(ID_SUPER, { esAdmin: true, esSuperAdmin: true, nombre: "Super", apellido: "Admin", email: "super@prueba.test" });
+    const otro = crear(ID_USUARIO, { esAdmin: true, nombre: "Vale", apellido: "Castro", email: "vale@prueba.test" });
+    const ruta = `/admin/usuarios/${ID_USUARIO}`;
+
+    // Un administrador normal no puede tocar a otro administrador.
+    const admin = token(ID_ADMIN);
+    const borrar = await pedir("DELETE", ruta, { token: admin });
+    assert.equal(borrar.status, 403);
+    assert.match(borrar.cuerpo.message, /super administrador/);
+    assert.equal((await pedir("POST", `${ruta}/restablecer-password`, { token: admin })).status, 403);
+    assert.equal((await pedir("PATCH", `${ruta}/gestion`, { token: admin, json: { esAdmin: false } })).status, 403);
+    assert.equal((await pedir("PATCH", `${ruta}/gestion`, { token: admin, json: { rol: "padre" } })).status, 403);
+    assert.equal(otro.esAdmin, true);
+    assert.equal(historial.length, 0);
+
+    // El super administrador sí: le quita el rol…
+    const superAdmin = token(ID_SUPER);
+    const quitar = await pedir("PATCH", `${ruta}/gestion`, { token: superAdmin, json: { esAdmin: false } });
+    assert.equal(quitar.status, 200);
+    assert.equal(otro.esAdmin, false);
+    assert.equal(historial.at(-1).accion, "quitar_admin");
+    assert.equal(historial.at(-1).adminNombre, "Super Admin");
+
+    // …y elimina la cuenta de un administrador.
+    otro.esAdmin = true;
+    const eliminar = await pedir("DELETE", ruta, { token: superAdmin });
+    assert.equal(eliminar.status, 200);
+    assert.equal(usuarios.has(ID_USUARIO), false);
+    assert.deepEqual(historial.at(-1).detalle, { estadoAnterior: "aprobado", analisis: 0, eraAdmin: true });
+});
+
+test("al super administrador nadie lo modifica ni lo elimina desde el panel (ni él mismo)", async () => {
+    const jefe = crear(ID_SUPER, { esAdmin: true, esSuperAdmin: true, email: "super@prueba.test" });
+    const ruta = `/admin/usuarios/${ID_SUPER}`;
+    for (const t of [token(ID_ADMIN), token(ID_SUPER)]) {
+        const r = await pedir("DELETE", ruta, { token: t });
+        assert.equal(r.status, 403);
+        assert.match(r.cuerpo.message, /super administrador no se puede/);
+    }
+    assert.equal((await pedir("PATCH", `${ruta}/gestion`, { token: token(ID_ADMIN), json: { esAdmin: false } })).status, 403);
+    assert.equal((await pedir("POST", `${ruta}/restablecer-password`, { token: token(ID_ADMIN) })).status, 403);
+    assert.equal(usuarios.has(ID_SUPER), true);
+    assert.equal(jefe.esAdmin, true);
+});
+
+test("cualquier administrador puede nombrar a otro (la advertencia la muestra el panel)", async () => {
+    const u = crear(ID_USUARIO, { permisos: { conContexto: true, descargarPdf: true } });
+    const r = await pedir("PATCH", `/admin/usuarios/${ID_USUARIO}/gestion`, { token: token(ID_ADMIN), json: { esAdmin: true } });
+    assert.equal(r.status, 200);
+    assert.equal(u.esAdmin, true);
+    assert.equal(u.esSuperAdmin, undefined); // ser super administrador nunca se da desde el panel
+});
+
+test("SUPERADMIN_EMAILS: al iniciar sesión la cuenta queda super administradora y aprobada", async () => {
+    process.env.SUPERADMIN_EMAILS = "jefe@prueba.test";
+    try {
+        const u = crear(ID_USUARIO, { email: "jefe@prueba.test", estado: "pendiente", password: await bcrypt.hash("Clave123!", 4) });
+        const r = await pedir("POST", "/auth/login", { json: { email: "jefe@prueba.test", password: "Clave123!" } });
+        assert.equal(r.status, 200);
+        assert.equal(r.cuerpo.usuario.esSuperAdmin, true);
+        assert.equal(r.cuerpo.usuario.esAdmin, true);
+        assert.equal(u.estado, "aprobado");
+    } finally {
+        delete process.env.SUPERADMIN_EMAILS;
+    }
 });

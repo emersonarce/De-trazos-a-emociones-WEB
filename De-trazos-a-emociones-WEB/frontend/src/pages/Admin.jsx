@@ -72,7 +72,14 @@ const Admin = () => {
   // devolvió el backend (se muestra una sola vez).
   const [porRestablecer, setPorRestablecer] = useState(null);
   const [temporal, setTemporal] = useState(null); // { u, password, copiada }
-  const miId = leerUsuario().id;
+  // Nombrar o quitar administrador: se pide confirmar con una advertencia.
+  const [cambioAdmin, setCambioAdmin] = useState(null); // { u, valor }
+  const yo = leerUsuario();
+  const miId = yo.id;
+  const soySuper = yo.esSuperAdmin === true;
+  // Sobre otro administrador solo actúa el super administrador; sobre el super
+  // administrador, nadie (el backend lo exige igual; aquí solo se oculta).
+  const puedoModificar = (u) => !u.esSuperAdmin && (!u.esAdmin || soySuper);
 
   const confirmarRestablecer = async () => {
     const u = porRestablecer;
@@ -237,6 +244,11 @@ const Admin = () => {
                   </div>
                   <div className="admin-card-email">{u.email}</div>
                   <div className="admin-card-meta">
+                    {u.esSuperAdmin ? (
+                      <span className="admin-chip super">Super administrador</span>
+                    ) : u.esAdmin ? (
+                      <span className="admin-chip admin">Administrador(a)</span>
+                    ) : null}
                     <span className="admin-chip">{ROL_LABEL[u.rol] || u.rol}</span>
                     {u.institucion ? (
                       <span className="admin-chip inst">{u.institucion}</span>
@@ -252,6 +264,13 @@ const Admin = () => {
                 </div>
 
                 <div className="admin-actions">
+                  {!puedoModificar(u) && (
+                    <span className="admin-nota">
+                      {u.esSuperAdmin
+                        ? 'El super administrador no se puede modificar desde el panel'
+                        : 'Solo el super administrador puede modificar a otros administradores'}
+                    </span>
+                  )}
                   {filtro === 'pendiente' && (
                     <>
                       <button className="btn-aprobar" disabled={procesando === u._id} onClick={() => resolver(u._id, 'aprobar')}>
@@ -262,14 +281,17 @@ const Admin = () => {
                       </button>
                     </>
                   )}
-                  {filtro === 'aprobado' && (
+                  {filtro === 'aprobado' && puedoModificar(u) && (
                     <>
                       <button className="btn-neutro-admin" disabled={procesando === u._id} onClick={() => setPorRestablecer(u)}>
                         <KeyRound size={16} /> Restablecer contraseña
                       </button>
-                      <button className="btn-rechazar" disabled={procesando === u._id} onClick={() => resolver(u._id, 'rechazar')}>
-                        <Ban size={16} /> Deshabilitar
-                      </button>
+                      {/* A un administrador no se le cambia el estado: primero se le quita el rol. */}
+                      {!u.esAdmin && (
+                        <button className="btn-rechazar" disabled={procesando === u._id} onClick={() => resolver(u._id, 'rechazar')}>
+                          <Ban size={16} /> Deshabilitar
+                        </button>
+                      )}
                     </>
                   )}
                   {filtro === 'rechazado' && (
@@ -282,9 +304,11 @@ const Admin = () => {
                       <RotateCcw size={16} /> Restaurar
                     </button>
                   )}
-                  <button className="btn-eliminar-admin" disabled={procesando === u._id} onClick={() => setPorBorrar(u)}>
-                    <Trash2 size={16} /> {filtro === 'eliminado' ? 'Eliminar definitivamente' : 'Eliminar'}
-                  </button>
+                  {puedoModificar(u) && (
+                    <button className="btn-eliminar-admin" disabled={procesando === u._id} onClick={() => setPorBorrar(u)}>
+                      <Trash2 size={16} /> {filtro === 'eliminado' ? 'Eliminar definitivamente' : 'Eliminar'}
+                    </button>
+                  )}
                 </div>
 
                 {filtro !== 'eliminado' && (
@@ -293,7 +317,7 @@ const Admin = () => {
                     <span>Rol</span>
                     <select
                       value={u.rol}
-                      disabled={guardandoGestion === u._id}
+                      disabled={!puedoModificar(u) || guardandoGestion === u._id}
                       onChange={(e) => setCambioRol({ u, rol: e.target.value })}
                     >
                       <option value="padre">Padre / Madre</option>
@@ -333,12 +357,20 @@ const Admin = () => {
                     />
                     Eliminar su cuenta
                   </label>
-                  <label className="adm-g-check" title={u._id === miId ? 'No puedes cambiar tu propio rol de administrador' : ''}>
+                  <label
+                    className="adm-g-check"
+                    title={u.esSuperAdmin
+                      ? 'El super administrador no se puede modificar desde el panel'
+                      : !puedoModificar(u)
+                        ? 'Solo el super administrador puede quitar el rol de administrador'
+                        : ''}
+                  >
                     <input
                       type="checkbox"
                       checked={!!u.esAdmin}
-                      disabled={u._id === miId || guardandoGestion === u._id}
-                      onChange={(e) => actualizar(u, { esAdmin: e.target.checked })}
+                      disabled={u._id === miId || !puedoModificar(u) || guardandoGestion === u._id}
+                      // Pide confirmar con una advertencia antes de aplicar.
+                      onChange={(e) => setCambioAdmin({ u, valor: e.target.checked })}
                     />
                     Administrador
                   </label>
@@ -353,11 +385,15 @@ const Admin = () => {
       <ConfirmDialog
         abierto={!!porBorrar}
         peligro
-        titulo={filtro === 'eliminado' ? 'Eliminar definitivamente' : 'Eliminar cuenta'}
+        titulo={filtro === 'eliminado'
+          ? 'Eliminar definitivamente'
+          : porBorrar?.esAdmin ? 'Eliminar cuenta de administrador(a)' : 'Eliminar cuenta'}
         mensaje={porBorrar
           ? `¿Eliminar ${filtro === 'eliminado' ? 'definitivamente ' : ''}la cuenta de ${porBorrar.nombre} ${porBorrar.apellido} (${porBorrar.email})?`
           : ''}
-        detalle="Se borrarán también todos sus análisis e imágenes. Esta acción no se puede deshacer."
+        detalle={porBorrar?.esAdmin
+          ? 'Es administrador(a): perderá el acceso al panel. Se borrarán también todos sus análisis e imágenes. Esta acción no se puede deshacer.'
+          : 'Se borrarán también todos sus análisis e imágenes. Esta acción no se puede deshacer.'}
         textoConfirmar={filtro === 'eliminado' ? 'Eliminar definitivamente' : 'Eliminar'}
         cargando={procesando === porBorrar?._id}
         onConfirmar={confirmarEliminar}
@@ -391,6 +427,29 @@ const Admin = () => {
         textoCancelar="Cerrar"
         onConfirmar={copiarTemporal}
         onCancelar={() => setTemporal(null)}
+      />
+
+      {/* Advertencia antes de nombrar (o quitar) un administrador. */}
+      <ConfirmDialog
+        abierto={!!cambioAdmin}
+        peligro
+        titulo={cambioAdmin?.valor ? 'Nombrar administrador(a)' : 'Quitar el rol de administrador'}
+        mensaje={cambioAdmin
+          ? (cambioAdmin.valor
+            ? `¿Darle el rol de administrador(a) a ${cambioAdmin.u.nombre} ${cambioAdmin.u.apellido} (${cambioAdmin.u.email})?`
+            : `¿Quitarle el rol de administrador(a) a ${cambioAdmin.u.nombre} ${cambioAdmin.u.apellido} (${cambioAdmin.u.email})?`)
+          : ''}
+        detalle={cambioAdmin?.valor
+          ? 'Tendrá todos los permisos y acceso a este panel: podrá aprobar y rechazar cuentas, cambiar permisos, restablecer contraseñas, eliminar cuentas de usuarios y nombrar a otros administradores. Solo el super administrador podrá quitarle el rol o eliminar su cuenta.'
+          : 'Dejará de tener acceso al panel y volverá a ser una cuenta normal, con los permisos que tenga asignados.'}
+        textoConfirmar={cambioAdmin?.valor ? 'Sí, nombrar administrador(a)' : 'Quitar el rol'}
+        cargando={cambioAdmin ? guardandoGestion === cambioAdmin.u._id : false}
+        onConfirmar={async () => {
+          const c = cambioAdmin;
+          await actualizar(c.u, { esAdmin: c.valor });
+          setCambioAdmin(null);
+        }}
+        onCancelar={() => setCambioAdmin(null)}
       />
 
       <ConfirmDialog

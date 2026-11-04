@@ -270,3 +270,9 @@ test('historial del panel: cada acción en una frase con su detalle', async () =
   // Sin nombres (p. ej. cuentas viejas), usa el correo.
   assert.equal(describirAccion({ accion: 'restaurar', adminEmail: 'a@x.co', usuarioEmail: 'p@x.co' }).texto, 'a@x.co restauró la cuenta de p@x.co');
 });
+
+test('historial: eliminar la cuenta de un administrador lo dice en el detalle', async () => {
+  const { describirAccion } = await import('./historialAdmin.js');
+  const r = describirAccion({ accion: 'eliminar_definitivo', adminNombre: 'Admin Demo', usuarioNombre: 'Valeria Castro', detalle: { analisis: 0, estadoAnterior: 'aprobado', eraAdmin: true } });
+  assert.equal(r.detalle, 'No tenía análisis. La cuenta estaba aprobada. Era administrador(a).');
+});
