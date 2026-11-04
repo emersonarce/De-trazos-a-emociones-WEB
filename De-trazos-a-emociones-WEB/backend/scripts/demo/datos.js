@@ -23,14 +23,17 @@ const USUARIO_ADMIN_DEMO = {
 // una que su usuario eliminó. Las fechas son relativas al día del banco. Todas
 // usan la contraseña del usuario demo, por si se quiere entrar con una después
 // de aprobarla.
+// Fecha «hace n días, a tal hora» contando desde el día del banco.
+const haceDesde = (hoy) => (dias, hora) => {
+    const f = new Date(hoy);
+    f.setDate(f.getDate() - dias);
+    f.setHours(hora, 0, 0, 0);
+    return f;
+};
+
 function cuentasPanelDemo(hoy = new Date()) {
-    const hace = (dias, hora) => {
-        const f = new Date(hoy);
-        f.setDate(f.getDate() - dias);
-        f.setHours(hora, 0, 0, 0);
-        return f;
-    };
-    const nueva = { password: USUARIO_DEMO.password, institucion: "", permisos: { conContexto: false, descargarPdf: false } };
+    const hace = haceDesde(hoy);
+    const nueva ={ password: USUARIO_DEMO.password, institucion: "", permisos: { conContexto: false, descargarPdf: false } };
     return [
         { ...nueva, nombre: "Camila", apellido: "Restrepo", email: "camila.restrepo@detrazos.test", rol: "profesor", institucion: "Colegio Los Pinos (demo)", estado: "pendiente", createdAt: hace(0, 8) },
         { ...nueva, nombre: "Andrés", apellido: "Gómez", email: "andres.gomez@detrazos.test", rol: "padre", estado: "pendiente", createdAt: hace(1, 18) },
@@ -40,6 +43,20 @@ function cuentasPanelDemo(hoy = new Date()) {
             ...nueva, nombre: "Martín", apellido: "Pérez", email: "martin.perez@detrazos.test", rol: "padre", estado: "eliminado",
             permisos: { conContexto: false, descargarPdf: false, eliminarCuenta: true }, createdAt: hace(30, 15), eliminadoEn: hace(1, 16),
         },
+    ];
+}
+
+// Historial de ejemplo del panel, coherente con esas cuentas: lo que el
+// administrador demo «hizo» antes (aprobó a Martín y a Paula, y a Martín le
+// dio el permiso de eliminar su cuenta, que él usó ayer). Cada entrada se
+// completa con los datos del administrador y de la cuenta al crearla.
+function historialPanelDemo(hoy = new Date()) {
+    const hace = haceDesde(hoy);
+    const aprobada = { estadoAnterior: "pendiente", estadoNuevo: "aprobado" };
+    return [
+        { accion: "aprobar_solicitud", usuarioEmail: "martin.perez@detrazos.test", detalle: aprobada, fecha: hace(30, 17) },
+        { accion: "aprobar_solicitud", usuarioEmail: "paula.diaz@detrazos.test", detalle: aprobada, fecha: hace(20, 10) },
+        { accion: "cambiar_permiso", usuarioEmail: "martin.perez@detrazos.test", detalle: { permiso: "eliminarCuenta", valor: true }, fecha: hace(5, 11) },
     ];
 }
 
@@ -266,4 +283,4 @@ function resultadoIA(item, dib, medicion, r) {
     };
 }
 
-module.exports = { USUARIO_DEMO, USUARIO_ADMIN_DEMO, cuentasPanelDemo, azar, fechaBanco, generarBanco, resultadoIA };
+module.exports = { USUARIO_DEMO, USUARIO_ADMIN_DEMO, cuentasPanelDemo, historialPanelDemo, azar, fechaBanco, generarBanco, resultadoIA };

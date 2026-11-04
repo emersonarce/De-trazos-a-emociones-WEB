@@ -251,3 +251,22 @@ test('avisos de cuenta eliminada: al iniciar sesión y al registrarse con ese co
   assert.equal(registro.titulo, 'Este correo es de una cuenta eliminada');
   assert.deepEqual(registro.campos, ['email']);
 });
+
+test('historial del panel: cada acción en una frase con su detalle', async () => {
+  const { describirAccion } = await import('./historialAdmin.js');
+  const base = { adminNombre: 'Admin Demo', usuarioNombre: 'Paula Díaz' };
+  assert.equal(describirAccion({ ...base, accion: 'aprobar_solicitud' }).texto, 'Admin Demo aprobó la solicitud de Paula Díaz');
+  assert.equal(describirAccion({ ...base, accion: 'deshabilitar' }).tono, 'alerta');
+  const rol = describirAccion({ ...base, accion: 'cambiar_rol', detalle: { de: 'profesor', a: 'psicologo' } });
+  assert.equal(rol.detalle, 'Profesor(a) → Psicólogo(a)');
+  assert.equal(describirAccion({ ...base, accion: 'cambiar_permiso', detalle: { permiso: 'eliminarCuenta', valor: true } }).texto,
+    'Admin Demo le dio a Paula Díaz el permiso «Eliminar su cuenta»');
+  assert.match(describirAccion({ ...base, accion: 'cambiar_permiso', detalle: { permiso: 'descargarPdf', valor: false } }).texto, /le quitó/);
+  const eliminar = describirAccion({ ...base, accion: 'eliminar_definitivo', detalle: { analisis: 12, estadoAnterior: 'eliminado' } });
+  assert.equal(eliminar.tono, 'peligro');
+  assert.equal(eliminar.detalle, 'Se borraron 12 análisis con sus imágenes. La cuenta estaba eliminada por su usuario.');
+  assert.equal(describirAccion({ ...base, accion: 'eliminar_definitivo', detalle: { analisis: 1 } }).detalle, 'Se borró 1 análisis con su imagen.');
+  assert.match(describirAccion({ ...base, accion: 'restablecer_password' }).texto, /restableció la contraseña de Paula Díaz/);
+  // Sin nombres (p. ej. cuentas viejas), usa el correo.
+  assert.equal(describirAccion({ accion: 'restaurar', adminEmail: 'a@x.co', usuarioEmail: 'p@x.co' }).texto, 'a@x.co restauró la cuenta de p@x.co');
+});

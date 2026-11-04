@@ -81,3 +81,17 @@ test("demo: administrador y cuentas del panel (solicitudes, cuenta limitada y el
     const correos = [USUARIO_DEMO.email, USUARIO_ADMIN_DEMO.email, ...cuentas.map((c) => c.email)];
     assert.equal(new Set(correos).size, correos.length); // sin correos repetidos
 });
+
+test("demo: historial de ejemplo del panel, coherente con las cuentas", () => {
+    const { cuentasPanelDemo, historialPanelDemo } = require("../scripts/demo/datos");
+    const { ACCIONES } = require("../models/AccionAdmin");
+    const hoy = fechaBanco("2026-11-05");
+    const correos = new Set(cuentasPanelDemo(hoy).map((c) => c.email));
+    const historial = historialPanelDemo(hoy);
+    assert.ok(historial.length >= 3);
+    for (const h of historial) {
+        assert.ok(ACCIONES.includes(h.accion), h.accion);
+        assert.ok(correos.has(h.usuarioEmail), h.usuarioEmail);
+        assert.ok(h.fecha < hoy);
+    }
+});

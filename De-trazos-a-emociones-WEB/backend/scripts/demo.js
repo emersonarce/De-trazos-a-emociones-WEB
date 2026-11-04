@@ -8,7 +8,9 @@
 //   npm run demo:borrar   borra la base demo y las imágenes demo-*
 //   npm run demo:usuarios [-- AAAA-MM-DD]   vuelve a crear SOLO las cuentas del
 //                         panel (administrador demo, solicitudes pendientes, una
-//                         cuenta limitada y una eliminada), sin tocar los análisis
+//                         cuenta limitada y una eliminada) y su historial de
+//                         ejemplo, y devuelve a Docente su contraseña, estado y
+//                         permisos de demo, sin tocar los análisis
 //   npm run dev:demo      arranca el backend con la base demo
 const path = require("path");
 const fs = require("fs");
@@ -20,10 +22,11 @@ const bcrypt = require("bcryptjs");
 const sharp = require("sharp");
 const User = require("../models/User");
 const Analysis = require("../models/Analysis");
+const AccionAdmin = require("../models/AccionAdmin");
 const { medirImagen } = require("../services/medicionImagen");
 const { validarPassword } = require("../utils/password");
 const { nombreBaseDemo } = require("./demo/base");
-const { USUARIO_DEMO, USUARIO_ADMIN_DEMO, cuentasPanelDemo, azar, fechaBanco, generarBanco, resultadoIA } = require("./demo/datos");
+const { USUARIO_DEMO, USUARIO_ADMIN_DEMO, cuentasPanelDemo, historialPanelDemo, azar, fechaBanco, generarBanco, resultadoIA } = require("./demo/datos");
 const { dibujo, GRUPOS_DIBUJO } = require("./demo/dibujos");
 
 const UPLOADS = path.join(__dirname, "..", "uploads");
@@ -106,7 +109,9 @@ async function crear(textoFecha) {
 // Cuentas del panel del administrador: el admin demo, solicitudes pendientes,
 // una cuenta con permisos limitados y una eliminada. Solo toca esas cuentas
 // (por su correo): se pueden volver a crear sin regenerar el banco, por
-// ejemplo para dejar otra vez pendientes las solicitudes tras un ensayo.
+// ejemplo para dejar otra vez pendientes las solicitudes tras un ensayo. El
+// historial del panel se rehace entero (el de ejemplo), para que cuadre con
+// las cuentas: lo hecho en un ensayo se borra de él.
 async function crearCuentasPanel(hoy) {
     const cuentas = [USUARIO_ADMIN_DEMO, ...cuentasPanelDemo(hoy)];
     for (const c of cuentas) {
@@ -114,11 +119,42 @@ async function crearCuentasPanel(hoy) {
         if (error) throw new Error(`Contraseña demo no válida (${c.email}): ${error}.`);
     }
     await User.deleteMany({ email: { $in: cuentas.map((c) => c.email) } });
+    const creadas = {};
     for (const { password, ...datos } of cuentas) {
         const fecha = datos.createdAt || hoy;
         const doc = new User({ ...datos, createdAt: fecha, updatedAt: fecha, password: await bcrypt.hash(password, 12) });
         await doc.save({ timestamps: false }); // conserva las fechas inventadas
+        creadas[doc.email] = doc;
     }
+
+    const admin = creadas[USUARIO_ADMIN_DEMO.email];
+    const nombre = (u) => `${u.nombre} ${u.apellido}`;
+    await AccionAdmin.deleteMany({});
+    await AccionAdmin.insertMany(historialPanelDemo(hoy).map((h) => {
+        const u = creadas[h.usuarioEmail];
+        return {
+            accion: h.accion, detalle: h.detalle, fecha: h.fecha,
+            adminId: admin._id, adminNombre: nombre(admin), adminEmail: admin.email,
+            usuarioId: u._id, usuarioNombre: nombre(u), usuarioEmail: u.email,
+        };
+    }));
+
+    // La cuenta Docente (la de los análisis) vuelve a su contraseña, estado y
+    // permisos de demo, por si se cambiaron en un ensayo (p. ej. se restableció
+    // su contraseña desde el panel). Sus análisis no se tocan.
+    await User.updateOne(
+        { email: USUARIO_DEMO.email },
+        {
+            $set: {
+                password: await bcrypt.hash(USUARIO_DEMO.password, 12),
+                passwordTemporal: false,
+                estado: USUARIO_DEMO.estado,
+                esAdmin: false,
+                permisos: USUARIO_DEMO.permisos,
+            },
+            $unset: { eliminadoEn: "" },
+        }
+    );
     return cuentas;
 }
 
@@ -128,8 +164,10 @@ async function usuarios(textoFecha) {
     const cuentas = await crearCuentasPanel(hoy);
     console.log(`Cuentas del panel creadas en «${base}» (los análisis no se tocaron):`);
     for (const c of cuentas) console.log(`  ${c.email} · ${c.esAdmin ? "administrador" : c.estado}`);
+    console.log("El historial del panel quedó con las acciones de ejemplo.");
+    console.log(`${USUARIO_DEMO.email} (Docente) volvió a su contraseña, estado y permisos de demo.`);
     console.log(`\nAdministrador: ${USUARIO_ADMIN_DEMO.email} / ${USUARIO_ADMIN_DEMO.password}`);
-    console.log(`Las demás usan la contraseña ${USUARIO_DEMO.password}.`);
+    console.log(`Docente y las demás usan la contraseña ${USUARIO_DEMO.password}.`);
 }
 
 const acciones = { crear, borrar, usuarios };

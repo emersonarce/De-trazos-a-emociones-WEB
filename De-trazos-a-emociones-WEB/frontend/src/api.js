@@ -386,6 +386,21 @@ export const api = {
     return data;
   },
 
+  // Historial de acciones del panel, de a 50 ({ acciones, hayMas }). «antes»
+  // (la fecha de la última recibida) trae las siguientes.
+  getHistorialAdmin: async (antes) => {
+    const consulta = antes ? `?antes=${encodeURIComponent(antes)}` : "";
+    const response = await authFetch(`${API_URL}/admin/historial${consulta}`);
+
+    const data = await jsonSeguro(response);
+
+    if (!response.ok) {
+      throw new Error(data.message || "Error al obtener el historial");
+    }
+
+    return data;
+  },
+
   // --- Perfil / cuenta ---
 
   getPerfil: async () => {

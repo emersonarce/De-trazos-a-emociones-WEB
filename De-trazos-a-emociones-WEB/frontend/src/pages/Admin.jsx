@@ -3,6 +3,7 @@ import { ShieldCheck, Check, X, Inbox, RefreshCw, Ban, Trash2, RotateCcw, KeyRou
 import { api } from '../api';
 import Sidebar from '../components/layout/Sidebar';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import HistorialAdmin from '../components/admin/HistorialAdmin';
 import { leerUsuario } from '../utils/permisos';
 import './Admin.css';
 import { useAvisos } from '../context/AvisosContext';
@@ -14,6 +15,8 @@ const FILTROS = [
   // Cuentas que su usuario eliminó (con permiso): están desactivadas, con sus
   // datos, hasta que el administrador las restaure o las elimine definitivamente.
   { key: 'eliminado', label: 'Cuentas eliminadas' },
+  // No es un estado de cuenta: lo que han hecho los administradores en el panel.
+  { key: 'historial', label: 'Historial' },
 ];
 
 const VACIO = {
@@ -112,6 +115,8 @@ const Admin = () => {
   };
 
   useEffect(() => {
+    // La pestaña Historial carga lo suyo (HistorialAdmin).
+    if (filtro === 'historial') return undefined;
     let activo = true;
     const t = setTimeout(async () => {
       setCargando(true);
@@ -211,9 +216,11 @@ const Admin = () => {
           </button>
         </div>
 
-        {error && <div className="admin-error">{error}</div>}
+        {filtro !== 'historial' && error && <div className="admin-error">{error}</div>}
 
-        {cargando ? (
+        {filtro === 'historial' ? (
+          <HistorialAdmin recargas={recargas} />
+        ) : cargando ? (
           <div className="admin-empty">Cargando…</div>
         ) : visibles.length === 0 ? (
           <div className="admin-empty">

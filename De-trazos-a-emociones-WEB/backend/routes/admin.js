@@ -4,10 +4,12 @@ const path = require("path");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const Analysis = require("../models/Analysis");
+const AccionAdmin = require("../models/AccionAdmin");
 const verificarToken = require("../middleware/authMiddleware");
 const verificarAdmin = require("../middleware/adminMiddleware");
 const { permisosEfectivos } = require("../utils/permisos");
 const { generarPasswordTemporal } = require("../utils/password");
+const { registrarAccion } = require("../utils/auditoria");
 
 const router = express.Router();
 
@@ -101,9 +103,18 @@ router.patch("/usuarios/:id", verificarToken, verificarAdmin, async (req, res) =
             return res.status(400).json({ message: "La cuenta está eliminada: restáurala o elimínala definitivamente" });
         }
 
+        const estadoAnterior = usuario.estado;
         usuario.estado = nuevoEstado;
         usuario.eliminadoEn = undefined;
         await usuario.save();
+
+        // Historial: qué fue exactamente, según el estado de antes.
+        if (estadoAnterior !== nuevoEstado) {
+            const clave = accion === "restaurar" ? "restaurar"
+                : accion === "aprobar" ? (estadoAnterior === "rechazado" ? "habilitar" : "aprobar_solicitud")
+                : (estadoAnterior === "aprobado" ? "deshabilitar" : "rechazar_solicitud");
+            await registrarAccion(req, usuario, clave, { estadoAnterior, estadoNuevo: nuevoEstado });
+        }
 
         const mensajes = { aprobar: "Cuenta aprobada", rechazar: "Cuenta rechazada", restaurar: "Cuenta restaurada" };
         return res.json({
@@ -153,6 +164,10 @@ router.delete("/usuarios/:id", verificarToken, verificarAdmin, async (req, res) 
         }
 
         await User.findByIdAndDelete(usuario._id);
+        await registrarAccion(req, usuario, "eliminar_definitivo", {
+            estadoAnterior: usuario.estado,
+            analisis: analisis.length,
+        });
 
         return res.json({ message: "Cuenta eliminada", id: usuario._id });
     } catch (error) {
@@ -192,6 +207,7 @@ router.post("/usuarios/:id/restablecer-password", verificarToken, verificarAdmin
         usuario.password = await bcrypt.hash(temporal, 12);
         usuario.passwordTemporal = true;
         await usuario.save();
+        await registrarAccion(req, usuario, "restablecer_password"); // sin la contraseña
 
         return res.json({ message: "Contraseña restablecida", id: usuario._id, temporal });
     } catch (error) {
@@ -216,6 +232,9 @@ router.patch("/usuarios/:id/gestion", verificarToken, verificarAdmin, async (req
         if (!usuario) {
             return res.status(404).json({ message: "Usuario no encontrado" });
         }
+
+        // Cómo estaba antes, para registrar en el historial solo lo que cambió.
+        const antes = { rol: usuario.rol, esAdmin: Boolean(usuario.esAdmin), permisos: permisosEfectivos(usuario) };
 
         if (rol !== undefined) {
             if (!["padre", "psicologo", "profesor"].includes(rol)) {
@@ -258,6 +277,25 @@ router.patch("/usuarios/:id/gestion", verificarToken, verificarAdmin, async (req
 
         await usuario.save();
 
+        // Historial: una entrada por cada cosa que cambió.
+        if (usuario.rol !== antes.rol) {
+            await registrarAccion(req, usuario, "cambiar_rol", { de: antes.rol, a: usuario.rol });
+        }
+        const cambioAdmin = Boolean(usuario.esAdmin) !== antes.esAdmin;
+        // Los permisos de un administrador salen de serlo: al nombrarlo o
+        // quitarlo, o si ya lo es, no se registran como cambios aparte.
+        if (!cambioAdmin && !usuario.esAdmin) {
+            const despues = permisosEfectivos(usuario);
+            for (const permiso of ["conContexto", "descargarPdf", "eliminarCuenta"]) {
+                if (despues[permiso] !== antes.permisos[permiso]) {
+                    await registrarAccion(req, usuario, "cambiar_permiso", { permiso, valor: despues[permiso] });
+                }
+            }
+        }
+        if (cambioAdmin) {
+            await registrarAccion(req, usuario, usuario.esAdmin ? "nombrar_admin" : "quitar_admin");
+        }
+
         return res.json({
             message: "Usuario actualizado",
             id: usuario._id,
@@ -269,6 +307,52 @@ router.patch("/usuarios/:id/gestion", verificarToken, verificarAdmin, async (req
     } catch (error) {
         console.error("Error en gestión de usuario:", error);
         return res.status(500).json({ message: "Error al actualizar el usuario" });
+    }
+});
+
+/*
+========================================
+HISTORIAL DE ACCIONES DEL PANEL
+GET /admin/historial?antes=<fecha ISO>
+De la más reciente a la más antigua, de a 50 («hayMas» indica si hay más;
+se piden con antes = la fecha de la última recibida).
+========================================
+*/
+
+const LIMITE_HISTORIAL = 50;
+
+router.get("/historial", verificarToken, verificarAdmin, async (req, res) => {
+    try {
+        const filtro = {};
+        if (req.query.antes) {
+            const antes = new Date(String(req.query.antes));
+            if (Number.isNaN(antes.getTime())) {
+                return res.status(400).json({ message: "Fecha no válida" });
+            }
+            filtro.fecha = { $lt: antes };
+        }
+
+        const acciones = await AccionAdmin.find(filtro)
+            .sort({ fecha: -1 })
+            .limit(LIMITE_HISTORIAL + 1)
+            .lean();
+
+        return res.json({
+            acciones: acciones.slice(0, LIMITE_HISTORIAL).map((a) => ({
+                _id: a._id,
+                accion: a.accion,
+                adminNombre: a.adminNombre,
+                adminEmail: a.adminEmail,
+                usuarioNombre: a.usuarioNombre,
+                usuarioEmail: a.usuarioEmail,
+                detalle: a.detalle || {},
+                fecha: a.fecha
+            })),
+            hayMas: acciones.length > LIMITE_HISTORIAL
+        });
+    } catch (error) {
+        console.error("Error leyendo el historial:", error);
+        return res.status(500).json({ message: "Error al obtener el historial" });
     }
 });
 

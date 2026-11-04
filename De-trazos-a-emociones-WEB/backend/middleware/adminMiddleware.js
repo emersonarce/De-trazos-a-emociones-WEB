@@ -12,6 +12,8 @@ const verificarAdmin = async (req, res, next) => {
             });
         }
 
+        // Quién es el administrador (para el historial de acciones).
+        req.admin = usuario;
         next();
     } catch (error) {
         console.error("Error verificando administrador:", error);

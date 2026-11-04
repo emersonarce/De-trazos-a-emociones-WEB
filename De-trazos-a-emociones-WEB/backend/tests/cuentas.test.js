@@ -13,6 +13,7 @@ process.env.AI_MODE = "mock";
 delete process.env.ADMIN_EMAILS;
 const User = require("../models/User");
 const Analysis = require("../models/Analysis");
+const AccionAdmin = require("../models/AccionAdmin");
 const app = require("../app");
 
 // --- Modelos en memoria ---
@@ -22,6 +23,8 @@ let borradosDeAnalisis = 0;
 const consulta = (valor, alOrdenar) => {
     const q = {
         select: () => q,
+        limit: () => q,
+        lean: () => q,
         sort: (orden) => { if (alOrdenar) alOrdenar(orden); return q; },
         then: (ok, err) => Promise.resolve(valor).then(ok, err),
     };
@@ -33,6 +36,15 @@ User.find = ({ estado }) => consulta([...usuarios.values()].filter((u) => u.esta
 User.findByIdAndDelete = async (id) => usuarios.delete(String(id));
 Analysis.find = () => consulta([]);
 Analysis.deleteMany = async () => { borradosDeAnalisis++; };
+// Historial de acciones en memoria (de la más reciente a la más antigua, de a n).
+const historial = [];
+AccionAdmin.create = async (doc) => { historial.push(doc); return doc; };
+AccionAdmin.find = (filtro = {}) => {
+    let lista = historial.filter((h) => !(filtro.fecha && filtro.fecha.$lt) || h.fecha < filtro.fecha.$lt);
+    lista = [...lista].sort((a, b) => b.fecha - a.fecha);
+    const q = { sort: () => q, lean: () => q, limit: (n) => { lista = lista.slice(0, n); return q; }, then: (ok, err) => Promise.resolve(lista).then(ok, err) };
+    return q;
+};
 
 const crear = (id, datos = {}) => {
     const u = {
@@ -60,7 +72,8 @@ test.beforeEach(() => {
     usuarios.clear();
     ordenPedido = null;
     borradosDeAnalisis = 0;
-    crear(ID_ADMIN, { esAdmin: true, email: "admin@prueba.test" });
+    historial.length = 0;
+    crear(ID_ADMIN, { esAdmin: true, nombre: "Admin", apellido: "Demo", email: "admin@prueba.test" });
 });
 
 const pedir = async (metodo, ruta, { token: t, json } = {}) => {
@@ -200,4 +213,57 @@ test("restablecer la contraseña: solo un admin, no la propia y solo en cuentas 
     assert.equal((await pedir("POST", `/admin/usuarios/${ID_ADMIN}/restablecer-password`, { token: token(ID_ADMIN) })).status, 400); // la propia
     usuarios.get(ID_USUARIO).estado = "aprobado";
     assert.equal((await pedir("POST", ruta, { token: token(ID_USUARIO) })).status, 403); // no es admin
+});
+
+test("historial: cada acción del panel queda registrada con quién, a quién y el detalle", async () => {
+    const u = crear(ID_USUARIO, { estado: "pendiente", permisos: { conContexto: false, descargarPdf: false } });
+    const admin = token(ID_ADMIN);
+    const ruta = `/admin/usuarios/${ID_USUARIO}`;
+    await pedir("PATCH", ruta, { token: admin, json: { accion: "aprobar" } });
+    await pedir("PATCH", `${ruta}/gestion`, { token: admin, json: { rol: "psicologo", permisos: { conContexto: true, descargarPdf: false } } });
+    const { cuerpo } = await pedir("POST", `${ruta}/restablecer-password`, { token: admin });
+    await pedir("PATCH", ruta, { token: admin, json: { accion: "rechazar" } }); // aprobada → deshabilitar
+    await pedir("PATCH", ruta, { token: admin, json: { accion: "aprobar" } });  // rechazada → habilitar
+    await pedir("DELETE", ruta, { token: admin });
+
+    assert.deepEqual(historial.map((h) => h.accion), [
+        "aprobar_solicitud", "cambiar_rol", "cambiar_permiso", "restablecer_password", "deshabilitar", "habilitar", "eliminar_definitivo",
+    ]);
+    const [aprobar, rol, permiso, restablecer, , , eliminar] = historial;
+    assert.equal(aprobar.adminNombre, "Admin Demo");
+    assert.equal(aprobar.adminEmail, "admin@prueba.test");
+    assert.equal(aprobar.usuarioNombre, "Ana Prueba");
+    assert.equal(aprobar.usuarioEmail, u.email);
+    assert.ok(aprobar.fecha instanceof Date);
+    assert.deepEqual(aprobar.detalle, { estadoAnterior: "pendiente", estadoNuevo: "aprobado" });
+    assert.deepEqual(rol.detalle, { de: "profesor", a: "psicologo" });
+    assert.deepEqual(permiso.detalle, { permiso: "conContexto", valor: true }); // descargarPdf no cambió: no se registra
+    assert.deepEqual(restablecer.detalle, {});
+    assert.deepEqual(eliminar.detalle, { estadoAnterior: "aprobado", analisis: 0 });
+    // La contraseña temporal nunca queda en el historial.
+    assert.ok(cuerpo.temporal && !JSON.stringify(historial).includes(cuerpo.temporal));
+});
+
+test("historial: nombrar administrador es una sola entrada (sus permisos salen de serlo)", async () => {
+    crear(ID_USUARIO, { permisos: { conContexto: false, descargarPdf: false } });
+    await pedir("PATCH", `/admin/usuarios/${ID_USUARIO}/gestion`, { token: token(ID_ADMIN), json: { esAdmin: true } });
+    assert.deepEqual(historial.map((h) => h.accion), ["nombrar_admin"]);
+});
+
+test("historial: GET /admin/historial, de la más reciente a la más antigua y de a 50", async () => {
+    for (let i = 0; i < 52; i++) {
+        historial.push({ accion: "aprobar_solicitud", adminNombre: "Admin Demo", usuarioNombre: `Cuenta ${i}`, detalle: {}, fecha: new Date(Date.UTC(2026, 10, 1, 0, i)) });
+    }
+    const primera = await pedir("GET", "/admin/historial", { token: token(ID_ADMIN) });
+    assert.equal(primera.status, 200);
+    assert.equal(primera.cuerpo.acciones.length, 50);
+    assert.equal(primera.cuerpo.hayMas, true);
+    assert.equal(primera.cuerpo.acciones[0].usuarioNombre, "Cuenta 51");
+    const ultima = primera.cuerpo.acciones[49].fecha;
+    const segunda = await pedir("GET", `/admin/historial?antes=${encodeURIComponent(ultima)}`, { token: token(ID_ADMIN) });
+    assert.deepEqual(segunda.cuerpo.acciones.map((a) => a.usuarioNombre), ["Cuenta 1", "Cuenta 0"]);
+    assert.equal(segunda.cuerpo.hayMas, false);
+    assert.equal((await pedir("GET", "/admin/historial?antes=ayer", { token: token(ID_ADMIN) })).status, 400);
+    crear(ID_USUARIO);
+    assert.equal((await pedir("GET", "/admin/historial", { token: token(ID_USUARIO) })).status, 403); // solo admin
 });
