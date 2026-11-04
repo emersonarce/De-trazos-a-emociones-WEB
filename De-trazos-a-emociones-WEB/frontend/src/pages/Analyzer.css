@@ -333,12 +333,13 @@
   overflow: hidden;
   margin-bottom: 1.5rem;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
-  transition: transform 0.4s;
+  transition: box-shadow 0.3s;
 }
 
+/* Al pasar el mouse solo se marca el borde: la tarjeta no se mueve (incomoda
+   mientras se llena el formulario). */
 .analyzer-wrapper .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--purple-glow, rgba(139, 121, 242, 0.4));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px var(--purple-glow, rgba(139, 121, 242, 0.4));
 }
 
 .analyzer-wrapper .card-header {

@@ -412,7 +412,7 @@
   font-family: 'DM Sans', sans-serif;
   margin-top: 0.75rem;
   box-shadow: 0 10px 24px -10px var(--accent-glow);
-  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  transition: background 0.25s ease, box-shadow 0.25s ease;
   position: relative;
   overflow: hidden;
 }
@@ -432,7 +432,6 @@
 .auth-container .btn-submit:hover {
   background: var(--accent-strong);
   box-shadow: 0 14px 28px -10px var(--accent-glow);
-  transform: translateY(-1px);
 }
 
 .auth-container .btn-submit:hover::before {

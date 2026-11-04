@@ -60,8 +60,10 @@ const mezclar = (a, b, p) => ({
 });
 
 export function crearTrazoLogo(canvas, {
-  // Elemento donde el cursor aparta los puntos.
+  // Elemento donde el cursor aparta los puntos, y filtro para que no los mueva
+  // en algunas partes (p. ej. sobre el formulario).
   zona = canvas,
+  aceptarCursor = () => true,
   // Elemento donde un clic deshace la marca y la vuelve a formar, y filtro
   // para ignorar algunos clics (p. ej. sobre el formulario).
   zonaClic = zona,
@@ -364,6 +366,10 @@ export function crearTrazoLogo(canvas, {
   };
 
   const alMover = (e) => {
+    if (!aceptarCursor(e)) {
+      cursor = null;
+      return;
+    }
     const r = canvas.getBoundingClientRect();
     cursor = { x: e.clientX - r.left, y: e.clientY - r.top };
   };
@@ -381,7 +387,9 @@ export function crearTrazoLogo(canvas, {
   // Recalcula tamaños y posiciones (fuentes ya cargadas o panel que se corre).
   // No reinicia la formación: los destinos están en unidades del logo.
   const reubicar = () => {
-    if (destruido) return;
+    // Al salir de la página, el observador aún puede avisar con el lienzo ya
+    // fuera del documento (y sin el logo): no hay nada que medir.
+    if (destruido || !canvas.isConnected) return;
     medir();
     // Al cambiar de tamaño el lienzo queda en blanco: se repinta enseguida para
     // que no parpadee mientras el panel se corre.
