@@ -31,7 +31,7 @@ export function TourProvider({ children }) {
       { route: '/app', titulo: `¡Hola, ${nombre || 'bienvenido'}!`, texto: 'Te muestro en un recorrido rápido cómo usar la app. Puedes saltarlo cuando quieras.' },
       { route: '/app', selector: '[data-tour="nav"]', titulo: 'Menú de navegación', texto: 'Desde esta barra llegas a Analizar, Panel, Historial, Mis niños, Reportes y Configuración.' },
       { route: '/app', selector: '[data-tour="modo"]', titulo: 'Cómo analizar', texto: 'Elige "Con contexto del niño" para un análisis completo, o "Solo dibujo" para uno rápido.' },
-      { route: '/app', selector: '[data-tour="pasos"]', titulo: 'Sigue los pasos', texto: 'Completa el contexto, sube el dibujo y obtén el análisis. Toca cada paso para avanzar.' },
+      { route: '/app', selector: '[data-tour="pasos"]', titulo: 'Sigue los pasos', texto: 'Completa el contexto, sube el dibujo y obtén el análisis. Cada paso se habilita al terminar el anterior, y puedes volver a uno ya hecho tocándolo.' },
       { route: '/dashboard', selector: '[data-tour="dash"]', titulo: 'El Panel del niño', texto: 'Aquí ves el seguimiento de cada niño: su emoción predominante y su evolución.' },
       { route: '/dashboard', selector: '[data-tour="agregar"]', titulo: 'Agregar un niño', texto: 'Con este botón registras un niño nuevo con su contexto para empezar su seguimiento.' },
       { route: '/dashboard', selector: '[data-tour="actividades"]', titulo: 'Actividades sugeridas', texto: 'Ideas para acompañar al niño según su emoción. Toca una para ver por qué ayuda.' },

@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle, Lock, X } from 'lucide-react';
 import './Analyzer.css';
 import Sidebar from '../components/layout/Sidebar';
 import AnalyzerContext from '../components/analyzer/AnalyzerContext';
@@ -84,6 +84,17 @@ const Analyzer = () => {
     }
   };
 
+  // Barra de pasos: no sirve para avanzar ni cambia el modo. Los pasos que
+  // faltan se ven bloqueados hasta terminar el anterior (se avanza con el botón
+  // de cada paso); a uno ya hecho sí se puede volver. El texto de ayuda va en
+  // data-tip (lo muestra TooltipGlobal): con title quedaría pegado el anterior
+  // cuando el paso pasa a ser el actual.
+  const propsPaso = (n) => {
+    if (step === n) return { className: 'step active', 'aria-current': 'step' };
+    if (step > n) return { className: 'step done', onClick: () => setStep(n), 'data-tip': 'Volver a este paso' };
+    return { className: 'step bloqueado', 'aria-disabled': true, 'data-tip': 'Se habilita al terminar el paso anterior' };
+  };
+
   return (
     <div className="analyzer-wrapper">
       <Sidebar active="app" />
@@ -137,18 +148,20 @@ const Analyzer = () => {
         <div className="steps" data-tour="pasos">
           {modo === 'contexto' && (
             <>
-              <div className={`step ${step === 1 ? 'active' : step > 1 ? 'done' : ''}`} onClick={() => step > 1 && setStep(1)}>
+              <div {...propsPaso(1)}>
                 <div className="step-num">1</div> Contexto
               </div>
               <div className="step-divider"></div>
             </>
           )}
-          <div className={`step ${step === 2 ? 'active' : step > 2 ? 'done' : ''}`} onClick={() => (step > 2 ? setStep(2) : step === 1 && continuarContexto())}>
+          <div {...propsPaso(2)}>
             <div className="step-num">{modo === 'contexto' ? '2' : '1'}</div> Dibujo
+            {step < 2 && <Lock size={12} className="step-candado" aria-hidden="true" />}
           </div>
           <div className="step-divider"></div>
-          <div className={`step ${step === 3 ? 'active' : ''}`}>
+          <div {...propsPaso(3)}>
             <div className="step-num">{modo === 'contexto' ? '3' : '2'}</div> Análisis
+            {step < 3 && <Lock size={12} className="step-candado" aria-hidden="true" />}
           </div>
         </div>
 

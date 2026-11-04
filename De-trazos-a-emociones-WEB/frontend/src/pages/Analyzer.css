@@ -278,16 +278,31 @@
   color: var(--muted, #a1a1aa);
   padding: 8px 16px;
   border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.3s;
+  cursor: default;
+  transition: color 0.3s, opacity 0.3s;
 }
 
 .analyzer-wrapper .step.active {
   color: var(--text, #ffffff);
 }
 
+/* Paso ya hecho: se puede volver a él */
 .analyzer-wrapper .step.done {
   color: var(--muted2, #9490a8);
+  cursor: pointer;
+}
+.analyzer-wrapper .step.done:hover {
+  color: var(--text, #ffffff);
+}
+
+/* Paso que falta: bloqueado hasta terminar el anterior */
+.analyzer-wrapper .step.bloqueado {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.analyzer-wrapper .step-candado {
+  flex-shrink: 0;
+  margin-left: -2px;
 }
 
 .analyzer-wrapper .step-num {
