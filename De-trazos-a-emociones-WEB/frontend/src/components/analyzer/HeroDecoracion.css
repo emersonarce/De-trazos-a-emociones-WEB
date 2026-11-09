@@ -1,0 +1,101 @@
+/* Decoración animada del encabezado del Analyzer:
+   orbes flotantes con los colores de la rueda emocional del logo que crecen al
+   pasar el mouse, y una onda al hacer clic. Nada aquí dibuja un fondo rectangular
+   (la estela es el brillo redondo de cada orbe, no un recuadro). La onda no se
+   recorta aquí: la recorta la propia tarjeta (.hero, con overflow hidden), que es
+   el único límite visible. */
+.hero-deco {
+  flex: 1;
+  align-self: stretch;
+  position: relative;
+  min-height: 76px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+/* El contenedor del orbe hace el flotado (translate). */
+.hero-orb {
+  position: absolute;
+  display: block;
+  animation-name: heroOrbFloat;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  pointer-events: none;
+}
+
+/* El punto interno pone color y brillo, y reacciona al hover (scale + estela). */
+.hero-orb-dot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 16px currentColor;
+  opacity: 0.5;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.4),
+    opacity 0.45s ease, box-shadow 0.45s ease;
+}
+
+/* Al pasar el mouse por el encabezado: los orbes crecen y dejan una estela
+   de color más intensa. */
+.analyzer-wrapper .hero:hover .hero-orb-dot {
+  opacity: 0.95;
+  transform: scale(1.4);
+  box-shadow: 0 0 26px currentColor, 0 0 10px currentColor;
+}
+
+@keyframes heroOrbFloat {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(7px, -13px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Onda que se expande desde el punto del clic, como la original: un anillo de
+   color nítido. Ya no necesita bordes suaves, porque el recorte lo hace el
+   encabezado (.hero) y no la animación, así que no se ve ningún recuadro. */
+.hero-onda {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  border: 2.5px solid currentColor;
+  color: var(--accent);
+  transform: scale(0);
+  opacity: 0.85;
+  pointer-events: none;
+  animation: heroOnda 0.7s ease-out forwards;
+}
+
+@keyframes heroOnda {
+  to {
+    transform: scale(11);
+    opacity: 0;
+  }
+}
+
+/* Respeta a quien prefiere menos movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-orb {
+    animation: none;
+  }
+  .hero-orb-dot {
+    transition: none;
+  }
+  .hero-onda {
+    animation-duration: 0.01s;
+  }
+}
+
+/* En pantallas pequeñas el encabezado se apila; ocultamos la decoración. */
+@media (max-width: 600px) {
+  .hero-deco {
+    display: none;
+  }
+}

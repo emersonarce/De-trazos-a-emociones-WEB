@@ -1,0 +1,14 @@
+.logo-mark {
+  display: block;
+}
+
+/* El trazo ondulado se "dibuja" al aparecer. */
+.logo-wave {
+  stroke-dasharray: 42;
+  stroke-dashoffset: 42;
+  animation: logoDraw 1.3s ease 0.2s forwards;
+}
+
+@keyframes logoDraw {
+  to { stroke-dashoffset: 0; }
+}

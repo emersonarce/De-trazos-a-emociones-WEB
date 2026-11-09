@@ -8,13 +8,6 @@
   flex: 1;
 }
 
-.auth-container .eye-icon {
-  position: absolute;
-  right: 16px;
-  color: var(--text-gray);
-  cursor: pointer;
-}
-
 .auth-container select {
   appearance: none;
   -webkit-appearance: none;
@@ -23,15 +16,20 @@
 .auth-container .role-select {
   width: 100%;
   background-color: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: 8px;
-  padding: 16px 16px;
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 14px 16px;
   color: var(--text-white);
   font-family: 'DM Sans', sans-serif;
-  font-size: 1rem;
+  font-size: 0.98rem;
   outline: none;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
+}
+
+.auth-container .role-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-dim);
 }
 
 .auth-container .checkbox-group {
@@ -78,4 +76,148 @@
 .auth-container .checkbox-group a {
   color: #c0b4f9;
   text-decoration: none;
+}
+
+/* Pantalla de confirmación tras el registro */
+.auth-container .register-success {
+  text-align: center;
+  padding: 1rem 0;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-container .register-success .success-icon {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.auth-container .register-success .success-icon.ok {
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.4);
+  color: #2dd4bf;
+}
+
+.auth-container .register-success .success-icon.wait {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #f5b041;
+}
+
+.auth-container .register-success h1 {
+  font-family: var(--display);
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-variation-settings: 'SOFT' 100;
+}
+
+.auth-container .register-success .success-msg {
+  color: var(--text-white);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 0.75rem;
+}
+
+.auth-container .register-success .success-hint {
+  color: var(--text-gray);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+}
+
+/* ===== Rol: tres tarjetas seleccionables (en vez de un <select>) ===== */
+.auth-container .form-group .form-label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.auth-container .rol-opciones {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  border-radius: 14px;
+}
+
+.auth-container .form-group label.rol-opcion {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0;
+  padding: 12px 6px 11px;
+  border-radius: 12px;
+  border: 1px solid var(--border2);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+/* Sin desplazamiento al pasar el mouse: solo cambia el color. */
+.auth-container .form-group label.rol-opcion:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border2));
+  color: var(--text);
+}
+.auth-container .form-group label.rol-opcion.activo {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--text);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+/* El radio queda oculto pero accesible (teclado y lectores de pantalla). */
+.auth-container .rol-opcion input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.auth-container .rol-opcion:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.auth-container .rol-icono {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--sunken);
+  color: var(--muted);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.auth-container .rol-opcion.activo .rol-icono {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Marcado por un aviso (no eligió rol). */
+.auth-container .rol-opciones.invalido .rol-opcion {
+  border-color: color-mix(in srgb, var(--emo-enojo) 60%, transparent);
+}
+
+:root[data-theme="light"] .auth-container .form-group label.rol-opcion {
+  background: var(--surface);
+}
+:root[data-theme="light"] .auth-container .form-group label.rol-opcion.activo {
+  background: var(--accent-dim);
+}
+
+@media (max-width: 380px) {
+  .auth-container .rol-opciones { grid-template-columns: minmax(0, 1fr); }
+  .auth-container .form-group label.rol-opcion { flex-direction: row; justify-content: flex-start; padding: 10px 12px; }
 }

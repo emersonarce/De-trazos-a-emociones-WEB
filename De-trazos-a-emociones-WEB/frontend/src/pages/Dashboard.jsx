@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Settings, Plus, FileText, Share2, ArrowRight } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import './Dashboard.css';
 import { api } from '../api';
+import { emotionVisual, emocionPredominante } from '../utils/emociones';
 
 import Sidebar from '../components/layout/Sidebar';
 import ChildSwitcher from '../components/dashboard/ChildSwitcher';
@@ -10,42 +10,71 @@ import WeeklySummary from '../components/dashboard/WeeklySummary';
 import TimelineSection from '../components/dashboard/TimelineSection';
 import ActivitiesSection from '../components/dashboard/ActivitiesSection';
 import ComparisonSection from '../components/dashboard/ComparisonSection';
+import AnalysisDetailModal from '../components/common/AnalysisDetailModal';
+import BrandHeader from '../components/common/BrandHeader';
+import IconoAnimo from '../components/dashboard/IconoAnimo';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  const [activeChild, setActiveChild] = useState('sofia');
-  const [historyData, setHistoryData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [actDones, setActDones] = useState([true, false, false]);
+  const location = useLocation();
+  // Permite llegar desde "Mis niños" con un niño ya seleccionado.
+  const [activeChild, setActiveChild] = useState(location.state?.nino || null);
+  // Volver a entrar con otro niño pedido (por ejemplo, desde una notificación) estando ya aquí.
+  const [visita, setVisita] = useState(location.key);
+  if (visita !== location.key) {
+    setVisita(location.key);
+    if (location.state?.nino) setActiveChild(location.state.nino);
+  }
+  // Si ya se trajeron en esta sesión, se muestran al instante mientras llegan los actuales.
+  const [historyData, setHistoryData] = useState(() => api.analisisGuardados() || []);
+  const [cargando, setCargando] = useState(() => !api.analisisGuardados());
+  const [detalle, setDetalle] = useState(null);
 
-  const toggleActDone = (index) => {
-    const newActDones = [...actDones];
-    newActDones[index] = !newActDones[index];
-    setActDones(newActDones);
-  };
-
-  const [barsHeight, setBarsHeight] = useState(['0px', '0px', '0px', '0px', '0px', '0px', '0px']);
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setBarsHeight(['32px', '24px', '40px', '48px', '52px', '56px', '8px']);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-  const loadDashboard = async () => {
+  const recargar = async () => {
     try {
       const data = await api.getAnalisis();
       setHistoryData(data);
     } catch (error) {
       console.error('Error cargando dashboard:', error);
     } finally {
-      setLoading(false);
+      setCargando(false);
     }
   };
 
-  loadDashboard();
-}, []);
+  useEffect(() => {
+    const t = setTimeout(() => recargar(), 0);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Agrupar los análisis reales por niño (hoy identificado por el nombre del
+  // contexto; en el Paso 4 se reemplazará por un modelo de Niño con ninoId).
+  const children = useMemo(() => {
+    const map = new Map();
+    for (const a of historyData) {
+      if (a.independiente) continue; // los dibujos independientes no son niños
+      const nombre = (a.contexto_nino?.nombre || '').trim() || 'Sin nombre';
+      if (!map.has(nombre)) {
+        map.set(nombre, {
+          nombre,
+          edad: a.contexto_nino?.edad || '',
+          fecha_nacimiento: a.contexto_nino?.fecha_nacimiento || '',
+          analisis: []
+        });
+      }
+      map.get(nombre).analisis.push(a);
+    }
+    return [...map.values()];
+  }, [historyData]);
+
+  const handleNinoEliminado = (ids) => {
+    const borrados = new Set(ids);
+    setHistoryData((prev) => prev.filter((a) => !borrados.has(a._id)));
+  };
+
+  // El niño seleccionado por defecto es el primero; al hacer clic se actualiza activeChild.
+  const selected = children.find((c) => c.nombre === activeChild) || children[0] || null;
+  const nombreUsuario = JSON.parse(localStorage.getItem('user') || '{}').nombre || 'Usuario';
+  const emocionSel = selected ? emocionPredominante(selected.analisis) : null;
+  const visualSel = emotionVisual(children.length > 0 ? emocionSel || '' : '');
 
   return (
     <div className="dashboard-container">
@@ -56,34 +85,72 @@ const Dashboard = () => {
       <Sidebar active="dashboard" />
 
       <main className="main">
+        <BrandHeader />
+
         {/* WELCOME */}
-        <div className="welcome">
+        <div className="welcome" data-tour="dash">
           <div className="welcome-left">
             <div className="welcome-greeting">
-              👋 Hola, {JSON.parse(localStorage.getItem('user') || '{}').firstname || 'Usuario'}
-              </div>
-                <div className="welcome-title">
-              ¿Cómo está <span>{historyData[0]?.contexto_nino?.nombre || 'tu hijo/a'}</span> hoy?
+              Hola, {nombreUsuario}
             </div>
-              <div className="welcome-sub">
-                {historyData.length > 0
-                  ? `Tenemos ${historyData.length} análisis registrados para este usuario.`
-                  : 'Aún no tienes análisis registrados. Realiza tu primer análisis para comenzar el seguimiento.'}
-              </div>          </div>
-          <div className="welcome-emoji">😟</div>
+            <div className="welcome-title">
+              ¿Cómo está <span>{selected?.nombre && selected.nombre !== 'Sin nombre' ? selected.nombre : 'tu niño/a'}</span> hoy?
+            </div>
+            <div className="welcome-sub">
+              {cargando
+                ? 'Cargando tus datos…'
+                : children.length > 0
+                  ? `Tienes ${children.length} niño(s) registrados.`
+                  : 'Aún no tienes niños registrados. Realiza un análisis con contexto para comenzar el seguimiento.'}
+            </div>
+          </div>
+          <IconoAnimo visual={visualSel} emocion={children.length > 0 ? emocionSel : null} />
         </div>
 
-        <ChildSwitcher activeChild={activeChild} setActiveChild={setActiveChild} />
+        {cargando ? (
+          // Esqueleto mientras llegan los análisis (antes decía que no había niños).
+          <div className="dash-esqueleto" aria-busy="true" aria-label="Cargando datos">
+            <div className="esq-fila">
+              {[0, 1, 2, 3].map((i) => <span key={i} className="esq esq-chip" />)}
+            </div>
+            <div className="esq-grid">
+              <span className="esq esq-tarjeta" />
+              <span className="esq esq-tarjeta" />
+            </div>
+          </div>
+        ) : children.length === 0 ? (
+          <div className="dashboard-card" style={{ padding: '32px', textAlign: 'center', color: 'var(--muted)' }}>
+            Todavía no hay niños registrados. Usa <strong>Agregar niño</strong> o <strong>Nuevo análisis</strong> para comenzar. Los dibujos analizados de forma independiente se ven en el Historial.
+          </div>
+        ) : (
+          <>
+            <ChildSwitcher ninos={children} activeChild={selected?.nombre} setActiveChild={setActiveChild} onDeleted={handleNinoEliminado} />
 
-        <WeeklySummary barsHeight={barsHeight} />
+            <WeeklySummary child={selected} />
 
-        <TimelineSection />
+            <TimelineSection child={selected} onSelect={setDetalle} />
 
-        <div className="grid-bottom">
-          <ActivitiesSection actDones={actDones} toggleActDone={toggleActDone} />
-          <ComparisonSection />
-        </div>
+            <div className="grid-bottom">
+              <ActivitiesSection key={`act-${selected?.nombre}`} child={selected} />
+              <ComparisonSection key={`cmp-${selected?.nombre}`} child={selected} onSelect={setDetalle} />
+            </div>
+          </>
+        )}
       </main>
+
+      {detalle && (
+        <AnalysisDetailModal
+          analisis={detalle}
+          analisisDelNino={historyData}
+          onClose={() => setDetalle(null)}
+          onActualizado={(id, resultado, contexto) => {
+            const cambios = { resultado_ia: resultado, analizado_sin_contexto: false, ...(contexto ? { contexto_nino: contexto } : {}) };
+            setHistoryData((prev) => prev.map((a) => (a._id === id ? { ...a, ...cambios } : a)));
+            setDetalle((prev) => (prev && prev._id === id ? { ...prev, ...cambios } : prev));
+          }}
+          onDesasignado={() => { recargar(); setDetalle(null); }}
+        />
+      )}
     </div>
   );
 };

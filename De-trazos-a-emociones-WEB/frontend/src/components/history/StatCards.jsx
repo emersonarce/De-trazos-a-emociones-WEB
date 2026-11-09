@@ -1,11 +1,11 @@
-import React from 'react';
 import './StatCards.css';
+import { emotionVisual } from '../../utils/emociones';
 
 const StatCards = ({ sessions = [] }) => {
   const totalSessions = sessions.length;
 
   let dominanteName = 'N/A';
-  let dominanteColor = '#a89ee0'; 
+  let dominanteColor = 'var(--emo-neutra)';
   let dominanteIntensidad = 'N/A';
   let intensitySubText = 'Esperando datos';
 
@@ -29,11 +29,8 @@ const StatCards = ({ sessions = [] }) => {
       dominanteIntensidad = lastDominanteSession.resultado_ia?.intensidad || 'Media';
     }
 
-    if (dominanteName.includes('ansiedad') || dominanteName.includes('enojo') || dominanteName.includes('ira')) dominanteColor = '#f87171';
-    else if (dominanteName.includes('tristeza') || dominanteName.includes('miedo')) dominanteColor = '#60a5fa';
-    else if (dominanteName.includes('alegría') || dominanteName.includes('felicidad')) dominanteColor = '#2dd4bf';
-    else dominanteColor = '#fbbf24'; 
-    
+    dominanteColor = emotionVisual(dominanteName).color;
+
     dominanteName = dominanteName.charAt(0).toUpperCase() + dominanteName.slice(1);
     intensitySubText = `Intensidad ${dominanteIntensidad.toLowerCase()}`;
   }
@@ -77,7 +74,7 @@ const StatCards = ({ sessions = [] }) => {
       </div>
       <div className="dashboard-card stat-card">
         <div style={{fontSize: '11px', color: 'var(--purple-light)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '14px', fontWeight: 700}}>Mejor momento</div>
-        <div style={{fontFamily: "'Inter', sans-serif", fontSize: '26px', fontWeight: 800, color: '#2dd4bf', lineHeight: 1, letterSpacing: '-0.02em'}}>{mejorMomento}</div>
+        <div style={{fontFamily: "'Inter', sans-serif", fontSize: '26px', fontWeight: 800, color: 'var(--emo-alegria)', lineHeight: 1, letterSpacing: '-0.02em'}}>{mejorMomento}</div>
         <div className="stat-label">{mejorMomentoLabel}</div>
         <div className="stat-sub">
           <span className="trend up" style={{fontSize: '11px'}}>{mejorMomentoSub}</span>

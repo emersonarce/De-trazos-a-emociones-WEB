@@ -1,0 +1,502 @@
+.admin-page {
+  min-height: 100vh;
+  background-color: var(--bg-dark);
+  color: var(--text-white);
+  font-family: var(--sans);
+}
+
+.admin-container {
+  margin-left: 72px;
+  padding: 32px 40px;
+}
+
+/* Encabezado */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: rgba(139, 121, 242, 0.15);
+  color: var(--accent-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-title h1 {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  font-variation-settings: 'SOFT' 100;
+}
+
+.admin-title p {
+  color: var(--text-gray);
+  font-size: 0.9rem;
+  margin: 2px 0 0;
+}
+
+.admin-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--input-border);
+  color: var(--text-gray);
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--sans);
+}
+
+.admin-back:hover {
+  color: var(--text-white);
+  border-color: var(--accent-purple);
+}
+
+/* Pestañas de filtro */
+.admin-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-tab {
+  background: var(--card);
+  border: 1px solid var(--input-border);
+  color: var(--text-gray);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--sans);
+}
+
+.admin-tab:hover {
+  color: var(--text-white);
+}
+
+.admin-tab.active {
+  background: var(--accent-purple);
+  border-color: var(--accent-purple);
+  color: #fff;
+  font-weight: 600;
+}
+
+.admin-refresh {
+  margin-left: auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--input-border);
+  color: var(--text-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-refresh:hover {
+  color: var(--text-white);
+  border-color: var(--accent-purple);
+}
+
+/* Mensajes */
+.admin-error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.admin-empty {
+  text-align: center;
+  color: var(--text-gray);
+  padding: 3.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Lista de solicitudes */
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-card {
+  background: var(--card);
+  border: 1px solid var(--input-border);
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  /* Botones arriba (no centrados): si los datos de la izquierda crecen (p. ej.
+     aparece «Contraseña temporal sin cambiar»), los botones no se mueven. */
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Los datos ocupan el espacio libre y sus etiquetas bajan de línea dentro de
+   él, en vez de empujar los botones a otra fila. Que los botones bajen o no
+   depende solo del ancho de la tarjeta, no de lo que diga. */
+.admin-card-main {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.admin-card-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.admin-card-email {
+  color: var(--accent-purple);
+  font-size: 0.9rem;
+  margin: 2px 0 8px;
+  word-break: break-all;
+}
+
+.admin-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-chip {
+  background: rgba(139, 121, 242, 0.12);
+  border: 1px solid rgba(139, 121, 242, 0.3);
+  color: #c0b4f9;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+}
+
+.admin-chip.inst {
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.3);
+  color: #5eead4;
+}
+
+.admin-chip.vacio {
+  background: transparent;
+  border-color: var(--input-border);
+  color: var(--text-gray);
+}
+
+/* Administrador(a) y super administrador en las tarjetas */
+.admin-chip.admin {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  font-weight: 600;
+}
+.admin-chip.super {
+  background: rgba(245, 158, 11, 0.22);
+  border-color: rgba(245, 158, 11, 0.7);
+  color: #fcd34d;
+  font-weight: 700;
+}
+
+/* En lugar de los botones, cuando no se puede modificar esa cuenta */
+.admin-nota {
+  align-self: center;
+  max-width: 260px;
+  font-size: 0.82rem;
+  color: var(--text-gray);
+  text-align: right;
+}
+
+.admin-fecha {
+  color: var(--text-gray);
+  font-size: 0.8rem;
+}
+
+/* Acciones */
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-aprobar,
+.btn-rechazar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  font-family: var(--sans);
+}
+
+.btn-aprobar {
+  background: rgba(45, 212, 191, 0.15);
+  border-color: rgba(45, 212, 191, 0.4);
+  color: #2dd4bf;
+}
+
+.btn-aprobar:hover:not(:disabled) {
+  background: rgba(45, 212, 191, 0.25);
+}
+
+.btn-rechazar {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.btn-rechazar:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.22);
+}
+
+.btn-eliminar-admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--sans);
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  transition: all 0.2s ease;
+}
+.btn-eliminar-admin:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* Botón neutro: restablecer la contraseña */
+.btn-neutro-admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--sans);
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.btn-neutro-admin:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.btn-aprobar:disabled,
+.btn-rechazar:disabled,
+.btn-eliminar-admin:disabled,
+.btn-neutro-admin:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Contraseña temporal: se muestra una sola vez para dársela al usuario */
+.admin-temporal {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px dashed var(--accent);
+  background: var(--card2);
+  color: var(--text);
+  font-family: ui-monospace, Consolas, Menlo, monospace;
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  user-select: all;
+}
+
+.estado-badge {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.estado-badge.aprobado {
+  background: rgba(45, 212, 191, 0.15);
+  color: #2dd4bf;
+}
+
+.estado-badge.rechazado {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+}
+
+@media (max-width: 560px) {
+  .admin-card {
+    align-items: flex-start;
+  }
+  .admin-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .btn-aprobar,
+  .btn-rechazar,
+  .btn-eliminar-admin,
+  .btn-neutro-admin {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* Gestión de rol y permisos por usuario */
+.admin-gestion {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--input-border);
+}
+
+.adm-g-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-gray);
+}
+
+.adm-g-field select {
+  background: var(--card2, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--input-border);
+  color: var(--text-white, var(--text));
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  font-family: var(--sans);
+  cursor: pointer;
+}
+
+.adm-g-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.85rem;
+  color: var(--text-gray);
+  cursor: pointer;
+}
+
+.adm-g-check input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-purple);
+  cursor: pointer;
+}
+
+.adm-g-check input:disabled {
+  cursor: not-allowed;
+}
+
+/* ===== Historial de acciones del panel ===== */
+.historial-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.historial-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 0.85rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid var(--input-border);
+  background: var(--card);
+}
+.historial-icono {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent-soft);
+}
+.historial-icono.ok { background: rgba(45, 212, 191, 0.15); color: #2dd4bf; }
+.historial-icono.alerta { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.historial-icono.peligro { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+.historial-cuerpo {
+  flex: 1;
+  min-width: 0;
+}
+.historial-texto {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.historial-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 3px;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+.historial-correo {
+  color: var(--accent-purple, var(--accent-soft));
+  word-break: break-all;
+}
+.historial-fecha {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  white-space: nowrap;
+  padding-top: 2px;
+}
+.historial-mas {
+  margin: 14px auto 0;
+  display: flex;
+}
+@media (max-width: 560px) {
+  .historial-item { flex-wrap: wrap; }
+  .historial-fecha { width: 100%; padding-left: 44px; }
+}

@@ -1,0 +1,541 @@
+/* =====================================================================
+   TEMA CLARO — ajustes de componentes
+   ---------------------------------------------------------------------
+   Los tokens del tema (fondos, textos, acento) están en index.css. Aquí
+   van solo los componentes que tienen colores fijos pensados para el tema
+   oscuro: superficies oscuras, bordes blancos translúcidos (invisibles
+   sobre blanco), textos pastel de poco contraste y sombras negras fuertes.
+   Todo va bajo :root[data-theme="light"], así el tema oscuro no cambia.
+   ===================================================================== */
+
+:root[data-theme="light"] {
+  /* Estados en tonos profesionales, legibles sobre blanco. */
+  --t-danger: #dc2626;
+  --t-danger-hover: #b91c1c;
+  --t-danger-bg: rgba(220, 38, 38, 0.08);
+  --t-danger-border: rgba(220, 38, 38, 0.35);
+  --t-ok: #0f766e;
+  --t-ok-bg: rgba(13, 148, 136, 0.1);
+  --t-ok-border: rgba(13, 148, 136, 0.35);
+  --t-warn: #b45309;
+  --t-warn-bg: rgba(217, 119, 6, 0.1);
+  --t-warn-border: rgba(217, 119, 6, 0.35);
+  --t-hover: rgba(17, 24, 39, 0.04);
+  --t-shadow: 0 6px 20px rgba(17, 24, 39, 0.07);
+  --t-shadow-lg: 0 18px 44px rgba(17, 24, 39, 0.14);
+}
+
+/* ---------- Botones principales ----------
+   Degradado sutil del violeta de la marca, brillo interior y sombra del mismo
+   tono; al pasar el mouse se intensifican. */
+:root[data-theme="light"] {
+  --t-btn: linear-gradient(180deg, #7a69ee 0%, #5b49d2 100%);
+  --t-btn-hover: linear-gradient(180deg, #6d5be6 0%, #4c3bc2 100%);
+  --t-btn-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(17, 24, 39, 0.12),
+    0 6px 16px -6px rgba(91, 73, 210, 0.55);
+  --t-btn-shadow-hover: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 4px rgba(17, 24, 39, 0.12),
+    0 10px 22px -6px rgba(91, 73, 210, 0.6);
+}
+:root[data-theme="light"] :is(
+  .pwd-btn,
+  .sp-btn.primary,
+  .adm-reanalizar,
+  .confirm-ok:not(.danger),
+  .exp-go,
+  .gt-btn,
+  .ind-assign-btn,
+  .admin-tab.active,
+  .rep-download,
+  .nino-ver-dashboard,
+  .history-wrapper .btn-new,
+  .analyzer-wrapper .btn-next,
+  .analyzer-wrapper .btn-analyze,
+  .analyzer-wrapper .nino-activo-btn:not(.ghost),
+  .analyzer-wrapper .modo-opt.active,
+  .radio-opt.selected,
+  .auth-container .btn-submit
+) {
+  background: var(--t-btn);
+  border-color: #5b49d2;
+  color: #fff;
+  box-shadow: var(--t-btn-shadow);
+}
+:root[data-theme="light"] :is(
+  .pwd-btn,
+  .sp-btn.primary,
+  .adm-reanalizar,
+  .confirm-ok:not(.danger),
+  .exp-go,
+  .gt-btn,
+  .ind-assign-btn,
+  .rep-download,
+  .nino-ver-dashboard,
+  .history-wrapper .btn-new,
+  .analyzer-wrapper .btn-next,
+  .analyzer-wrapper .btn-analyze,
+  .analyzer-wrapper .nino-activo-btn:not(.ghost),
+  .radio-opt.selected,
+  .auth-container .btn-submit
+):hover:not(:disabled) {
+  background: var(--t-btn-hover);
+  box-shadow: var(--t-btn-shadow-hover);
+}
+
+/* ---------- Barra lateral y menú de perfil ---------- */
+:root[data-theme="light"] .sidebar {
+  box-shadow: 1px 0 0 var(--border), 4px 0 18px rgba(17, 24, 39, 0.04);
+}
+:root[data-theme="light"] .sidebar .logo-icon,
+:root[data-theme="light"] .profile-avatar {
+  background: var(--accent);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+:root[data-theme="light"] .sidebar .nav-item:hover {
+  background: var(--card2);
+}
+:root[data-theme="light"] .profile-dropdown {
+  box-shadow: var(--t-shadow-lg);
+}
+:root[data-theme="light"] .profile-email {
+  color: var(--accent);
+}
+:root[data-theme="light"] .profile-item.danger,
+:root[data-theme="light"] .profile-modal-icon {
+  color: var(--t-danger);
+}
+:root[data-theme="light"] .profile-item.danger:hover {
+  color: var(--t-danger-hover);
+  background: var(--t-danger-bg);
+}
+:root[data-theme="light"] .profile-modal-overlay {
+  background: var(--overlay);
+}
+:root[data-theme="light"] .btn-cancelar:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+/* ---------- Fondos decorativos (manchas de color) ----------
+   En claro se quitan para que el fondo quede neutro y limpio. */
+:root[data-theme="light"] .analyzer-wrapper .bg-dots,
+:root[data-theme="light"] .dashboard-container .orb-1,
+:root[data-theme="light"] .dashboard-container .orb-2,
+:root[data-theme="light"] .dashboard-container .orb-3,
+:root[data-theme="light"] .history-wrapper .orb-1,
+:root[data-theme="light"] .history-wrapper .orb-2 {
+  display: none;
+}
+
+/* ---------- Analizador ---------- */
+/* Orbes del encabezado más presentes (sobre fondo claro se veían lavados). */
+:root[data-theme="light"] .hero-orb-dot {
+  opacity: 0.78;
+  box-shadow: 0 0 12px currentColor;
+}
+:root[data-theme="light"] .analyzer-wrapper .hero:hover .hero-orb-dot {
+  opacity: 1;
+  box-shadow: 0 0 22px currentColor, 0 0 8px currentColor;
+}
+:root[data-theme="light"] .analyzer-wrapper .hero,
+:root[data-theme="light"] .analyzer-wrapper .card {
+  box-shadow: var(--t-shadow);
+}
+:root[data-theme="light"] .analyzer-wrapper .card:hover {
+  box-shadow: var(--t-shadow-lg), 0 0 0 1px var(--accent-glow);
+}
+:root[data-theme="light"] .analyzer-wrapper .steps {
+  box-shadow: var(--t-shadow);
+}
+:root[data-theme="light"] .analyzer-wrapper .card-header,
+:root[data-theme="light"] .analysis-card-top {
+  border-color: var(--border);
+}
+:root[data-theme="light"] .analyzer-wrapper .card-subtitle,
+:root[data-theme="light"] .field label,
+:root[data-theme="light"] .radio-opt,
+:root[data-theme="light"] .section-label,
+:root[data-theme="light"] .result-image-caption,
+:root[data-theme="light"] .intensity-title,
+:root[data-theme="light"] details summary,
+:root[data-theme="light"] .raw-content,
+:root[data-theme="light"] .sa-title,
+:root[data-theme="light"] .upload-hint,
+:root[data-theme="light"] .adm-date,
+:root[data-theme="light"] .adm-title {
+  color: var(--muted);
+}
+:root[data-theme="light"] .radio-opt:hover,
+:root[data-theme="light"] .analyzer-wrapper .btn-back:hover,
+:root[data-theme="light"] .analyzer-wrapper .btn-new:hover,
+:root[data-theme="light"] .sp-btn:hover:not(:disabled),
+:root[data-theme="light"] .sa-section:hover {
+  background: var(--t-hover);
+}
+:root[data-theme="light"] .analyzer-wrapper .btn-back,
+:root[data-theme="light"] .analyzer-wrapper .btn-new {
+  border-color: var(--border2);
+}
+
+/* Subida del dibujo */
+:root[data-theme="light"] .upload-area {
+  border-color: rgba(17, 24, 39, 0.18);
+}
+:root[data-theme="light"] .upload-icon,
+:root[data-theme="light"] .analyzing-preview {
+  box-shadow: var(--t-shadow);
+}
+:root[data-theme="light"] .preview-img-wrap,
+:root[data-theme="light"] .result-image,
+:root[data-theme="light"] .adm-image-wrap {
+  border-color: var(--border);
+}
+:root[data-theme="light"] .preview-toolbar {
+  background: var(--card2);
+  border-top-color: var(--border);
+}
+:root[data-theme="light"] .btn-remove,
+:root[data-theme="light"] .error-icon {
+  color: var(--t-danger);
+}
+:root[data-theme="light"] .btn-remove:hover {
+  color: var(--t-danger-hover);
+}
+:root[data-theme="light"] .error-box,
+:root[data-theme="light"] .exp-error,
+:root[data-theme="light"] .admin-error {
+  background: var(--t-danger-bg);
+  border-color: var(--t-danger-border);
+  color: var(--t-danger);
+}
+:root[data-theme="light"] .analyzing-notice,
+:root[data-theme="light"] .analysis-notice.simulado {
+  background: var(--accent-dim);
+  border-color: rgba(109, 92, 224, 0.3);
+  color: var(--accent-strong);
+}
+
+/* Progreso del análisis */
+:root[data-theme="light"] .analyzing-badge {
+  background: var(--accent);
+}
+:root[data-theme="light"] .analyzing-bar-fill {
+  background: linear-gradient(90deg, var(--accent), var(--teal));
+}
+:root[data-theme="light"] .analyzing-cancelar:hover {
+  color: var(--t-danger);
+  border-color: var(--t-danger-border);
+  background: var(--t-danger-bg);
+}
+
+/* Resultado del análisis */
+:root[data-theme="light"] .intensity-card,
+:root[data-theme="light"] .analysis-card {
+  background: var(--card);
+  border-color: var(--border);
+}
+:root[data-theme="light"] .analysis-card-top,
+:root[data-theme="light"] .sa-section,
+:root[data-theme="light"] .rasgo-item {
+  background: var(--card2);
+}
+:root[data-theme="light"] details {
+  border-color: var(--border);
+}
+:root[data-theme="light"] .emotion-chip {
+  background: var(--accent-dim);
+  border-color: rgba(109, 92, 224, 0.28);
+  color: var(--accent-strong);
+}
+:root[data-theme="light"] .sa-section.highlight {
+  background: linear-gradient(90deg, var(--t-ok-bg) 0%, transparent 100%);
+}
+:root[data-theme="light"] .sa-section.highlight .sa-title {
+  color: var(--t-ok);
+}
+:root[data-theme="light"] .rasgo-item:hover {
+  background: var(--t-ok-bg);
+}
+:root[data-theme="light"] .rasgo-dot {
+  background: var(--teal);
+  box-shadow: none;
+}
+:root[data-theme="light"] .analysis-notice,
+:root[data-theme="light"] .adm-sincontexto {
+  background: var(--t-warn-bg);
+  border-color: var(--t-warn-border);
+}
+:root[data-theme="light"] .analysis-notice,
+:root[data-theme="light"] .adm-badge-sc {
+  color: var(--t-warn);
+}
+
+/* ---------- Dashboard ---------- */
+:root[data-theme="light"] .welcome {
+  background: linear-gradient(135deg, var(--accent-dim) 0%, rgba(234, 122, 78, 0.04) 100%);
+  border-color: rgba(109, 92, 224, 0.18);
+  box-shadow: var(--t-shadow);
+}
+:root[data-theme="light"] .welcome::before {
+  background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
+}
+:root[data-theme="light"] .dashboard-card:hover,
+:root[data-theme="light"] .history-wrapper .dashboard-card:hover {
+  border-color: var(--border2);
+  box-shadow: var(--t-shadow-lg);
+}
+:root[data-theme="light"] .btn-outline,
+:root[data-theme="light"] .history-wrapper .btn-outline-small {
+  background: var(--card2);
+}
+:root[data-theme="light"] .btn-outline:hover,
+:root[data-theme="light"] .history-wrapper .btn-outline-small:hover {
+  background: rgba(17, 24, 39, 0.07);
+}
+:root[data-theme="light"] .alert-card {
+  background: var(--t-danger-bg);
+  border-color: rgba(220, 38, 38, 0.18);
+}
+:root[data-theme="light"] .alert-title,
+:root[data-theme="light"] .alert-action,
+:root[data-theme="light"] .history-wrapper .alert-title,
+:root[data-theme="light"] .history-wrapper .alert-btn {
+  color: var(--t-danger);
+}
+:root[data-theme="light"] .alert-action,
+:root[data-theme="light"] .history-wrapper .alert-btn {
+  background: rgba(220, 38, 38, 0.1);
+}
+:root[data-theme="light"] .alert-action:hover,
+:root[data-theme="light"] .history-wrapper .alert-btn:hover {
+  background: rgba(220, 38, 38, 0.16);
+}
+:root[data-theme="light"] .alert-card.ok {
+  background: var(--t-ok-bg);
+  border-color: var(--t-ok-border);
+}
+:root[data-theme="light"] .alert-card.ok .alert-title {
+  color: var(--t-ok);
+}
+:root[data-theme="light"] .alert-icono {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--t-danger);
+}
+:root[data-theme="light"] .alert-card.ok .alert-icono {
+  background: rgba(13, 148, 136, 0.12);
+  color: var(--t-ok);
+}
+:root[data-theme="light"] .week-badge,
+:root[data-theme="light"] .qa-icon.teal {
+  background: var(--t-ok-bg);
+}
+:root[data-theme="light"] .child-delete:hover,
+:root[data-theme="light"] .session-delete:hover {
+  background: var(--t-danger-bg);
+  color: var(--t-danger);
+}
+:root[data-theme="light"] .history-wrapper .session-row:hover {
+  background: var(--t-hover);
+}
+:root[data-theme="light"] .compare-card:hover .compare-thumb {
+  border-color: var(--border2);
+}
+
+/* ---------- Historial ---------- */
+:root[data-theme="light"] .history-wrapper .btn-new {
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+:root[data-theme="light"] .history-wrapper .s-bar-wrap {
+  background: rgba(17, 24, 39, 0.06);
+}
+:root[data-theme="light"] .history-wrapper .trend.up {
+  background: rgba(22, 163, 74, 0.1);
+  color: #15803d;
+}
+
+/* ---------- Modales y diálogos ---------- */
+:root[data-theme="light"] .adm-overlay {
+  background: var(--overlay);
+}
+:root[data-theme="light"] .adm-card {
+  border-color: var(--border);
+}
+:root[data-theme="light"] .adm-card,
+:root[data-theme="light"] .confirm-card,
+:root[data-theme="light"] .exp-card,
+:root[data-theme="light"] .gt-tip,
+:root[data-theme="light"] .act-modal,
+:root[data-theme="light"] .nino-modal,
+:root[data-theme="light"] .toast-analisis {
+  box-shadow: var(--t-shadow-lg);
+}
+:root[data-theme="light"] .adm-close {
+  background: var(--card2);
+  border-color: var(--border);
+}
+:root[data-theme="light"] .confirm-icon.danger {
+  background: var(--t-danger-bg);
+  color: var(--t-danger);
+}
+:root[data-theme="light"] .confirm-ok.danger,
+:root[data-theme="light"] .btn-eliminar {
+  background: var(--t-danger);
+  border-color: var(--t-danger);
+}
+:root[data-theme="light"] .confirm-ok.danger:hover:not(:disabled),
+:root[data-theme="light"] .btn-eliminar:hover:not(:disabled) {
+  background: var(--t-danger-hover);
+}
+
+/* ---------- Administración ---------- */
+:root[data-theme="light"] .admin-badge,
+:root[data-theme="light"] .admin-chip {
+  background: var(--accent-dim);
+}
+:root[data-theme="light"] .admin-chip {
+  border-color: rgba(109, 92, 224, 0.28);
+  color: var(--accent-strong);
+}
+:root[data-theme="light"] .admin-chip.inst {
+  background: var(--t-ok-bg);
+  border-color: var(--t-ok-border);
+  color: var(--t-ok);
+}
+:root[data-theme="light"] .btn-aprobar {
+  background: var(--t-ok-bg);
+  border-color: var(--t-ok-border);
+  color: var(--t-ok);
+}
+:root[data-theme="light"] .btn-aprobar:hover:not(:disabled) {
+  background: rgba(13, 148, 136, 0.18);
+}
+:root[data-theme="light"] .btn-rechazar,
+:root[data-theme="light"] .btn-eliminar-admin {
+  border-color: var(--t-danger-border);
+  color: var(--t-danger);
+}
+:root[data-theme="light"] .btn-rechazar {
+  background: var(--t-danger-bg);
+}
+:root[data-theme="light"] .btn-rechazar:hover:not(:disabled),
+:root[data-theme="light"] .btn-eliminar-admin:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.14);
+}
+:root[data-theme="light"] .estado-badge.aprobado {
+  background: var(--t-ok-bg);
+  color: var(--t-ok);
+}
+:root[data-theme="light"] .estado-badge.rechazado {
+  background: var(--t-danger-bg);
+  color: var(--t-danger);
+}
+
+/* ---------- Configuración ---------- */
+:root[data-theme="light"] .pwd-msg.error {
+  color: var(--t-danger);
+}
+:root[data-theme="light"] .cuenta-eliminar,
+:root[data-theme="light"] .config-tab.peligro,
+:root[data-theme="light"] .config-tab.peligro.activa {
+  color: var(--t-danger);
+}
+:root[data-theme="light"] .cuenta-eliminar {
+  border-color: var(--t-danger-border);
+}
+:root[data-theme="light"] .cuenta-eliminar:hover {
+  background: var(--t-danger-bg);
+}
+:root[data-theme="light"] .cuenta-chip.admin {
+  background: var(--t-ok-bg);
+  color: var(--t-ok);
+}
+:root[data-theme="light"] .switch-slider::before {
+  box-shadow: 0 1px 3px rgba(17, 24, 39, 0.25);
+}
+
+/* ---------- Inicio de sesión y registro ---------- */
+/* Panel de moléculas con un fondo claro apenas teñido de violeta;
+   el formulario queda sobre blanco. */
+:root[data-theme="light"] .auth-container {
+  background:
+    radial-gradient(60% 70% at 28% 50%, rgba(109, 92, 224, 0.09) 0%, transparent 70%),
+    radial-gradient(45% 55% at 76% 45%, rgba(109, 92, 224, 0.05) 0%, transparent 70%),
+    linear-gradient(180deg, #f8f7fe 0%, #eff1f8 100%);
+}
+/* Formulario de vidrio en claro: más luminoso, con borde casi blanco. */
+@media (min-width: 901px) {
+  :root[data-theme="light"] .auth-container .right-panel .form-container {
+    background: linear-gradient(
+      150deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(255, 255, 255, 0.45) 45%,
+      rgba(255, 255, 255, 0.6) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.85);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 0 0 1px rgba(109, 92, 224, 0.06),
+      0 24px 60px -20px rgba(31, 36, 48, 0.22);
+  }
+  :root[data-theme="light"] .auth-container .right-panel .form-container::before {
+    background: radial-gradient(120% 60% at 15% -10%, rgba(255, 255, 255, 0.7) 0%, transparent 55%);
+  }
+  :root[data-theme="light"] .auth-container .form-container .input-wrapper input,
+  :root[data-theme="light"] .auth-container .form-container .role-select {
+    background-color: rgba(255, 255, 255, 0.75);
+    border-color: rgba(17, 24, 39, 0.1);
+  }
+  :root[data-theme="light"] .auth-container .form-container .form-footer {
+    border-top-color: rgba(17, 24, 39, 0.08);
+  }
+}
+/* Campos en blanco: resaltan sobre el fondo lila suave de toda la página. */
+:root[data-theme="light"] .auth-container .input-wrapper input,
+:root[data-theme="light"] .auth-container .role-select {
+  background-color: var(--surface);
+}
+:root[data-theme="light"] .auth-container .input-wrapper input:focus,
+:root[data-theme="light"] .auth-container .role-select:focus {
+  background-color: var(--surface);
+}
+:root[data-theme="light"] .auth-container .form-footer {
+  border-top-color: var(--border);
+}
+:root[data-theme="light"] .auth-container .form-footer a,
+:root[data-theme="light"] .auth-container .checkbox-group a {
+  color: var(--accent-strong);
+}
+:root[data-theme="light"] .auth-container .input-wrapper input::placeholder {
+  color: #9aa0ab;
+}
+:root[data-theme="light"] .auth-container .auth-aviso {
+  /* Sobre el vidrio blanco, un poco más de color para que no se pierda. */
+  background: color-mix(in srgb, var(--aviso) 9%, rgba(255, 255, 255, 0.7));
+  border-color: color-mix(in srgb, var(--aviso) 32%, transparent);
+}
+:root[data-theme="light"] .auth-container .auth-aviso-cuerpo a {
+  color: var(--accent-strong);
+}
+:root[data-theme="light"] .auth-container .form-container .input-wrapper.invalido input,
+:root[data-theme="light"] .auth-container .form-container .input-wrapper.invalido .role-select {
+  border-color: color-mix(in srgb, var(--emo-enojo) 70%, transparent);
+}
+:root[data-theme="light"] .auth-container .register-success .success-icon.ok {
+  background: var(--t-ok-bg);
+  border-color: var(--t-ok-border);
+  color: var(--t-ok);
+}
+:root[data-theme="light"] .auth-container .register-success .success-icon.wait {
+  background: var(--t-warn-bg);
+  border-color: var(--t-warn-border);
+  color: var(--t-warn);
+}
+
+/* Dashboard: tarjetas de "Cómo ha estado" sobre fondo blanco. */
+:root[data-theme="light"] .ts-card {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--emo) 8%, transparent) 0%, transparent 60%),
+    var(--surface);
+  box-shadow: var(--t-shadow);
+}
+:root[data-theme="light"] .ts-reciente {
+  background: rgba(31, 36, 48, 0.75);
+}

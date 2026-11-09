@@ -1,0 +1,23 @@
+/* Imagen que no está en este servidor: ícono y, si hay espacio, un texto corto. */
+.auth-img-faltante {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
+  text-align: center;
+  color: var(--muted2);
+  background:
+    repeating-linear-gradient(-45deg, transparent 0 8px, color-mix(in srgb, var(--muted2) 7%, transparent) 8px 16px),
+    var(--sunken);
+}
+.auth-img-faltante span {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+@container (max-width: 90px) {
+  .auth-img-faltante span { display: none; }
+}

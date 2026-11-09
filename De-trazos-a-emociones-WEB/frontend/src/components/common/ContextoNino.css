@@ -1,0 +1,214 @@
+/* Resumen y editor del contexto del niño (ContextoNino.jsx). */
+.ctx-resumen {
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+}
+
+.ctx-resumen-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ctx-resumen-icono {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  color: var(--accent-soft);
+  background: var(--accent-dim);
+}
+.ctx-resumen-titulos {
+  flex: 1;
+  min-width: 0;
+}
+.ctx-resumen-titulos h4 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.ctx-resumen-titulos p {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--muted2);
+}
+
+.ctx-editar {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.ctx-editar:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.ctx-filas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px 18px;
+  margin: 14px 0 0;
+}
+.ctx-fila {
+  min-width: 0;
+}
+.ctx-fila.larga {
+  grid-column: 1 / -1;
+}
+.ctx-fila dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted2);
+}
+.ctx-fila dd {
+  margin: 3px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.ctx-vacio {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.ctx-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- Editor ---------- */
+.ctx-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+.ctx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+.ctx-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.ctx-campo > span {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.ctx-campo input,
+.ctx-campo select,
+.ctx-campo textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  background: var(--input-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13.5px;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.ctx-campo input:focus,
+.ctx-campo select:focus,
+.ctx-campo textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.ctx-pildoras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ctx-pildoras button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.ctx-pildoras button:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border2));
+}
+.ctx-pildoras button.activa {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+:root[data-theme="light"] .ctx-resumen {
+  background: var(--card2);
+}
+:root[data-theme="light"] .ctx-campo input,
+:root[data-theme="light"] .ctx-campo select,
+:root[data-theme="light"] .ctx-campo textarea {
+  background: var(--surface);
+}
+
+/* Edad calculada con la fecha de nacimiento: no se edita */
+.ctx-calculada {
+  font-style: normal;
+  font-weight: 500;
+  opacity: 0.75;
+}
+.ctx-campo input[readonly] {
+  color: var(--muted);
+  cursor: default;
+}
+
+/* «Otro» diagnóstico y tiempo exacto en el editor */
+.ctx-campo select + input {
+  margin-top: 8px;
+}
+/* Tiempo exacto que tardó: un solo campo «hh:mm» */
+.ctx-minutos {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.ctx-campo .ctx-minutos input {
+  width: 88px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}

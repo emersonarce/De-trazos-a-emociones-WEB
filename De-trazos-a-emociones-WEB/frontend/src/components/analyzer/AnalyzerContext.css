@@ -33,13 +33,13 @@
 .field input,
 .field select,
 .field textarea {
-  background: #040418;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--sunken);
+  border: 1px solid var(--input-border);
   border-radius: 10px;
   padding: 12px 14px;
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
-  color: #f9fafb;
+  color: var(--text);
   outline: none;
   transition: all 0.2s;
 }
@@ -47,8 +47,8 @@
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+  border-color: var(--purple, #8b79f2);
+  box-shadow: 0 0 0 2px rgba(139, 121, 242, 0.25);
 }
 
 .field textarea {
@@ -59,6 +59,12 @@
 
 .field select {
   cursor: pointer;
+}
+
+/* Misma altura para textos, fechas y listas que quedan lado a lado */
+.field > input,
+.field > select {
+  min-height: 46px;
 }
 
 .optional {
@@ -84,7 +90,7 @@
   gap: 0;
   padding: 8px 16px;
   border-radius: 999px;
-  background: #040418;
+  background: var(--sunken);
   border: 1px solid transparent;
   cursor: pointer;
   font-size: 13px;
@@ -95,7 +101,7 @@
 
 .radio-opt:hover {
   background: rgba(255, 255, 255, 0.05);
-  color: #f9fafb;
+  color: var(--text);
 }
 
 .radio-opt input[type="radio"] {
@@ -103,6 +109,49 @@
 }
 
 .radio-opt.selected {
-  background: #4f46e5;
-  color: #ffffff;
+  background: var(--purple, #8b79f2);
+  color: #fff;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: var(--purple-light, #a89ee0);
+  font-weight: 600;
+}
+
+/* Nombre o alias obligatorio: aviso al intentar continuar sin él */
+.field input.invalido {
+  border-color: var(--emo-enojo, #f2736d);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--emo-enojo, #f2736d) 18%, transparent);
+}
+.field-error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emo-enojo, #f2736d);
+}
+
+/* Edad calculada con la fecha de nacimiento: no se edita */
+.field input#edad[readonly] {
+  color: var(--muted);
+  cursor: default;
+}
+
+/* «Otro» diagnóstico */
+.field select + input {
+  margin-top: 8px;
+}
+/* Tiempo exacto que tardó: un solo campo «hh:mm» */
+.field .tiempo-exacto {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.field .tiempo-exacto input {
+  width: 88px;
+  padding: 8px 10px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }

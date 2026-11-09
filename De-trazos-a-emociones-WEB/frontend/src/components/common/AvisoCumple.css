@@ -1,0 +1,179 @@
+/* Aviso de cumpleaños (AvisoCumple.jsx) */
+.aviso-cumple {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: linear-gradient(100deg, rgba(139, 121, 242, 0.14), rgba(45, 212, 191, 0.08));
+  border: 1px solid rgba(139, 121, 242, 0.3);
+  animation: aviso-cumple-entra 0.35s ease-out;
+}
+
+.aviso-cumple.es-hoy {
+  background: linear-gradient(100deg, rgba(242, 115, 109, 0.16), rgba(251, 191, 36, 0.14) 50%, rgba(139, 121, 242, 0.16));
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.aviso-cumple-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.es-hoy .aviso-cumple-head {
+  padding-right: 110px;
+}
+
+.aviso-cumple-icono {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.es-hoy .aviso-cumple-icono {
+  background: rgba(251, 191, 36, 0.2);
+  color: var(--amber);
+  animation: cumple-salto 0.8s ease-in-out 0.2s 4;
+}
+
+.aviso-cumple h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.aviso-cumple-head p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.aviso-cumple-ideas {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.aviso-cumple-ideas li {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+}
+.aviso-cumple-ideas li svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--accent);
+}
+.es-hoy .aviso-cumple-ideas li svg {
+  color: var(--amber);
+}
+.aviso-cumple-ideas b {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.aviso-cumple-ideas span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+:root[data-theme="light"] .aviso-cumple-ideas li {
+  background: var(--surface);
+}
+
+/* Globos del día del cumpleaños */
+.aviso-cumple-globos {
+  position: absolute;
+  top: 12px;
+  right: 22px;
+  width: 92px;
+  height: 58px;
+  pointer-events: none;
+}
+.aviso-cumple-globos span {
+  position: absolute;
+  bottom: 0;
+  width: 24px;
+  height: 30px;
+  border-radius: 50% 50% 46% 46%;
+  transform-origin: 50% 150%;
+  animation: globo-entra 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both, globo-vaiven 2.6s ease-in-out infinite alternate;
+}
+.aviso-cumple-globos span::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 1px;
+  height: 18px;
+  background: currentColor;
+  opacity: 0.5;
+}
+.aviso-cumple-globos span:nth-child(1) {
+  left: 0;
+  color: #f2736d;
+  background: #f2736d;
+  animation-delay: 0.1s, 0.7s;
+}
+.aviso-cumple-globos span:nth-child(2) {
+  left: 32px;
+  bottom: 14px;
+  color: #8b79f2;
+  background: #8b79f2;
+  animation-delay: 0.25s, 0.85s;
+}
+.aviso-cumple-globos span:nth-child(3) {
+  left: 64px;
+  color: #2fd2cc;
+  background: #2fd2cc;
+  animation-delay: 0.4s, 1s;
+}
+
+@keyframes aviso-cumple-entra {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes cumple-salto {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(-6px) rotate(-8deg); }
+  60% { transform: translateY(0) rotate(6deg); }
+}
+@keyframes globo-entra {
+  from { opacity: 0; transform: translateY(30px) scale(0.2); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes globo-vaiven {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(6deg) translateY(-4px); }
+}
+
+@media (max-width: 640px) {
+  .aviso-cumple-globos {
+    display: none;
+  }
+  .es-hoy .aviso-cumple-head {
+    padding-right: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aviso-cumple,
+  .es-hoy .aviso-cumple-icono,
+  .aviso-cumple-globos span {
+    animation: none;
+  }
+}

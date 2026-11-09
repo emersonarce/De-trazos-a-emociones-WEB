@@ -1,0 +1,39 @@
+/* Trazos de la emoción predominante: cubren todo el banner de bienvenida
+   (.welcome) por detrás del texto. --animo-color (por style) es el color de
+   la emoción, para los trazos y el halo. */
+.animo-lienzo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  color: var(--animo-color);
+}
+
+/* Zona de clic sobre la cara (lado derecho del banner). */
+.animo-boton {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 270px;
+  z-index: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.animo-boton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -8px;
+  border-radius: 20px;
+}
+
+@media (max-width: 560px) {
+  .animo-boton {
+    width: 130px;
+  }
+}

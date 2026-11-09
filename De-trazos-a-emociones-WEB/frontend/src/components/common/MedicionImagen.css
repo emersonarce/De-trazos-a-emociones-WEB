@@ -1,0 +1,73 @@
+/* Medición de color y trazo (resultado y detalle del historial) */
+.med-barra {
+  display: flex;
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border2);
+  background: var(--sunken);
+}
+.med-barra span {
+  display: block;
+  height: 100%;
+}
+.med-leyenda {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.med-leyenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.med-leyenda strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.med-punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+.med-datos {
+  margin: 14px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.med-datos div {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--sunken);
+}
+.med-datos dt {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted2);
+}
+.med-datos dd {
+  margin: 3px 0 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text);
+}
+.med-nota {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted2);
+}
+@media (max-width: 640px) {
+  .med-datos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -24,14 +24,13 @@
 
 .history-wrapper .session-row:hover {
   background: rgba(255, 255, 255, 0.03);
-  transform: translateX(6px);
 }
 
 .history-wrapper .session-thumb {
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: rgba(30, 30, 48, 0.6);
+  background: var(--card2);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -119,9 +118,21 @@
 .history-wrapper .w-dot {
   width: 10px;
   border-radius: 4px;
-  background: var(--purple-dim);
-  transition: height 1s ease;
-  height: 0;
+  background: var(--border2);
+  transition: height 1s cubic-bezier(0.16, 1, 0.3, 1);
+  height: 4px;
+}
+/* Día con análisis (alto según cuántos hubo) y hoy resaltado. */
+.history-wrapper .w-dot.con-analisis {
+  background: color-mix(in srgb, var(--purple) 55%, transparent);
+}
+.history-wrapper .w-dot.hoy {
+  outline: 1px solid var(--purple-light);
+  outline-offset: 2px;
+}
+.history-wrapper .w-dot.hoy.con-analisis {
+  background: var(--purple-light);
+  box-shadow: 0 0 8px var(--purple-glow);
 }
 
 .history-wrapper .btn-outline-small {
@@ -138,4 +149,25 @@
 
 .history-wrapper .btn-outline-small:hover {
   background: rgba(255,255,255,0.1);
+}
+
+.session-delete {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.session-delete:hover {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+}
+
+.session-row-click {
+  cursor: pointer;
 }

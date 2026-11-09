@@ -1,0 +1,119 @@
+.analyzing-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 1.5rem;
+}
+
+/* Botón pequeño "Cancelar", arriba a la izquierda del recuadro. */
+.analyzing-cancelar {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 5px 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--sunken);
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.analyzing-cancelar:hover {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.6);
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.analyzing-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.analyzing-badge {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  box-shadow: 0 0 0 0 rgba(139, 121, 242, 0.5);
+  animation: analyzingPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes analyzingPulse {
+  0% { box-shadow: 0 0 0 0 rgba(139, 121, 242, 0.45); }
+  70% { box-shadow: 0 0 0 12px rgba(139, 121, 242, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(139, 121, 242, 0); }
+}
+
+.analyzing-titles {
+  min-width: 0;
+}
+
+.analyzing-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text, #ffffff);
+  letter-spacing: -0.01em;
+}
+
+.analyzing-phase {
+  font-size: 13.5px;
+  color: var(--muted, #a1a1aa);
+  margin-top: 2px;
+  animation: analyzingFade 0.4s ease;
+}
+
+@keyframes analyzingFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.analyzing-bar {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--card2);
+  overflow: hidden;
+  position: relative;
+}
+
+.analyzing-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8b79f2, #2dd4bf);
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Brillo que se desplaza para dar sensación de proceso en marcha */
+.analyzing-bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: translateX(-100%);
+  animation: analyzingShimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes analyzingShimmer {
+  100% { transform: translateX(100%); }
+}
+
+.analyzing-note {
+  font-size: 12.5px;
+  color: var(--muted, #a1a1aa);
+  margin-top: 14px;
+  text-align: center;
+}

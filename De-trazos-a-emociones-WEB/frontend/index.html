@@ -1,10 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Aplica el tema y la paleta guardados antes de pintar (evita el parpadeo).
+      (function () {
+        try {
+          var t = localStorage.getItem('tema');
+          var p = localStorage.getItem('paleta');
+          document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+          document.documentElement.setAttribute('data-palette', p || 'violeta');
+        } catch (e) { /* almacenamiento no disponible */ }
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..800,0..100;1,9..144,400..800,0..100&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <title>De trazos a emociones</title>
   </head>
   <body>
     <div id="root"></div>

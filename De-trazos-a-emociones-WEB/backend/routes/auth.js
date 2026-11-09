@@ -2,6 +2,9 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { esEmailAdmin, esEmailSuperAdmin } = require("../utils/admin");
+const { validarPassword } = require("../utils/password");
+const { permisosEfectivos } = require("../utils/permisos");
 
 const router = express.Router();
 
@@ -14,7 +17,7 @@ POST /auth/register
 
 router.post("/register", async (req, res) => {
     try {
-        const { nombre, apellido, email, password, rol } = req.body;
+        const { nombre, apellido, email, password, rol, institucion } = req.body;
 
         // Validar campos
         if (!nombre || !apellido || !email || !password || !rol) {
@@ -23,11 +26,10 @@ router.post("/register", async (req, res) => {
             });
         }
 
-        // Validar longitud mínima de contraseña
-        if (password.length < 8) {
-            return res.status(400).json({
-                message: "La contraseña debe tener al menos 8 caracteres"
-            });
+        // Validar política de contraseña segura
+        const errorPassword = validarPassword(password);
+        if (errorPassword) {
+            return res.status(400).json({ message: errorPassword });
         }
 
         // Normalizar email
@@ -40,12 +42,19 @@ router.post("/register", async (req, res) => {
 
         if (usuarioExistente) {
             return res.status(409).json({
-                message: "El correo ya está registrado"
+                message: usuarioExistente.estado === "eliminado"
+                    ? "Ese correo es de una cuenta eliminada. Si quieres recuperarla, pídele al administrador que la restaure."
+                    : "El correo ya está registrado"
             });
         }
 
         // Hashear contraseña
         const passwordHash = await bcrypt.hash(password, 12);
+
+        // Si el correo está en ADMIN_EMAILS (o SUPERADMIN_EMAILS), la cuenta es
+        // admin y queda aprobada; de lo contrario queda pendiente de aprobación.
+        const superAdmin = esEmailSuperAdmin(emailNormalizado);
+        const admin = superAdmin || esEmailAdmin(emailNormalizado);
 
         // Crear usuario
         const nuevoUsuario = new User({
@@ -53,17 +62,28 @@ router.post("/register", async (req, res) => {
             apellido: apellido.trim(),
             email: emailNormalizado,
             password: passwordHash,
-            rol: rol
+            rol: rol,
+            institucion: (institucion || "").trim(),
+            esAdmin: admin,
+            esSuperAdmin: superAdmin,
+            estado: admin ? "aprobado" : "pendiente",
+            // Las cuentas nuevas arrancan restringidas: solo análisis de dibujo
+            // suelto. El administrador habilita lo demás por usuario.
+            permisos: { conContexto: false, descargarPdf: false }
         });
 
         await nuevoUsuario.save();
 
         return res.status(201).json({
-            message: "Usuario registrado correctamente",
+            message: admin
+                ? "Cuenta de administrador creada. Ya puedes iniciar sesión."
+                : "Registro recibido. Tu cuenta quedó pendiente de aprobación por el administrador.",
+            estado: nuevoUsuario.estado,
             usuario: {
                 id: nuevoUsuario._id,
                 nombre: nuevoUsuario.nombre,
-                email: nuevoUsuario.email
+                email: nuevoUsuario.email,
+                estado: nuevoUsuario.estado
             }
         });
 
@@ -122,15 +142,51 @@ router.post("/login", async (req, res) => {
             });
         }
 
+        // Reconciliar administrador desde ADMIN_EMAILS (por si el correo se
+        // agregó a la lista después de haberse registrado).
+        if (esEmailAdmin(usuario.email) && (!usuario.esAdmin || usuario.estado !== "aprobado")) {
+            usuario.esAdmin = true;
+            usuario.estado = "aprobado";
+            await usuario.save();
+        }
+        // Igual con el super administrador (SUPERADMIN_EMAILS).
+        if (esEmailSuperAdmin(usuario.email) && (!usuario.esSuperAdmin || !usuario.esAdmin || usuario.estado !== "aprobado")) {
+            usuario.esSuperAdmin = true;
+            usuario.esAdmin = true;
+            usuario.estado = "aprobado";
+            await usuario.save();
+        }
+
+        // Bloquear el acceso hasta que el administrador apruebe la cuenta.
+        if (usuario.estado === "pendiente") {
+            return res.status(403).json({
+                message: "Tu cuenta está pendiente de aprobación por el administrador."
+            });
+        }
+
+        if (usuario.estado === "rechazado") {
+            return res.status(403).json({
+                message: "Tu solicitud de registro fue rechazada. Comunícate con el administrador."
+            });
+        }
+
+        if (usuario.estado === "eliminado") {
+            return res.status(403).json({
+                message: "Esta cuenta fue eliminada. Si fue un error, pídele al administrador que la restaure."
+            });
+        }
+
         // Crear JWT
         const token = jwt.sign(
             {
                 id: usuario._id,
-                email: usuario.email
+                email: usuario.email,
+                rol: usuario.rol,
+                esAdmin: usuario.esAdmin
             },
             process.env.JWT_SECRET,
             {
-                expiresIn: process.env.JWT_EXPIRES_IN || "2h"
+                expiresIn: process.env.JWT_EXPIRES_IN || "7d"
             }
         );
 
@@ -140,7 +196,14 @@ router.post("/login", async (req, res) => {
             usuario: {
                 id: usuario._id,
                 nombre: usuario.nombre,
-                email: usuario.email
+                email: usuario.email,
+                rol: usuario.rol,
+                esAdmin: usuario.esAdmin,
+                esSuperAdmin: Boolean(usuario.esSuperAdmin),
+                permisos: permisosEfectivos(usuario),
+                // Contraseña temporal (la restableció el administrador): la app
+                // pide cambiarla antes de seguir.
+                passwordTemporal: Boolean(usuario.passwordTemporal)
             }
         });
 

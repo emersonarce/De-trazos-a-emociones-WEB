@@ -1,20 +1,222 @@
 :root {
+  /* Controles nativos (listas desplegables, calendario, scroll) en oscuro:
+     sin esto el navegador abre los <select> con fondo blanco y letra blanca. */
+  color-scheme: dark;
   --sans: 'DM Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Marca y títulos principales: serif suave y expresiva. */
+  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --mono: ui-monospace, Consolas, monospace;
-  
-  /* Theme Colors for Login/Register */
+
+  /* ===== TEMA OSCURO (por defecto) ===== */
+
+  /* Neutros */
   --bg-dark: #0a0816;
-  --text-white: #ffffff;
-  --text-gray: #a1a1aa;
-  
-  /* Input & Button colors based on requested design */
-  --input-bg: #2b2827; /* Dark cafe/grey */
+  --bg-panel: #0d0a1b;
+  --surface: #13131f;
+  --card: #181828;
+  --card2: #1e1e30;
+  --sunken: #070617;       /* superficie hundida: inputs, dropzone, slider */
+  --border: rgba(255, 255, 255, 0.07);
+  --border2: rgba(255, 255, 255, 0.12);
+  --border-solid: #2b2740;
+  --text: #ffffff;
+  --text-white: #ffffff;   /* alias heredado */
+  --muted: #a1a1aa;
+  --muted2: #9490a8;
+  --text-gray: #a1a1aa;    /* alias heredado */
+  --input-bg: #15132a;
   --input-border: #3b3735;
-  --btn-bg: #19142c; /* Dark purple */
+  --btn-bg: #19142c;
   --btn-border: #261f40;
+  --overlay: rgba(5, 4, 12, 0.7);
+
+  /* Acento (paleta violeta por defecto) */
+  --accent: #8b79f2;
+  --accent-strong: #7c5cfc;
+  --accent-soft: #a89ee0;
+  --accent-dim: rgba(139, 121, 242, 0.15);
+  --accent-glow: rgba(139, 121, 242, 0.4);
+  --purple: #8b79f2;                       /* alias heredado */
+  --purple-light: #a89ee0;
+  --purple-dim: rgba(139, 121, 242, 0.15);
+  --purple-glow: rgba(139, 121, 242, 0.4);
   --accent-purple: #8b79f2;
   --accent-purple-glow: rgba(139, 121, 242, 0.4);
+
+  /* Semánticos */
+  --teal: #2dd4bf;
+  --amber: #fbbf24;
+  --coral: #f87171;
+  --warm: #ff9f6b;
+  --green: #4ade80;
+  --blue: #60a5fa;
+
+  /* Barra lateral */
+  --sidebar-bg: rgba(19, 19, 31, 0.8);
+
+  /* "Rueda emocional" del logo y de la animación del encabezado */
+  --rueda-1: #d7a24c;
+  --rueda-2: #6e9a86;
+  --rueda-3: #7595bf;
+  --rueda-4: #cf949d;
+  --rueda-op: 0.85;
+
+  /* Emociones: un color propio por emoción (utils/emociones.js, historial y
+     animaciones de trazos). Las agradables: alegría turquesa, calma verde hoja,
+     asombro amarillo y cariño rosado; las difíciles cada una con su tono:
+     tristeza azul, miedo violeta, enojo rojo coral, ansiedad naranja. Tonos
+     separados en el círculo cromático para distinguirlas de un vistazo. */
+  --emo-alegria: #2fd2cc;
+  --emo-alegria-bg: rgba(47, 210, 204, 0.16);
+  --emo-tristeza: #6f9cf0;
+  --emo-tristeza-bg: rgba(111, 156, 240, 0.16);
+  --emo-calma: #8fd26f;
+  --emo-calma-bg: rgba(143, 210, 111, 0.16);
+  --emo-enojo: #f2736d;
+  --emo-enojo-bg: rgba(242, 115, 109, 0.16);
+  --emo-miedo: #b48cf5;
+  --emo-miedo-bg: rgba(180, 140, 245, 0.16);
+  --emo-ansiedad: #f5a254;
+  --emo-ansiedad-bg: rgba(245, 162, 84, 0.16);
+  --emo-asombro: #f2c94c;
+  --emo-asombro-bg: rgba(242, 201, 76, 0.16);
+  --emo-carino: #f38bc2;
+  --emo-carino-bg: rgba(243, 139, 194, 0.16);
+  --emo-neutra: #94a3b8;
+  --emo-neutra-bg: rgba(148, 163, 184, 0.15);
+  /* Las barras mezclan su color con este gris (de luminosidad parecida) para
+     verse menos saturadas sin oscurecerse (un ámbar oscurecido se ve marrón). */
+  --barra-mezcla: #c4c1d8;
+  --barra-pct: 80%; /* cuánto color de la emoción lleva la barra (ya son tonos apagados) */
+  /* Intensidades */
+  --int-alta: #f2736d;
+  --int-media: #f5a254;
+  --int-baja: #8fd26f;
+}
+
+/* ===== TEMA CLARO (paleta estándar: fondos neutros + acento violeta sobrio) ===== */
+/* Mayor especificidad (:root[...] = 0,2,0) para ganarle a cualquier :root. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  /* Neutros: blanco y grises estándar, sin tinte lila. */
+  --bg-dark: #f4f5f7;
+  --bg-panel: #ffffff;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card2: #f5f6f8;
+  --sunken: #eef0f3;
+  --border: rgba(17, 24, 39, 0.1);
+  --border2: rgba(17, 24, 39, 0.14);
+  --border-solid: #e3e5ea;
+  --text: #1f2430;
+  --text-white: #1f2430;
+  --muted: #5b6170;
+  --muted2: #6b7280;
+  --text-gray: #5b6170;
+  --input-bg: #f2f3f5;
+  --input-border: #d7dae1;
+  --btn-bg: var(--accent);
+  --btn-border: var(--accent-strong);
+  --overlay: rgba(31, 36, 48, 0.4);
+
+  /* Acento violeta sobrio, legible sobre blanco. "soft"/"light" se usan como
+     color de texto y borde, por eso en claro van oscuros (no pastel). */
+  --accent: #6d5ce0;
+  --accent-strong: #5b49cf;
+  --accent-soft: #5b49cf;
+  --accent-dim: rgba(109, 92, 224, 0.12);
+  --accent-glow: rgba(109, 92, 224, 0.32);
+  --purple: #6d5ce0;
+  --purple-light: #5b49cf;
+  --purple-dim: rgba(109, 92, 224, 0.12);
+  --purple-glow: rgba(109, 92, 224, 0.32);
+  --accent-purple: #6d5ce0;
+  --accent-purple-glow: rgba(109, 92, 224, 0.32);
+
+  /* Semánticos en tonos profesionales (no fosforescentes sobre blanco). */
+  --teal: #0d9488;
+  --amber: #d97706;
+  --coral: #dc2626;
+  --warm: #ea7a4e;
+  --green: #16a34a;
+  --blue: #2563eb;
+
+  --sidebar-bg: rgba(255, 255, 255, 0.94);
+
+  /* Rueda del logo más viva: sobre blanco los tonos apagados se ven insípidos. */
+  --rueda-1: #eaa22a;
+  --rueda-2: #2f9e7d;
+  --rueda-3: #4a7fd1;
+  --rueda-4: #e0697f;
+  --rueda-op: 0.9;
+
+  --emo-alegria: #0f9e9a;
+  --emo-alegria-bg: rgba(15, 158, 154, 0.12);
+  --emo-tristeza: #3b6fd4;
+  --emo-tristeza-bg: rgba(59, 111, 212, 0.12);
+  --emo-calma: #4f9a33;
+  --emo-calma-bg: rgba(79, 154, 51, 0.12);
+  --emo-enojo: #d8453f;
+  --emo-enojo-bg: rgba(216, 69, 63, 0.12);
+  --emo-miedo: #8150d6;
+  --emo-miedo-bg: rgba(129, 80, 214, 0.12);
+  --emo-ansiedad: #d9771f;
+  --emo-ansiedad-bg: rgba(217, 119, 31, 0.12);
+  --emo-asombro: #b7860b;
+  --emo-asombro-bg: rgba(183, 134, 11, 0.12);
+  --emo-carino: #d14d8f;
+  --emo-carino-bg: rgba(209, 77, 143, 0.12);
+  --emo-neutra: #64748b;
+  --emo-neutra-bg: rgba(100, 116, 139, 0.12);
+  --barra-mezcla: #d8dbe3;
+  --barra-pct: 78%;
+  --int-alta: #d8453f;
+  --int-media: #d9771f;
+  --int-baja: #4f9a33;
+}
+
+/* ===== PALETAS DE ACENTO (en claro y oscuro) ===== */
+:root[data-palette="teal"] {
+  --accent: #14b8a6;
+  --accent-strong: #0d9488;
+  --accent-soft: #5eead4;
+  --accent-dim: rgba(20, 184, 166, 0.15);
+  --accent-glow: rgba(20, 184, 166, 0.4);
+  --purple: #14b8a6;
+  --purple-light: #5eead4;
+  --purple-dim: rgba(20, 184, 166, 0.15);
+  --purple-glow: rgba(20, 184, 166, 0.4);
+  --accent-purple: #14b8a6;
+  --accent-purple-glow: rgba(20, 184, 166, 0.4);
+}
+
+:root[data-palette="durazno"] {
+  --accent: #f98a6c;
+  --accent-strong: #f2704f;
+  --accent-soft: #ffc3ad;
+  --accent-dim: rgba(249, 138, 108, 0.15);
+  --accent-glow: rgba(249, 138, 108, 0.4);
+  --purple: #f98a6c;
+  --purple-light: #ffc3ad;
+  --purple-dim: rgba(249, 138, 108, 0.15);
+  --purple-glow: rgba(249, 138, 108, 0.4);
+  --accent-purple: #f98a6c;
+  --accent-purple-glow: rgba(249, 138, 108, 0.4);
+}
+
+:root[data-palette="oceano"] {
+  --accent: #60a5fa;
+  --accent-strong: #3b82f6;
+  --accent-soft: #93c5fd;
+  --accent-dim: rgba(96, 165, 250, 0.15);
+  --accent-glow: rgba(96, 165, 250, 0.4);
+  --purple: #60a5fa;
+  --purple-light: #93c5fd;
+  --purple-dim: rgba(96, 165, 250, 0.15);
+  --purple-glow: rgba(96, 165, 250, 0.4);
+  --accent-purple: #60a5fa;
+  --accent-purple-glow: rgba(96, 165, 250, 0.4);
 }
 
 body {
@@ -22,8 +224,8 @@ body {
   padding: 0;
   box-sizing: border-box;
   font-family: var(--sans);
-  background-color: #0a0816;
-  color: #ffffff;
+  background-color: var(--bg-dark);
+  color: var(--text);
 }
 
 *, *::before, *::after {
@@ -42,3 +244,62 @@ a {
   text-decoration: none;
   color: inherit;
 }
+
+/* Edge agrega su propio ojo a los campos de contraseña; la app ya trae el suyo. */
+input::-ms-reveal {
+  display: none;
+}
+
+/* Opciones de las listas desplegables con los colores del tema. */
+select option {
+  background-color: var(--card);
+  color: var(--text);
+}
+
+/* Animación de entrada compartida por todas las páginas. */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Flotado suave (p. ej. la campana de alerta del Dashboard). */
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* Entrada escalonada del login y el registro. */
+@keyframes authEntrada {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Entrada suave y escalonada del contenido (como en el Historial). */
+.analyzer-wrapper .container > *,
+.rep-container > *,
+.ninos-container > *,
+.admin-container > *,
+.config-container > * {
+  animation: fadeUp 0.55s ease both;
+}
+.analyzer-wrapper .container > *:nth-child(2),
+.rep-container > *:nth-child(2),
+.ninos-container > *:nth-child(2),
+.admin-container > *:nth-child(2),
+.config-container > *:nth-child(2) { animation-delay: 0.07s; }
+.analyzer-wrapper .container > *:nth-child(3),
+.rep-container > *:nth-child(3),
+.ninos-container > *:nth-child(3),
+.admin-container > *:nth-child(3),
+.config-container > *:nth-child(3) { animation-delay: 0.14s; }
+.analyzer-wrapper .container > *:nth-child(4),
+.rep-container > *:nth-child(4),
+.ninos-container > *:nth-child(4),
+.admin-container > *:nth-child(4),
+.config-container > *:nth-child(4) { animation-delay: 0.21s; }
+.analyzer-wrapper .container > *:nth-child(n + 5),
+.rep-container > *:nth-child(n + 5),
+.ninos-container > *:nth-child(n + 5),
+.admin-container > *:nth-child(n + 5),
+.config-container > *:nth-child(n + 5) { animation-delay: 0.28s; }

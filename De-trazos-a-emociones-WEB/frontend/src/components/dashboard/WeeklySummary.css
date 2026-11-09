@@ -47,8 +47,9 @@
   justify-content: center;
   font-size: 44px;
   flex-shrink: 0;
-  background: rgba(139, 121, 242, 0.1);
-  border: 1px solid rgba(139, 121, 242, 0.2);
+  /* --emo: color de la emoción predominante (inline). */
+  background: color-mix(in srgb, var(--emo, var(--accent)) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emo, var(--accent)) 24%, transparent);
   position: relative;
 }
 
@@ -56,7 +57,7 @@
   position: absolute;
   inset: -4px;
   border-radius: 28px;
-  border: 2px solid rgba(139, 121, 242, 0.3);
+  border: 2px solid color-mix(in srgb, var(--emo, var(--accent)) 32%, transparent);
   animation: pulse-ring 2s ease-in-out infinite;
 }
 
@@ -94,11 +95,14 @@
   display: flex;
   gap: 8px;
   align-items: flex-end;
+  justify-content: flex-start;
   margin-bottom: 20px;
 }
 
 .day-col {
-  flex: 1;
+  /* Ancho fijo: con pocos análisis la barra NO ocupa todo el espacio. */
+  flex: 0 1 56px;
+  max-width: 72px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -144,18 +148,20 @@
 
 /* MESSAGE */
 .message-box {
-  background: rgba(30, 30, 48, 0.6);
+  background: var(--card2);
   border-radius: 16px;
   padding: 16px 18px;
-  border-left: 3px solid var(--purple);
   transition: transform 0.3s;
 }
 
 .message-box:hover {
-  transform: translateX(4px);
+  background: var(--card2);
 }
 
 .message-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 10px;
   color: var(--purple-light);
   text-transform: uppercase;
@@ -200,6 +206,38 @@
   margin-bottom: 6px;
 }
 
+/* Icono de la tarjeta (campana / brote), en un círculo del color del estado. */
+.alert-icono {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  background: rgba(248, 113, 113, 0.14);
+  color: #f87171;
+}
+
+.alert-card.ok .alert-icono {
+  background: rgba(45, 212, 191, 0.14);
+  color: var(--teal);
+}
+
+/* Variante positiva ("Todo en seguimiento"): verde azulado, no rojo de alerta. */
+.alert-card.ok {
+  background: rgba(45, 212, 191, 0.06);
+  border-color: rgba(45, 212, 191, 0.25);
+}
+
+.alert-card.ok:hover {
+  box-shadow: 0 10px 25px rgba(45, 212, 191, 0.12);
+}
+
+.alert-card.ok .alert-title {
+  color: var(--teal);
+}
+
 .alert-sub {
   font-size: 13px;
   color: var(--muted);
@@ -239,7 +277,7 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  background: rgba(30, 30, 48, 0.5);
+  background: var(--card2);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 16px 10px;
@@ -260,10 +298,50 @@
 }
 
 .qa-icon {
-  font-size: 24px;
-  transition: transform 0.3s;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-dim);
+  color: var(--accent);
+  transition: all 0.3s;
 }
 
 .qa-btn:hover .qa-icon {
-  transform: scale(1.1);
+  transform: scale(1.08);
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Color coherente por acción */
+.qa-icon.teal {
+  background: rgba(45, 212, 191, 0.14);
+  color: var(--teal);
+}
+.qa-btn:hover .qa-icon.teal {
+  background: var(--teal);
+  color: #fff;
+}
+
+.qa-icon.azul {
+  background: rgba(96, 165, 250, 0.14);
+  color: var(--blue);
+}
+.qa-btn:hover .qa-icon.azul {
+  background: var(--blue);
+  color: #fff;
+}
+.qa-icon.ambar {
+  background: rgba(251, 191, 36, 0.14);
+  color: var(--amber);
+}
+.qa-btn:hover .qa-icon.ambar {
+  background: var(--amber);
+  color: #fff;
+}
+.qa-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }

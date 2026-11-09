@@ -1,49 +1,109 @@
-import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, Pencil } from 'lucide-react';
+import '../common/ContextoNino.css';
 import './AnalyzerContext.css';
+import AvisoCumple from '../common/AvisoCumple';
+import CampoDuracion from '../common/CampoDuracion';
+import { textoEdad, edadDesde, infoCumple } from '../../utils/emociones';
+import { OPCIONES, normalizarGenero, textoGenero, opcionDiagnostico } from '../../utils/contextoNino';
 
-const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, setStep }) => {
+const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, onContinuar, ninoConocido, faltaAlias = false }) => {
+  // Niño ya conocido: sus datos básicos se muestran resumidos y se pueden editar.
+  const [editarBasicos, setEditarBasicos] = useState(false);
+  // «Otro» en diagnóstico previo: muestra un campo corto aunque aún esté vacío.
+  const [otroDiag, setOtroDiag] = useState(false);
+  const diag = opcionDiagnostico(formData.diagnostico_previo);
+  const opcionDiag = otroDiag || diag.opcion === 'otro' ? 'otro' : diag.opcion;
+  const elegirDiagnostico = (e) => {
+    const v = e.target.value;
+    setOtroDiag(v === 'otro');
+    handleRadioChange('diagnostico_previo', v === 'otro' ? '' : v);
+  };
+  // Edad: si hay fecha de nacimiento se calcula sola; si no, se escribe.
+  const edadCalculada = edadDesde(formData.fecha_nacimiento);
+  const conFecha = Boolean(formData.fecha_nacimiento);
+  const cambiarFecha = (e) => {
+    handleInputChange(e);
+    const calc = edadDesde(e.target.value);
+    if (calc != null) handleRadioChange('edad', String(calc));
+  };
+  const cumple = infoCumple(formData.fecha_nacimiento);
   return (
     <div id="screen-1" className="screen">
-      <div className="card">
-        <div className="card-header">
-          <div className="card-icon">
-            <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-              <circle cx="9" cy="6" r="3.5" />
-              <path d="M2 16c0-3.3 3.1-6 7-6s7 2.7 7 6" />
-            </svg>
+      {ninoConocido && !editarBasicos ? (
+        <div className="card nino-conocido-card">
+          <div className="card-header">
+            <div className="card-icon">
+              <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <circle cx="9" cy="6" r="3.5" />
+                <path d="M2 16c0-3.3 3.1-6 7-6s7 2.7 7 6" />
+              </svg>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="card-title">{formData.nombre || 'Niño sin nombre'}</div>
+              <div className="card-subtitle">
+                {[textoEdad(formData) || null, formData.genero && textoGenero(formData.genero)].filter(Boolean).join(' · ') || 'Sin edad ni género'}
+              </div>
+            </div>
+            <button type="button" className="ctx-editar" onClick={() => setEditarBasicos(true)}>
+              <Pencil size={14} /> Editar datos
+            </button>
           </div>
-          <div>
-            <div className="card-title">Información básica</div>
-            <div className="card-subtitle">Datos generales del niño</div>
-          </div>
-        </div>
-        <div className="card-body">
-          <div className="form-grid cols-3">
-            <div className="field">
-              <label>Nombre <span className="optional">Opcional</span></label>
-              <input type="text" id="nombre" value={formData.nombre} onChange={handleInputChange} placeholder="Ej: Sofía" />
-            </div>
-            <div className="field">
-              <label>Edad</label>
-              <input type="number" id="edad" value={formData.edad} onChange={handleInputChange} placeholder="Ej: 7" min="2" max="17" />
-            </div>
-            <div className="field">
-              <label>Género</label>
-              <select id="genero" value={formData.genero} onChange={handleInputChange}>
-                <option value="">Seleccionar</option>
-                <option value="niña">Niña</option>
-                <option value="niño">Niño</option>
-                <option value="no especificado">Prefiero no decirlo</option>
-              </select>
-            </div>
+          <div className="card-body">
+            <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--muted, #6b7280)' }}>
+              Se reutiliza el contexto de este niño (abajo). Revísalo, actualiza lo que haya cambiado y sigue con el dibujo.
+            </p>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="card">
+          <div className="card-header">
+            <div className="card-icon">
+              <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <circle cx="9" cy="6" r="3.5" />
+                <path d="M2 16c0-3.3 3.1-6 7-6s7 2.7 7 6" />
+              </svg>
+            </div>
+            <div>
+              <div className="card-title">Información básica</div>
+              <div className="card-subtitle">Datos generales del niño</div>
+            </div>
+          </div>
+          <div className="card-body">
+            <div className="form-grid">
+              <div className="field">
+                <label htmlFor="nombre">Nombre, alias o código</label>
+                <input type="text" id="nombre" value={formData.nombre} onChange={handleInputChange} placeholder="Ej: Sofi, S. R. o Niño 3C-07" maxLength={60} readOnly={ninoConocido} className={faltaAlias ? 'invalido' : undefined} aria-invalid={faltaAlias || undefined} title={ninoConocido ? 'El nombre identifica al niño en el historial' : undefined} />
+                {faltaAlias && <span className="field-error">Escribe un nombre, alias o código para continuar.</span>}
+              </div>
+              <div className="field">
+                <label htmlFor="genero">Género</label>
+                <select id="genero" value={normalizarGenero(formData.genero)} onChange={handleInputChange}>
+                  <option value="">Seleccionar</option>
+                  {OPCIONES.genero.map(([valor, texto]) => <option key={valor} value={valor}>{texto}</option>)}
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="fecha_nacimiento">Fecha de nacimiento <span className="optional">Opcional</span></label>
+                <input type="date" id="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={cambiarFecha} max={new Date().toISOString().split('T')[0]} />
+              </div>
+              <div className="field">
+                <label htmlFor="edad">Edad {conFecha && <span className="optional">Calculada</span>}</label>
+                <input type="number" id="edad" min="2" max="17" inputMode="numeric" placeholder="Años"
+                  value={conFecha ? (edadCalculada ?? '') : (formData.edad || '')}
+                  onChange={(e) => handleRadioChange('edad', e.target.value.replace(/\D/g, '').slice(0, 2))}
+                  readOnly={conFecha} title={conFecha ? 'Se calcula con la fecha de nacimiento' : undefined} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <AvisoCumple nombre={formData.nombre} cumple={cumple} clave={`${formData.nombre}|${formData.fecha_nacimiento}`} />
 
       <div className="card">
         <div className="card-header">
-          <div className="card-icon" style={{background: 'rgba(52, 211, 153, 0.15)', color: '#ffffff'}}>
+          <div className="card-icon" style={{background: 'rgba(52, 211, 153, 0.15)', color: '#10b981'}}>
             <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <circle cx="9" cy="9" r="7" />
               <path d="M9 6v4l2.5 2.5" />
@@ -71,15 +131,22 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, setSt
             </div>
           </div>
           <div className="field">
-            <label>Diagnóstico previo <span className="optional">Opcional</span></label>
-            <input type="text" id="diagnostico_previo" value={formData.diagnostico_previo} onChange={handleInputChange} placeholder="Ej: TDAH, ansiedad, TEA... o ninguno" />
+            <label htmlFor="diagnostico_previo_opcion">Diagnóstico previo <span className="optional">Opcional</span></label>
+            <select id="diagnostico_previo_opcion" value={opcionDiag} onChange={elegirDiagnostico}>
+              <option value="">Seleccionar</option>
+              {OPCIONES.diagnostico_previo.map((op) => <option key={op} value={op}>{op}</option>)}
+              <option value="otro">Otro</option>
+            </select>
+            {opcionDiag === 'otro' && (
+              <input type="text" id="diagnostico_previo" value={formData.diagnostico_previo} onChange={handleInputChange} placeholder="¿Cuál?" maxLength={120} aria-label="Otro diagnóstico previo" />
+            )}
           </div>
         </div>
       </div>
 
       <div className="card">
         <div className="card-header">
-          <div className="card-icon" style={{background: 'rgba(251, 146, 60, 0.15)', color: '#ffffff'}}>
+          <div className="card-icon" style={{background: 'rgba(251, 146, 60, 0.15)', color: '#f97316'}}>
             <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <path d="M3 15l3-1 9-9-2-2-9 9-1 3z" />
               <path d="M12 4l2 2" />
@@ -115,12 +182,17 @@ const AnalyzerContext = ({ formData, handleInputChange, handleRadioChange, setSt
                   <span className="radio-dot"></span>{opt}
                 </label>
               ))}
+              <CampoDuracion
+                className="tiempo-exacto"
+                valor={formData.tiempo_dibujo}
+                onCambiar={(v) => handleRadioChange('tiempo_dibujo', v)}
+              />
             </div>
           </div>
         </div>
       </div>
 
-      <button className="btn-next" onClick={() => setStep(2)} style={{width: '100%'}}>
+      <button className="btn-next" onClick={onContinuar} style={{width: '100%'}}>
         Continuar al dibujo
         <ArrowRight size={18} />
       </button>

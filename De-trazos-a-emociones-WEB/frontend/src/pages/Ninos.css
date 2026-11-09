@@ -1,0 +1,218 @@
+.ninos-page {
+  min-height: 100vh;
+  background-color: var(--bg-dark);
+  color: var(--text);
+  font-family: var(--sans);
+}
+
+.ninos-container {
+  margin-left: 72px;
+  padding: 32px 40px;
+}
+
+.ninos-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--input-border);
+  color: var(--muted);
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--sans);
+  margin-bottom: 1.5rem;
+}
+.ninos-back:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.ninos-title {
+  font-family: var(--display);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+  font-variation-settings: 'SOFT' 100;
+}
+
+.ninos-sub {
+  color: var(--muted);
+  font-size: 1rem;
+  margin: 0 0 2rem;
+}
+
+.ninos-empty {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 2.5rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.ninos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.nino-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.nino-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+
+.nino-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin-bottom: 12px;
+}
+
+.nino-name {
+  font-family: var(--heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.nino-meta {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 2px;
+  text-transform: capitalize;
+}
+
+.nino-sit {
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-top: 10px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.nino-count {
+  font-size: 0.78rem;
+  color: var(--accent-soft);
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+/* Modal de detalle del niño */
+.nino-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 1rem;
+}
+
+.nino-modal {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  padding: 1.75rem;
+  max-width: 460px;
+  width: 100%;
+  color: var(--text);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.nino-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.nino-modal-close:hover { color: var(--text); }
+
+.nino-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 1.25rem;
+}
+
+.nino-modal-name {
+  font-family: var(--heading);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.nino-modal-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+.nino-dato {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.nino-dato span { color: var(--muted); }
+
+.nino-bloque {
+  margin-top: 1rem;
+}
+.nino-bloque-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+  margin-bottom: 5px;
+}
+.nino-bloque p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.nino-ver-dashboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 1.5rem;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: all 0.2s ease;
+}
+.nino-ver-dashboard:hover { background: var(--accent-strong); }

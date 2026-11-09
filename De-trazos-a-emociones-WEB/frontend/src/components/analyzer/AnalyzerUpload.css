@@ -3,7 +3,7 @@
   position: relative;
   border: 2px dashed rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  background: #040418;
+  background: var(--sunken);
   padding: 3rem 2rem;
   text-align: center;
   cursor: pointer;
@@ -12,8 +12,8 @@
 
 .upload-area:hover,
 .upload-area.drag {
-  border-color: #4f46e5;
-  background: rgba(79, 70, 229, 0.05);
+  border-color: var(--purple, #8b79f2);
+  background: rgba(139, 121, 242, 0.06);
 }
 
 .upload-area input[type="file"] {
@@ -30,7 +30,7 @@
   width: 64px;
   height: 64px;
   margin: 0 auto 16px;
-  background: rgba(96, 165, 250, 0.1);
+  background: var(--purple-dim, rgba(139, 121, 242, 0.15));
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -42,14 +42,14 @@
 .upload-icon svg {
   width: 28px;
   height: 28px;
-  color: #ffffff;
+  color: var(--text);
 }
 
 .upload-title {
   font-size: 1.1rem;
   font-weight: 500;
   margin-bottom: 6px;
-  color: #f9fafb;
+  color: var(--text);
 }
 
 .upload-hint {
@@ -61,7 +61,7 @@
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #040418;
+  background: var(--sunken);
 }
 
 .preview-img-wrap img {
@@ -82,7 +82,7 @@
 
 .preview-name {
   font-size: 13px;
-  color: #f9fafb;
+  color: var(--text);
 }
 
 .btn-remove {
@@ -119,4 +119,87 @@
 
 .error-icon {
   color: #ef4444;
+}
+
+.analyzing-notice {
+  background: rgba(129, 140, 248, 0.1);
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 1.5rem;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #a5b4fc;
+  text-align: center;
+}
+
+/* Dibujo que se muestra mientras se está analizando (sin opción de subir). */
+.analyzing-preview {
+  display: flex;
+  justify-content: center;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--border2);
+  background: var(--sunken);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  margin-bottom: 1.5rem;
+}
+
+.analyzing-preview img {
+  display: block;
+  max-width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+}
+
+/* Descripción opcional del dibujo (disponible con o sin contexto). */
+.desc-dibujo {
+  margin-bottom: 1.5rem;
+}
+
+.desc-dibujo-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.desc-opcional {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.desc-dibujo-input {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 74px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border2);
+  background: var(--sunken);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.desc-dibujo-input::placeholder {
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+.desc-dibujo-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.desc-dibujo-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
 }

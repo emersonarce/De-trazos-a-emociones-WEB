@@ -4,7 +4,7 @@
   left: 0;
   width: 72px;
   height: 100vh;
-  background: rgba(19, 19, 31, 0.8);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-right: 1px solid var(--border);
@@ -55,4 +55,10 @@
 .sidebar .nav-item svg {
   width: 20px;
   height: 20px;
+}
+
+.sidebar .sidebar-profile {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 4px;
 }

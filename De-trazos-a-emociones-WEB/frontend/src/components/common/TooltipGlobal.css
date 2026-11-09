@@ -1,0 +1,39 @@
+/* Globo de los tooltips (TooltipGlobal.jsx). */
+.tooltip-global {
+  position: fixed;
+  z-index: 9000;
+  max-width: 260px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  box-shadow: 0 12px 28px -10px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  opacity: 0;
+}
+.tooltip-global.visible {
+  animation: tooltipEntrada 0.16s ease-out forwards;
+}
+.tooltip-global.visible.abajo { --desde: translateY(-4px); }
+.tooltip-global.visible.derecha { --desde: translateX(-4px); }
+
+@keyframes tooltipEntrada {
+  from { opacity: 0; transform: var(--desde, translateY(4px)); }
+  to { opacity: 1; transform: none; }
+}
+
+:root[data-theme="light"] .tooltip-global {
+  background: #1f2430;
+  border-color: #1f2430;
+  color: #fff;
+  box-shadow: 0 10px 24px -10px rgba(17, 24, 39, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tooltip-global.visible { animation: none; opacity: 1; }
+}

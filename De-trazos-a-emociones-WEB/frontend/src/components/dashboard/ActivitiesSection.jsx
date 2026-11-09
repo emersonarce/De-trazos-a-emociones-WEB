@@ -1,57 +1,72 @@
-import React from 'react';
+import { useState } from 'react';
+import { X, Sparkles } from 'lucide-react';
 import './ActivitiesSection.css';
+import { emocionPredominante } from '../../utils/emociones';
+import { actividadesPara } from '../../data/actividades';
+import { useBloquearScroll } from '../../hooks/useBloquearScroll';
 
-const ActivitiesSection = ({ actDones, toggleActDone }) => {
+const ActivitiesSection = ({ child }) => {
+  const nombre = child?.nombre && child.nombre !== 'Sin nombre' ? child.nombre : 'el niño';
+  const emocion = emocionPredominante(child?.analisis || []);
+  const { actividades, consejos } = actividadesPara(emocion);
+
+  const [detalle, setDetalle] = useState(null);
+  useBloquearScroll(!!detalle);
+
   return (
-    <div className="dashboard-card activities-section">
+    <div className="dashboard-card activities-section" data-tour="actividades">
       <div className="act-header">
         <div>
           <div className="act-title">Actividades sugeridas</div>
-          <div className="act-subtitle">Para hacer con Sofía esta semana</div>
+          <div className="act-subtitle">Para hacer con {nombre} esta semana · toca una para ver por qué</div>
         </div>
-        <span style={{fontSize: '24px', animation: 'float 3s infinite ease-in-out alternate'}}>✨</span>
+        <Sparkles className="act-spark" size={22} />
       </div>
       <div className="act-body">
-        <div className="act-card" onClick={() => toggleActDone(0)}>
-          <div className="act-icon" style={{background: 'rgba(139, 121, 242, 0.15)'}}>🎨</div>
-          <div className="act-info">
-            <div className="act-name">Dibujen juntos 15 minutos</div>
-            <div className="act-desc">Siéntate con ella sin pantallas. Deja que elija qué dibujar. No corrijas, solo acompaña.</div>
-            <span className="act-tag" style={{background: 'rgba(139, 121, 242, 0.15)', color: 'var(--purple-light)'}}>Conexión</span>
+        {actividades.map((act, i) => (
+          <div className="act-card" key={i} onClick={() => setDetalle(act)}>
+            <div className="act-icon" style={{ background: act.bg }}><act.icon size={22} style={{ color: act.color }} /></div>
+            <div className="act-info">
+              <div className="act-name">{act.nombre}</div>
+              <div className="act-desc">{act.desc}</div>
+              <span className="act-tag" style={{ background: act.bg, color: act.color }}>{act.tag}</span>
+            </div>
           </div>
-          <div className={`act-done ${actDones[0] ? 'checked' : ''}`}>
-            <svg viewBox="0 0 12 12" fill="none">
-              <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        </div>
-        <div className="act-card" onClick={() => toggleActDone(1)}>
-          <div className="act-icon" style={{background: 'rgba(45,212,191,0.15)'}}>📖</div>
-          <div className="act-info">
-            <div className="act-name">Cuento antes de dormir</div>
-            <div className="act-desc">Un cuento donde el personaje supera un miedo. Ayuda a procesar emociones.</div>
-            <span className="act-tag" style={{background: 'rgba(45,212,191,0.15)', color: 'var(--teal)'}}>Calma</span>
-          </div>
-          <div className={`act-done ${actDones[1] ? 'checked' : ''}`}>
-            <svg viewBox="0 0 12 12" fill="none">
-              <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        </div>
-        <div className="act-card" onClick={() => toggleActDone(2)}>
-          <div className="act-icon" style={{background: 'rgba(251,191,36,0.15)'}}>💬</div>
-          <div className="act-info">
-            <div className="act-name">Pregúntale cómo estuvo su día</div>
-            <div className="act-desc">No "¿cómo te fue?" sino "¿qué fue lo más raro que pasó hoy?"</div>
-            <span className="act-tag" style={{background: 'rgba(251,191,36,0.15)', color: 'var(--amber)'}}>Diálogo</span>
-          </div>
-          <div className={`act-done ${actDones[2] ? 'checked' : ''}`}>
-            <svg viewBox="0 0 12 12" fill="none">
-              <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        </div>
+        ))}
       </div>
+
+      {detalle && (
+        <div className="act-modal-overlay" onClick={() => setDetalle(null)}>
+          <div className="act-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="act-modal-close" onClick={() => setDetalle(null)} title="Cerrar"><X size={18} /></button>
+            <div className="act-modal-head">
+              <div className="act-icon" style={{ background: detalle.bg }}><detalle.icon size={22} style={{ color: detalle.color }} /></div>
+              <div className="act-modal-title">{detalle.nombre}</div>
+            </div>
+            <p className="act-modal-desc">{detalle.desc}</p>
+
+            <div className="act-modal-section">
+              <div className="act-modal-label">Por qué ayuda</div>
+              <p className="act-modal-text">{detalle.fundamento}</p>
+            </div>
+
+            {consejos?.length > 0 && (
+              <div className="act-modal-section">
+                <div className="act-modal-label">Consejos para acompañar</div>
+                <ul className="act-modal-consejos">
+                  {consejos.map((c, idx) => (
+                    <li key={idx}><strong>{c.titulo}:</strong> {c.texto}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="act-modal-nota">
+              Sugerencia orientativa de acompañamiento, no una indicación clínica.
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

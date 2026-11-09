@@ -8,3 +8,33 @@ node_modules/
 
 # Logs
 *.log
+
+# Dibujos subidos por los usuarios (datos sensibles, no se versionan)
+De-trazos-a-emociones-WEB/uploads/*
+!De-trazos-a-emociones-WEB/uploads/.gitkeep
+De-trazos-a-emociones-WEB/backend/uploads/*
+!De-trazos-a-emociones-WEB/backend/uploads/.gitkeep
+
+# Mockups con datos personales visibles (correo real, imagen de terceros)
+docs/MOCKUPS.pdf
+
+# PDFs generados por la app (contienen nombre y dibujo de un niño: datos sensibles)
+de-trazos-*.pdf
+
+# Metadatos de Windows/WSL al copiar archivos descargados
+*:Zone.Identifier
+
+# Capturas de pantalla compartidas para revisión (no se versionan)
+WhatsApp Image*
+
+# Imágenes de referencia/diseño soltadas en la raíz del repo (no se versionan)
+/*.png
+# Informes de comparación de variantes del análisis (backend/scripts/comparar-variantes.js)
+De-trazos-a-emociones-WEB/comparaciones/
+
+# Artículo científico y evidencias de la prueba piloto (contienen dibujos y nombres reales de niños: no se versionan)
+/articulo cientifico/
+/Articulo_cientifico_*.pdf
+/PRUEBAS_PROYECTO_DE_GRADO*.docx
+/FORMAT_*.PDF
+/Carta de Respuesta*.docx

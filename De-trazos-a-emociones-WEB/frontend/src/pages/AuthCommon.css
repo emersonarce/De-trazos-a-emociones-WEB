@@ -1,6 +1,11 @@
+/* Un solo fondo para toda la página (sin división entre paneles): los puntos
+   de la animación también se ven detrás del formulario. */
 .auth-container {
   font-family: 'DM Sans', sans-serif;
-  background-color: var(--bg-dark);
+  background:
+    radial-gradient(60% 70% at 28% 50%, rgba(139, 121, 242, 0.13) 0%, transparent 70%),
+    radial-gradient(45% 55% at 76% 45%, rgba(139, 121, 242, 0.06) 0%, transparent 70%),
+    var(--bg-panel);
   color: var(--text-white);
   height: 100vh;
   display: flex;
@@ -13,8 +18,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--bg-dark);
-  padding: 2rem;
+  background: transparent;
+  padding: 2.5rem 2rem;
   position: relative;
   z-index: 10;
   overflow-y: auto;
@@ -22,73 +27,312 @@
 
 .auth-container .form-container {
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
   margin: auto;
-  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Mientras se forma el logo, su panel ocupa toda la pantalla y el del
+   formulario mide cero; al terminar (ver useIntroAuth) el panel del logo se
+   corre a la izquierda y entra el formulario. Así no queda un espacio vacío. */
+.auth-container .left-panel,
+.auth-container .right-panel {
+  transition:
+    flex-grow 0.7s cubic-bezier(0.65, 0, 0.35, 1),
+    padding 0.7s cubic-bezier(0.65, 0, 0.35, 1);
 }
+
+.auth-container .right-panel {
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+/* En pantallas grandes el formulario es una tarjeta de vidrio ("liquid
+   glass"): translúcida, desenfoca los puntos de fondo y tiene borde luminoso.
+   Ancho fijo: mientras su panel se abre, la va descubriendo sin reacomodar el
+   texto. */
+@media (min-width: 901px) {
+  .auth-container .right-panel .form-container {
+    position: relative;
+    flex-shrink: 0;
+    min-width: 440px;
+    max-width: 440px;
+    padding: 2.4rem 2.2rem 2rem;
+    border-radius: 28px;
+    background: linear-gradient(
+      150deg,
+      rgba(255, 255, 255, 0.11) 0%,
+      rgba(255, 255, 255, 0.04) 45%,
+      rgba(255, 255, 255, 0.07) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(22px) saturate(170%);
+    -webkit-backdrop-filter: blur(22px) saturate(170%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+      0 24px 60px -18px rgba(0, 0, 0, 0.55);
+  }
+
+  /* Brillo especular en la esquina superior, como la luz sobre el vidrio. */
+  .auth-container .right-panel .form-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(120% 60% at 15% -10%, rgba(255, 255, 255, 0.16) 0%, transparent 55%);
+    pointer-events: none;
+  }
+
+  .auth-container .right-panel.listo .form-container {
+    animation: vidrioEntrada 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+  }
+
+  /* Campos translúcidos, integrados al vidrio. */
+  .auth-container .form-container .input-wrapper input,
+  .auth-container .form-container .role-select {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  .auth-container .form-container .form-footer {
+    border-top-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+@keyframes vidrioEntrada {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.auth-container.intro .right-panel {
+  flex-grow: 0;
+  padding-left: 0;
+  padding-right: 0;
+  overflow: hidden;
+}
+
+/* El formulario espera oculto (y fuera del alcance del teclado). */
+.auth-container .right-panel.esperando .form-container {
+  visibility: hidden;
+}
+
+/* Entrada escalonada al aparecer, cuando el panel ya se está abriendo:
+   marca, encabezado, formulario y pie en orden. */
+.auth-container .right-panel.listo .form-container > :not(.auth-aviso),
+.auth-container .right-panel.listo .form-container form > :not(.auth-aviso) {
+  animation: authEntrada 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+}
+.auth-container .right-panel.listo .form-container > :nth-child(2):not(.auth-aviso) { animation-delay: 0.41s; }
+.auth-container .right-panel.listo .form-container > :nth-child(3):not(.auth-aviso) { animation-delay: 0.47s; }
+.auth-container .right-panel.listo .form-container > :nth-child(n + 4):not(.auth-aviso) { animation-delay: 0.53s; }
+.auth-container .right-panel.listo .form-container form > :nth-child(1):not(.auth-aviso) { animation-delay: 0.51s; }
+.auth-container .right-panel.listo .form-container form > :nth-child(2):not(.auth-aviso) { animation-delay: 0.57s; }
+.auth-container .right-panel.listo .form-container form > :nth-child(3):not(.auth-aviso) { animation-delay: 0.63s; }
+.auth-container .right-panel.listo .form-container form > :nth-child(n + 4):not(.auth-aviso) { animation-delay: 0.69s; }
 
 .auth-container .brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 3rem;
+  margin-bottom: 2.75rem;
 }
 
 .auth-container .brand-icon {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
-  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
 }
 
 .auth-container .brand-text h2 {
+  font-family: var(--display);
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.2;
+  margin: 0;
+  font-variation-settings: 'SOFT' 100;
 }
 .auth-container .brand-text p {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-gray);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  margin: 2px 0 0;
 }
 
 .auth-container .form-header {
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 .auth-container .form-header h1 {
-  font-family: 'Inter', sans-serif;
-  font-size: 3rem;
-  font-weight: 800;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.02em;
+  font-family: var(--display);
+  font-size: 2.3rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  font-variation-settings: 'SOFT' 100;
 }
 .auth-container .form-header p {
   color: var(--text-gray);
-  font-size: 1rem;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ===== Avisos (components/auth/AuthAviso.jsx) =====
+   Un color por tipo (--aviso) tomado de la paleta suave de emociones:
+   nada de rojos chillones, pero se distingue de un vistazo. */
+.auth-container .auth-aviso {
+  --aviso: var(--emo-enojo);
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 12px 12px 14px;
+  margin-bottom: 1.25rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--aviso) 11%, transparent);
+  border: 1px solid color-mix(in srgb, var(--aviso) 30%, transparent);
+  box-shadow: 0 10px 26px -18px color-mix(in srgb, var(--aviso) 70%, transparent);
+  color: var(--text);
+  overflow: hidden;
+  animation: avisoEntrada 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.auth-container .auth-aviso.error {
+  animation:
+    avisoEntrada 0.45s cubic-bezier(0.16, 1, 0.3, 1) both,
+    avisoSacudida 0.42s ease 0.12s;
+}
+.auth-container .auth-aviso.espera { --aviso: var(--emo-ansiedad); }
+.auth-container .auth-aviso.info { --aviso: var(--accent-soft); }
+.auth-container .auth-aviso.exito { --aviso: var(--emo-alegria); }
+
+/* Filo de color a la izquierda. */
+.auth-container .auth-aviso::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--aviso);
+}
+
+.auth-container .auth-aviso-icono {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--aviso);
+  background: color-mix(in srgb, var(--aviso) 18%, transparent);
+}
+
+.auth-container .auth-aviso-cuerpo {
+  flex: 1;
+  min-width: 0;
+  padding-top: 1px;
+}
+.auth-container .auth-aviso-cuerpo strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.auth-container .auth-aviso-cuerpo p {
+  margin: 3px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text-gray);
+}
+.auth-container .auth-aviso-cuerpo a {
+  color: var(--accent-soft);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.auth-container .auth-aviso-cerrar {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin: -2px -2px 0 0;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.auth-container .auth-aviso-cerrar:hover {
+  background: color-mix(in srgb, var(--aviso) 16%, transparent);
+  color: var(--text);
+}
+.auth-container .auth-aviso-cerrar:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* El del registro va justo encima del botón "Crear cuenta". */
+.auth-container .auth-aviso.junto-boton {
+  margin: 1.25rem 0 0;
+}
+
+/* El de "sesión expirada" aparece al mismo ritmo que el resto del formulario. */
+.auth-container .right-panel.listo .form-container > .auth-aviso {
+  animation-delay: 0.5s;
+}
+
+@keyframes avisoEntrada {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes avisoSacudida {
+  0%, 100% { translate: 0; }
+  20% { translate: -5px 0; }
+  40% { translate: 4px 0; }
+  60% { translate: -3px 0; }
+  80% { translate: 2px 0; }
+}
+
+/* Campos señalados por un aviso. */
+.auth-container .form-container .input-wrapper.invalido input,
+.auth-container .form-container .input-wrapper.invalido .role-select {
+  border-color: color-mix(in srgb, var(--emo-enojo) 75%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--emo-enojo) 14%, transparent);
+}
+.auth-container .input-wrapper.invalido .input-icon {
+  color: var(--emo-enojo);
+}
+.auth-container .checkbox-group.invalido input[type="checkbox"] {
+  border-color: var(--emo-enojo);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--emo-enojo) 18%, transparent);
 }
 
 .auth-container .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.auth-container .input-hint {
+  font-size: 0.78rem;
+  color: var(--text-gray);
+  margin: 8px 0 0;
+  line-height: 1.4;
 }
 
 .auth-container .form-group label {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 600;
-  color: var(--text-gray);
-  margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--text);
+  margin-bottom: 0.5rem;
 }
 
 .auth-container .input-wrapper {
@@ -99,24 +343,26 @@
 
 .auth-container .input-icon {
   position: absolute;
-  left: 16px;
+  left: 15px;
   color: var(--text-gray);
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
+  transition: color 0.2s ease;
 }
 
 .auth-container .input-wrapper input {
   width: 100%;
   background-color: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: 8px;
-  padding: 16px 16px 16px 48px;
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 14px 16px 14px 46px;
   color: var(--text-white);
   font-family: 'DM Sans', sans-serif;
-  font-size: 1rem;
+  font-size: 0.98rem;
   outline: none;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .auth-container .input-wrapper input::placeholder {
@@ -124,27 +370,54 @@
 }
 
 .auth-container .input-wrapper input:focus {
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 0 2px var(--accent-purple-glow);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-dim);
+}
+
+.auth-container .input-wrapper:focus-within .input-icon {
+  color: var(--accent);
+}
+
+/* Botón para mostrar u ocultar la contraseña (login y registro). */
+.auth-container .eye-icon {
+  position: absolute;
+  right: 16px;
+  color: var(--text-gray);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+.auth-container .eye-icon:hover {
+  color: var(--text);
+}
+/* Que el texto no quede debajo del ojo. */
+.auth-container .input-wrapper:has(.eye-icon) input {
+  padding-right: 48px;
 }
 
 .auth-container .btn-submit {
   width: 100%;
-  background-color: var(--btn-bg);
-  border: 1px solid var(--btn-border);
-  color: white;
-  padding: 16px;
-  border-radius: 8px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+  padding: 15px;
+  border-radius: 12px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   font-family: 'DM Sans', sans-serif;
-  margin-top: 1rem;
-  transition: all 0.3s ease;
+  margin-top: 0.75rem;
+  box-shadow: 0 10px 24px -10px var(--accent-glow);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
   position: relative;
   overflow: hidden;
 }
 
+/* Brillo que cruza el botón al pasar el mouse. */
 .auth-container .btn-submit::before {
   content: '';
   position: absolute;
@@ -152,38 +425,113 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-  transition: left 0.5s ease;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  transition: left 0.6s ease;
 }
 
 .auth-container .btn-submit:hover {
-  background-color: #1a1532;
-  border-color: var(--accent-purple);
-  box-shadow: 0 4px 20px rgba(139, 121, 242, 0.2);
+  background: var(--accent-strong);
+  box-shadow: 0 14px 28px -10px var(--accent-glow);
 }
 
 .auth-container .btn-submit:hover::before {
   left: 100%;
 }
 
+.auth-container .btn-submit:active {
+  transform: translateY(0);
+}
+
+/* Enviando: spinner y sin efectos de hover. */
+.auth-container .btn-submit:disabled {
+  cursor: progress;
+  opacity: 0.85;
+  transform: none;
+}
+.auth-container .btn-submit:disabled::before {
+  display: none;
+}
+.auth-container .btn-submit .girando {
+  vertical-align: -3px;
+  margin-right: 6px;
+  animation: girar 0.9s linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+/* «¿Olvidaste tu contraseña?», debajo del campo de contraseña */
+.auth-container .olvido-fila {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+.auth-container .olvido-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-soft);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.auth-container .olvido-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
 .auth-container .form-footer {
-  margin-top: 2.5rem;
+  margin-top: 2rem;
   text-align: center;
   font-size: 0.95rem;
   color: var(--text-gray);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
 }
 
 .auth-container .form-footer a {
-  color: #c0b4f9;
+  color: var(--accent-soft);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   transition: color 0.2s;
 }
 .auth-container .form-footer a:hover {
-  color: white;
+  color: var(--text);
   text-decoration: underline;
+}
+
+/* Al pasar entre login y registro (la intro ya terminó): el formulario nuevo
+   entra enseguida, sin la espera pensada para el final de la animación. */
+.auth-container .right-panel.listo.cambio .form-container,
+.auth-container .right-panel.listo.cambio .form-container > :not(.auth-aviso),
+.auth-container .right-panel.listo.cambio .form-container form > :not(.auth-aviso) {
+  animation-delay: 0s !important;
+  animation-duration: 0.45s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-container .right-panel.listo .form-container,
+  .auth-container .right-panel.listo .form-container > *,
+  .auth-container .right-panel.listo .form-container form > *,
+  .auth-container .auth-aviso,
+  .auth-container .auth-aviso.error {
+    animation: none;
+  }
+  .auth-container .left-panel,
+  .auth-container .right-panel {
+    transition: none;
+  }
+}
+
+/* En pantallas grandes la marca ya aparece en el panel izquierdo (el logo se
+   forma con su nombre); en móvil, sin ese panel, se muestra arriba del formulario. */
+@media (min-width: 901px) {
+  .auth-container .brand {
+    display: none;
+  }
 }
 
 /* RESPONSIVE */
@@ -193,7 +541,7 @@
     overflow-y: auto;
   }
   .auth-container .left-panel {
-    display: none; /* Ocultar los gráficos en dispositivos móviles para centrarse en el inicio de sesión. */
+    display: none; /* En móvil se prioriza el formulario. */
   }
   .auth-container .right-panel {
     padding: 2rem 1.5rem;

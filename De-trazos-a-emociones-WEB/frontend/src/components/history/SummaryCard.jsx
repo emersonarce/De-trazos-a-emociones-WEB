@@ -1,8 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './SummaryCard.css';
+import { emotionVisual } from '../../utils/emociones';
 
-const SummaryCard = ({ sessions = [], dotsHeight = ['0px', '0px', '0px', '0px', '0px', '0px', '0px'] }) => {
+const DIAS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+
+// Análisis por día de la semana actual (lunes a domingo) y el índice de hoy.
+function actividadSemanal(sessions) {
+  const hoy = new Date();
+  const indiceHoy = (hoy.getDay() + 6) % 7; // lunes = 0
+  const lunes = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() - indiceHoy);
+  const conteo = [0, 0, 0, 0, 0, 0, 0];
+  for (const s of sessions) {
+    const f = new Date(s.fecha);
+    const dia = Math.floor((new Date(f.getFullYear(), f.getMonth(), f.getDate()) - lunes) / 86400000);
+    if (dia >= 0 && dia < 7) conteo[dia] += 1;
+  }
+  return { conteo, indiceHoy };
+}
+
+const SummaryCard = ({ sessions = [] }) => {
   const [animatedWidths, setAnimatedWidths] = useState({});
+  const [alturasVisibles, setAlturasVisibles] = useState(false);
+  const semana = actividadSemanal(sessions);
 
   const emotionCounts = {};
   sessions.forEach(s => {
@@ -17,13 +36,9 @@ const SummaryCard = ({ sessions = [], dotsHeight = ['0px', '0px', '0px', '0px', 
     summaryData = Object.keys(emotionCounts).map(e => {
       const count = emotionCounts[e];
       const pctValue = Math.round((count / total) * 100);
-      let color = '#fbbf24';
-      let bg = 'rgba(251,191,36,0.5)';
-      
-      if (e.includes('ansiedad') || e.includes('enojo') || e.includes('ira')) { color = '#f87171'; bg = 'rgba(248,113,113,0.5)'; }
-      else if (e.includes('tristeza') || e.includes('miedo')) { color = '#60a5fa'; bg = 'rgba(96,165,250,0.5)'; }
-      else if (e.includes('alegría') || e.includes('felicidad')) { color = '#2dd4bf'; bg = 'rgba(45,212,191,0.5)'; }
-      else if (e.includes('calma') || e.includes('tranquilidad')) { color = '#a89ee0'; bg = 'rgba(168,158,224,0.5)'; }
+      // Un color por emoción (utils/emociones.js), como variable CSS del tema.
+      const { color } = emotionVisual(e);
+      const bg = `color-mix(in srgb, ${color} 50%, transparent)`;
 
       return {
         name: e.charAt(0).toUpperCase() + e.slice(1),
@@ -39,7 +54,7 @@ const SummaryCard = ({ sessions = [], dotsHeight = ['0px', '0px', '0px', '0px', 
     summaryData.sort((a, b) => b.pctValue - a.pctValue);
   } else {
     summaryData = [
-       { name: 'Esperando datos', color: '#6b7280', bg: 'rgba(107,114,128,0.5)', trend: 'stable', trendTxt: '-', pct: '0%', pctValue: 0 }
+       { name: 'Esperando datos', color: 'var(--emo-neutra)', bg: 'var(--emo-neutra-bg)', trend: 'stable', trendTxt: '-', pct: '0%', pctValue: 0 }
     ];
   }
 
@@ -52,6 +67,7 @@ const SummaryCard = ({ sessions = [], dotsHeight = ['0px', '0px', '0px', '0px', 
         widths[i] = item.pct;
       });
       setAnimatedWidths(widths);
+      setAlturasVisibles(true);
     }, 100);
     return () => clearTimeout(timer);
   }, [sessions]);
@@ -78,28 +94,25 @@ const SummaryCard = ({ sessions = [], dotsHeight = ['0px', '0px', '0px', '0px', 
               </div>
             </div>
             <div className="s-bar-wrap">
-              <div className="s-bar" style={{width: animatedWidths[i] || '0%', background: item.color, boxShadow: `0 0 10px ${item.bg}`, transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1)'}}></div>
+              <div className="s-bar" style={{width: animatedWidths[i] || '0%', background: `color-mix(in srgb, ${item.color} var(--barra-pct), var(--barra-mezcla))`, transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1)'}}></div>
             </div>
           </div>
         ))}
 
         <div style={{marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border)'}}>
           <div style={{fontSize: '12px', color: 'var(--muted2)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700}}>Actividad semanal</div>
-          <div className="week-dots">
-            {[
-              { bg: 'var(--purple)', opacity: 0.3 },
-              { bg: 'var(--purple)', opacity: 0.5 },
-              { bg: 'var(--purple)', opacity: 0.4 },
-              { bg: 'var(--purple)', opacity: 0.6 },
-              { bg: 'var(--purple)', opacity: 0.5 },
-              { bg: 'var(--purple-light)', boxShadow: '0 0 8px var(--purple-glow)' },
-              { bg: 'var(--border2)' },
-            ].map((dot, i) => (
-              <div key={i} className="w-dot" style={{height: dotsHeight[i] || '4px', background: dot.bg, opacity: dot.opacity, boxShadow: dot.boxShadow, transition: 'height 1s cubic-bezier(0.16, 1, 0.3, 1)'}}></div>
+          <div className="week-dots" role="img" aria-label={`Análisis esta semana: ${semana.conteo.reduce((a, b) => a + b, 0)}`}>
+            {semana.conteo.map((n, i) => (
+              <div
+                key={i}
+                className={`w-dot ${n ? 'con-analisis' : ''} ${i === semana.indiceHoy ? 'hoy' : ''}`}
+                style={{ height: alturasVisibles ? `${n ? Math.min(30, 8 + (n - 1) * 7) : 4}px` : '4px' }}
+                title={`${DIAS[i]}: ${n} análisis`}
+              ></div>
             ))}
           </div>
           <div style={{fontSize: '11px', color: 'var(--muted)', marginTop: '6px', fontWeight: 500, display: 'flex', justifyContent: 'space-between', width: '105px'}}>
-            <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+            {DIAS.map((d, i) => <span key={i} style={i === semana.indiceHoy ? { color: 'var(--text)', fontWeight: 700 } : undefined}>{d}</span>)}
           </div>
         </div>
       </div>

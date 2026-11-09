@@ -1,23 +1,4 @@
-:root {
-  --bg-dark: #0a0816;
-  --bg-panel: #0d0a1b;
-  --surface: #13131f;
-  --card: #181828;
-  --card2: #1e1e30;
-  --border: rgba(255, 255, 255, 0.07);
-  --border2: rgba(255, 255, 255, 0.12);
-  --purple: #8b79f2;
-  --purple-light: #a89ee0;
-  --purple-dim: rgba(139, 121, 242, 0.15);
-  --purple-glow: rgba(139, 121, 242, 0.4);
-  --text: #ffffff;
-  --muted: #a1a1aa;
-  --muted2: #9490a8;
-  --teal: #2dd4bf;
-  --amber: #fbbf24;
-  --coral: #f87171;
-  --warm: #ff9f6b;
-}
+/* Los tokens de color viven en index.css (tema claro/oscuro + paletas). */
 
 .dashboard-container {
   font-family: 'DM Sans', sans-serif;
@@ -75,7 +56,6 @@
   margin-left: 72px;
   padding: 32px 40px;
   min-height: 100vh;
-  max-width: 1200px;
   position: relative;
   z-index: 1;
 }
@@ -108,6 +88,24 @@
   background: radial-gradient(circle, rgba(139, 121, 242, 0.15) 0%, transparent 70%);
 }
 
+/* El texto va por encima de las moléculas (IconoAnimo) y deja libre la
+   derecha, donde se dibuja la cara. */
+.welcome {
+  min-height: 190px;
+}
+
+.welcome-left {
+  position: relative;
+  z-index: 2;
+  padding-right: 240px;
+}
+
+@media (max-width: 560px) {
+  .welcome-left {
+    padding-right: 110px;
+  }
+}
+
 .welcome-greeting {
   font-size: 13px;
   color: var(--purple-light);
@@ -118,17 +116,19 @@
 }
 
 .welcome-title {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--display);
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text);
   margin-bottom: 8px;
   line-height: 1.2;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'SOFT' 100;
 }
 
 .welcome-title span {
   color: var(--purple-light);
+  font-style: italic;
 }
 
 .welcome-sub {
@@ -137,15 +137,6 @@
   font-weight: 400;
   max-width: 420px;
   line-height: 1.6;
-}
-
-.welcome-emoji {
-  font-size: 72px;
-  line-height: 1;
-  opacity: 0.9;
-  position: relative;
-  z-index: 1;
-  animation: float 6s infinite ease-in-out;
 }
 
 /* CHILD SWITCHER */
@@ -159,7 +150,7 @@
 
 /* ESTILO DE TARJETA COMÚN */
 .dashboard-card {
-  background: rgba(24, 24, 40, 0.6);
+  background: var(--card);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border);
   border-radius: 20px;
@@ -178,6 +169,15 @@
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   margin-top: 20px;
+  /* Cada tarjeta con su propio alto: si no, la más corta se estira hasta la
+     otra y queda un espacio vacío abajo. */
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .grid-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .btn-outline {
@@ -199,4 +199,47 @@
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Esqueleto de carga: misma silueta que el selector de niños y las tarjetas. */
+.dash-esqueleto {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.esq-fila {
+  display: flex;
+  gap: 12px;
+  overflow: hidden;
+}
+.esq-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+}
+.esq {
+  display: block;
+  border: 1px solid var(--border);
+  background: linear-gradient(90deg, var(--card) 0%, var(--card2) 50%, var(--card) 100%);
+  background-size: 200% 100%;
+  animation: esq-brillo 1.4s ease-in-out infinite;
+}
+.esq-chip {
+  flex: 0 0 200px;
+  height: 64px;
+  border-radius: 999px;
+}
+.esq-tarjeta {
+  height: 320px;
+  border-radius: 20px;
+}
+@keyframes esq-brillo {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (max-width: 900px) {
+  .esq-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .esq { animation: none; }
 }
